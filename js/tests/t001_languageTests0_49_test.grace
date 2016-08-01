@@ -123,9 +123,12 @@ def aGraceLangTest = object {
             out(true || false)
             out(true && false)
             
-            assert(str)shouldBe("true\nfalse\ntrue\nfalse\n")
-            str := ""
+            assert (true) description("True isn't true!")
+            deny (false) description "False is true!"
+            assert (true || false) shouldBe (true)
+            assert (true && false) shouldBe (false)
 
+            str := ""
             assert(false && {out "*"; true}) shouldBe (false)
             assert(true || {out "*"; false}) shouldBe (true)
             assert(str) shouldBe ""
@@ -133,6 +136,10 @@ def aGraceLangTest = object {
             assert(true && {out "*"; true}) shouldBe (true)
             assert(false || {out "*"; false}) shouldBe (false)
             assert(str) shouldBe "*\n*\n"
+
+            assert (true.hash == true.hash) description ("True hash is not equal to true hash!")
+            assert (false.hash == false.hash) description ("False hash is not equal to false hash!")
+            assert (true.hash != false.hash) description ("True hash is equal to false hash!")
         }
 
         method test_006_dotcall {

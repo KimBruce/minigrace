@@ -3999,6 +3999,14 @@ Object Boolean_NotEquals(Object self, int nparts, int *argcv,
         Object *args, int flags) {
     return alloc_Boolean(self != args[0]);
 }
+Object Boolean_hashcode(Object self, int nparts, int *argcv,
+        Object *args, int flags) {
+    int myval = *(int8_t*)self->data;
+    if (myval == 1) {
+        return alloc_Float64(3637);
+    }
+    return alloc_Float64(1741);
+}
 Object alloc_Boolean(int val) {
     if (val && BOOLEAN_TRUE != NULL)
         return BOOLEAN_TRUE;
@@ -4018,6 +4026,7 @@ Object alloc_Boolean(int val) {
         add_Method(Boolean, "==(1)", &Boolean_Equals);
         add_Method(Boolean, "≠(1)", &Boolean_NotEquals);
         add_Method(Boolean, "match(1)", &literal_match);
+        add_Method(Boolean, "hash", &Boolean_hashcode);
     }
     Object o = alloc_obj(sizeof(int8_t), Boolean);
     int8_t *d = (int8_t*)o->data;

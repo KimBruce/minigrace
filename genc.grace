@@ -1675,8 +1675,30 @@ method implementAliasesAndExclusionsFor(o) inheriting(e, superobj) {
 
     if (e.aliases.isEmpty && e.exclusions.isEmpty) then { return }
 
-    errormessages.error("I'm sorry, aliases and exclusions are not yet supported " ++
-        "by the C code generator.") atLine (e.line)
+    def tObj = compilenode(e.value)
+    def tMethNames = e.providedNames -- o.localNames
+    util.log 70 verbose "tMethNames = {tMethNames.asList.sort}"
+    o.aliases.do { each ->
+        def nn = each.newName.nameString
+        def methc = auto_count
+        auto_count := auto_count + 1
+        out "  Method *oldMeth{methc} = findmethodsimple({superobj}, each.oldName.nameString);"
+        out("  Method *newmeth{methc} = addmethodrealflags(self, \"{nn}\", " ++
+              "oldMeth{methc}->func, MFLAG_CONFIDENTIAL);  // alias")
+        out "  newmeth{methc}->definitionModule = oldmeth{methc}->definitionModule;"
+        out "  newmeth{methc}->definitionLine = oldmeth{methc}->definitionLine;"
+        tMethNames.remove(nn)
+    }
+//    tMethNames.do { each ->
+//       def nn = each.nameString
+//        def methc = auto_count
+//        auto_count := auto_count + 1
+//        out "  Method *oldMeth{methc} = findmethodsimple({superobj}, nn);"
+//        out("  Method *newmeth{methc} = addmethodreal(self, \"{nn}\", " ++
+//              "oldMeth{methc}->func);"  // copied-down method")
+//        out "  newmeth{methc}->definitionModule = oldmeth{methc}->definitionModule;"
+//        out "  newmeth{methc}->definitionLine = oldmeth{methc}->definitionLine;"
+//    }
 }
 
 method compile(moduleObject, outfile, rm, bt, buildinfo) {

@@ -5,7 +5,7 @@ MAKEFLAGS += -r
 ARCH := $(shell uname -s)-$(shell uname -m)
 STUBS := $(filter-out %Prelude.grace,$(STUBS))
 ALL_LIBRARY_MODULES = $(sort $(filter-out $(COMPILER_MODULES), $(LIBRARY_MODULES) $(OBJECTDRAW)))
-C_MODULES_GSO := $(UNICODE_MODULE:%.gso=modules/%.gso) $(OTHER_MODULES:%.gso=modules/%.gso)
+C_MODULES_GSO := $(UNICODE_MODULE) $(OTHER_MODULES)
 INTERNAL_STUBS := io.grace sys.grace  # for which there are no c files
 JS_STUBS := dom.grace timer.grace
 DYNAMIC_STUBS := $(filter-out $(INTERNAL_STUBS) $(JS_STUBS), $(STUBS))
@@ -18,8 +18,8 @@ HEADERFILES = gracelib.c gracelib.h definitions.h debugger.c
 # directory on an install (in addition to ALL_LIBRARY_MODULES)
 COMPILER_MODULES = standardGrace.grace collectionsPrelude.grace ast.grace util.grace identifierKinds.grace stringMap.grace
 
-DIALECT_DEPENDENCIES = modules/mirrors.gct modules/mirrors.gso errormessages.gct errormessages.gso ast.gct ast.gso util.gct util.gso modules/gUnit.gct modules/gUnit.gso modules/math.gso
-DIALECTS_NEED = modules/dialect util ast modules/gUnit modules/math
+DIALECT_DEPENDENCIES = mirrors.gct mirrors.gso errormessages.gct errormessages.gso ast.gct ast.gso util.gct util.gso modules/gUnit.gct modules/gUnit.gso
+DIALECTS_NEED = modules/dialect util ast modules/gUnit
 WEB_DIRECTORY = public_html/ide/
 DEV_WEB_DIRECTORY = public_html/dev/ide/
 GRAPHIX = createJsGraphicsWrapper.grace graphix.grace
@@ -37,7 +37,7 @@ OBJECTDRAW = objectdraw.grace rtobjectdraw.grace stobjectdraw.grace animation.gr
 OBJECTDRAW_REAL = $(filter-out %tobjectdraw.grace, $(OBJECTDRAW))
 
 PRELUDESOURCEFILES = collectionsPrelude.grace standardGrace.grace
-REALSOURCEFILES = $(sort compiler.grace errormessages.grace util.grace ast.grace identifierKinds.grace lexer.grace parser.grace genjs.grace genc.grace stringMap.grace xmodule.grace identifierresolution.grace)
+REALSOURCEFILES = $(sort compiler.grace errormessages.grace util.grace ast.grace identifierKinds.grace lexer.grace parser.grace genjs.grace genc.grace stringMap.grace unixFilePath.grace xmodule.grace identifierresolution.grace)
 ALLSOURCEFILES = $(REALSOURCEFILES) $(PRELUDESOURCEFILES) $(HEADERFILES)
 SOURCEFILES = $(MGSOURCEFILES) $(PRELUDESOURCEFILES)
 STABLE=2e7432b299d4ba499027a17319654f4bcd9372c2
@@ -70,8 +70,8 @@ ace-code: js/ace/ace.js
 
 alltests: test test.js module-test-js js/sample-dialects
 
-c: minigrace gracelib.c gracelib.h unicode.c unicodedata.h unicode.gct c/Makefile mirrors.c mirrors.gct definitions.h curl.c modules/math.gso modules/unicode.gso modules/mirrors.gso modules/math.gct modules/math.gcn modules/unixFilePath.gct modules/unixFilePath.gcn
-	for f in gracelib.c gracelib.h unicode.c unicode.gct unicodedata.h $(SOURCEFILES) mirrors.c mirrors.gct definitions.h debugger.c curl.c modules/*.gso modules/*.gct modules/*.gcn ;\
+c: minigrace gracelib.c gracelib.h unicode.c unicodedata.h unicode.gct c/Makefile mirrors.c mirrors.gct definitions.h curl.c modules/unicode.gso modules/mirrors.gso unixFilePath.gct unixFilePath.gcn
+	for f in gracelib.c gracelib.h unicode.{c,gct} unicodedata.h $(SOURCEFILES) mirrors.{c,gct} definitions.h debugger.c curl.c modules/*.gso modules/*.gct modules/*.gcn ;\
     do cp -f $$f c ; done &&\
     cd c &&\
     ../minigrace --make $(VERBOSITY) --noexec -XNoMain -XNativePrelude collectionsPrelude.grace &&\
@@ -154,6 +154,7 @@ echo:
 	@echo INTERNAL_STUBS = $(INTERNAL_STUBS)
 	@echo EXTERNAL_STUBS = $(EXTERNAL_STUBS)
 	@echo C_MODULES_GSO = $(C_MODULES_GSO)
+	@echo OTHER_MODULES = $(OTHER_MODULES)
 	@echo GRAPHIX:%.grace=js/%.js = $(GRAPHIX:%.grace=js/%.js)
 	@echo WEBFILES_SIMPLE = $(WEBFILES_SIMPLE)
 
@@ -298,18 +299,15 @@ l1/mirrors.gso: $(KG)/mirrors.gso
 l1/unicode.gso: $(KG)/unicode.gso
 	cd l1 && ln -f ../$(KG)/unicode.gso .
 
-l1/unixFilePath.gct: modules/unixFilePath.grace $(KG)/minigrace l1/standardGrace.gct
-	$(KG)/minigrace $(VERBOSITY) --make --noexec -XNoMain --dir l1 $<
-
-$(C_MODULES_GSO:%.gso=%.gct): modules/%.gct: stubs/%.gct
-	cd modules && ln -sf ../$< .
+#$(C_MODULES_GSO:%.gso=%.gct): %.gct: stubs/%.gct
+#	cd modules && ln -sf ../$< .
 
 $(LIBRARY_MODULES:%.grace=modules/%.gcn): modules/%.gcn: modules/%.gso
 
 $(LIBRARY_MODULES:%.grace=modules/%.gct): modules/%.gct: modules/%.gso
 
-$(LIBRARY_MODULES:%.grace=%.gct): %.gct: modules/%.grace l1/minigrace
-	cd l1 && ./minigrace $(VERBOSITY) --make --dir .. --noexec ../$<
+$(LIBRARY_MODULES:%.grace=%.gct): %.gct: modules/%.grace minigrace
+	GRACE_MODULE_PATH=modules ./minigrace $(VERBOSITY) --make --noexec -XNoMain $<
 
 $(LIBRARY_WO_OBJECTDRAW:%.grace=modules/%.gso): modules/%.gso: modules/%.grace minigrace
 	GRACE_MODULE_PATH=modules ./minigrace $(VERBOSITY) --make --noexec -XNoMain $<
@@ -333,10 +331,10 @@ $(MGSOURCEFILES:%.grace=%.gso): %.gso: %.grace standardGrace.gct l1/minigrace
 	GRACE_MODULE_PATH=. l1/minigrace $(VERBOSITY) --make --noexec $<
 
 $(MGSOURCEFILES:%.grace=js/%.js): js/%.js: %.grace js/standardGrace.gct minigrace
-	GRACE_MODULE_PATH=modules ./minigrace $(VERBOSITY) --make --target js --dir js $<
+	GRACE_MODULE_PATH=js ./minigrace $(VERBOSITY) --make --target js --dir js $<
 
-$(C_MODULES_GSO:modules/%.gso=%.gso): %.gso: modules/%.gso
-	ln -sf $< .
+#$(C_MODULES_GSO:modules/%.gso=%.gso): %.gso: modules/%.gso
+#	ln -sf $< .
 
 # Giant hack! Not suitable for use.
 minigrace-dynamic: l1/minigrace $(SOURCEFILES)
@@ -353,13 +351,16 @@ minigrace-c-env: minigrace standardGrace.gct gracelib.o $(LIBRARY_MODULES:%.grac
 
 minigrace-js-env: minigrace js/grace js/grace-debug standardGrace.gct js/gracelib.js .git/hooks/commit-msg $(PRELUDESOURCEFILES:%.grace=js/%.js) $(LIBRARY_MODULES:%.grace=js/%.js) js/ast.js js/errormessages.js dom.gct $(JSSOURCEFILES) $(TYPE_DIALECTS:%=modules/%.gso) $(TYPE_DIALECTS:%=js/%.js)
 
+mirrors.gso: mirrors.c
+	gcc -g -I. -std=c99 $(UNICODE_LDFLAGS) -o $@ -shared -fPIC $<
+
 module-test-js: minigrace-js-env $(TYPE_DIALECTS:%=js/%.js) $(TYPE_DIALECTS:%=modules/%.gso)
 	modules/tests/harness_js minigrace
 
 modules/curl.gso: curl.c gracelib.h
 	gcc -g -std=c99 $(UNICODE_LDFLAGS) -o $@ -shared -fPIC curl.c -lcurl
 
-modules/gUnit.gct modules/gUnit.gso modules/gUnit.gcn: modules/mirrors.gso modules/math.gso modules/dialect.gso
+modules/gUnit.gct modules/gUnit.gso modules/gUnit.gcn: mirrors.gso
 
 modules/minitest.gct modules/minitest.gso modules/minitest.gcn: modules/gUnit.gso
 
@@ -490,16 +491,8 @@ tarball: minigrace
       mkdir minigrace-$$VER ; cp -R c/* gUnit.grace minigrace-$$VER ;\
       mkdir minigrace-$$VER/tests ; cp tests/*.grace tests/*.out tests/harness minigrace-$$VER/tests ;\
       mkdir minigrace-$$VER/stubs ; cp stubs/*.grace minigrace-$$VER/stubs ;\
-      mkdir minigrace-$$VER/modules ;\
-      cp modules/unicode.c minigrace-$$VER/modules ;\
-      cp modules/unicode.gct minigrace-$$VER/modules ;\
-      cp modules/mirrors.c minigrace-$$VER/modules ;\
-      cp modules/mirrors.gct minigrace-$$VER/modules ;\
-      cp modules/unixFilePath.c minigrace-$$VER/modules ;\
-      cp modules/unixFilePath.gct minigrace-$$VER/modules ;\
-      cp modules/math.c minigrace-$$VER/modules ;\
-      cp modules/math.gct minigrace-$$VER/modules ;\
-      mkdir -p minigrace-$$VER/sample/dialects ; cp sample/dialects/*.grace sample/dialects/README sample/dialects/Makefile minigrace-$$VER/sample/dialects ;\
+      mkdir minigrace-$$VER/modules ; cp modules/*.grace minigrace-$$VER/modules ;\
+      cp {unicode.c,unicode.gct,mirrors.c,mirrors.gct,unixFilePath.c,unixFilePath.gct} minigrace-$$VER ;\
       cp -R README doc minigrace-$$VER ;\
       tar cjvf ../minigrace-$$VER.tar.bz2 minigrace-$$VER ;\
       chmod a+r ../minigrace-$$VER.tar.bz2 ;\
@@ -530,7 +523,10 @@ togracetest: minigrace
 	tests/harness minigrace tests tograce $(TESTS)
 
 tools/gracedoc: ./minigrace modules/gracedoc.grace ast.grace io.gct lexer.grace parser.grace sys.gct
-	GRACE_MODULE_PATH=modules:js ./minigrace --verbose --make modules/gracedoc.grace
+	@echo "gracedoc is in its own git repository"
+
+unicode.gso: unicode.c
+	gcc -g -I. -std=c99 $(UNICODE_LDFLAGS) -o $@ -shared -fPIC $<
 
 uninstall:
 	rm -f $(PREFIX)/bin/minigrace
@@ -547,5 +543,5 @@ webIde:
 %.o: %.c
 	gcc -g -std=c99 -c -o $@ $<
 
-modules/%.gso: %.c gracelib.h
-	gcc -g -I. -std=c99 $(UNICODE_LDFLAGS) -o $@ -shared -fPIC $<
+#modules/%.gso: %.c gracelib.h
+#	gcc -g -I. -std=c99 $(UNICODE_LDFLAGS) -o $@ -shared -fPIC $<

@@ -358,8 +358,11 @@ minigrace-js-env: minigrace js/grace js/grace-debug standardGrace.gct js/graceli
 module-test-js: minigrace-js-env $(TYPE_DIALECTS:%=js/%.js) $(TYPE_DIALECTS:%=modules/%.gso)
 	modules/tests/harness_js minigrace
 
-modules/curl.gso: curl.c gracelib.h
-	gcc -g -std=c99 $(UNICODE_LDFLAGS) -o $@ -shared -fPIC curl.c -lcurl
+#modules/curl.gso: curl.c gracelib.h
+#	gcc -g -std=c99 $(UNICODE_LDFLAGS) -o $@ -shared -fPIC curl.c -lcurl
+
+modules/curl%gso modules/curl%gct modules/curl%gcn: modules/curl.grace gracelib.o gracelib.h
+	GRACE_MODULE_PATH=modules:. GRACE_GCC_FLAGS=-lcurl ./minigrace --make $(VERBOSITY) $<
 
 modules/gUnit.gct modules/gUnit.gso modules/gUnit.gcn: modules/mirrors.gso modules/math.gso modules/dialect.gso
 

@@ -1606,9 +1606,11 @@ method compileDynamicModule(fnBase, buildinfo) {
             exportDynamicBit := "-Wl,-undefined -Wl,dynamic_lookup"
         }
     }
-    cmd := "gcc -DDYNAMIC -g -I\"{util.gracelibPath}\" -I\"{sys.execPath}/../include\" " ++
+    def gccFlags = sys.environ.at "GRACE_GCC_FLAGS"
+    cmd := "gcc -DDYNAMIC -g {exportDynamicBit} -I\"{util.gracelibPath}\" -I\"{sys.execPath}/../include\" " ++
         "-I\"{sys.execPath}\" -I\"{buildinfo.includepath}\" -shared -o \"{fnBase}.gso\" " ++
-        "-fPIC {exportDynamicBit} \"{fnBase}.c\" "
+        "-fPIC \"{fnBase}.c\" {gccFlags}"
+    util.log 60 verbose "executing {cmd}"
     if ((io.system(cmd)).not) then {
         io.error.write("Fatal error: Failed compiling dynamic module.\n")
         io.error.write("The failing command was\n{cmd}\n")
@@ -1618,11 +1620,13 @@ method compileDynamicModule(fnBase, buildinfo) {
 method compileStaticModule(fnBase, buildinfo) {
     // compile a statically-linkable version as .gcn
 //    util.log 50 verbose "producing static module {modname}.gcn"
+    def gccFlags = sys.environ.at "GRACE_GCC_FLAGS"
     def cmd = "gcc -std=c99 -g -I\"{util.gracelibPath}\" -I\"{sys.execPath}/../include\" " ++
-        "-I\"{sys.execPath}\" -I\"{buildinfo.includepath}\" -o \"{fnBase}.gcn\" -c \"{fnBase}.c\""
+        "-I\"{sys.execPath}\" -I\"{buildinfo.includepath}\" -o \"{fnBase}.gcn\" -c \"{fnBase}.c\" {gccFlags}"
         // -c          => don't run linker
         // -o <file>   => names the output file
 
+    util.log 60 verbose "executing {cmd}"
     if ((io.system(cmd)).not) then {
         io.error.write("Fatal error: C compilation of {modname} failed.\n")
         io.error.write("The failing command was\n{cmd}\n")
@@ -1642,6 +1646,7 @@ method linkExecutable(fnBase, buildinfo) {
     if (io.system(cmd)) then {
         exportDynamicBit := "-Wl,--export-dynamic"
     }
+    def gccFlags = sys.environ.at "GRACE_GCC_FLAGS"
     cmd := "gcc -g -o \"{fnBase}\" -fPIC {exportDynamicBit} \"{fnBase}.gcn\" "
 
     if (io.exists "{util.gracelibPath}/gracelib.o") then {
@@ -1661,7 +1666,8 @@ method linkExecutable(fnBase, buildinfo) {
     for (imports.linkfiles) do { fn ->
         cmd := "{cmd} \"{fn}\""
     }
-    cmd := "{cmd} -lm {dlbit}"
+    cmd := "{cmd} -lm {dlbit} {gccFlags}"
+    util.log 60 verbose "executing {cmd}"
     if ((io.system(cmd)).not) then {
         io.error.write("Fatal Error: Failed linking executable for {modname}.\n")
         io.error.write("The failing command was\n{cmd}\n")

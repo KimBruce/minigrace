@@ -13,6 +13,7 @@ var verbosity := 30
 var pad1 := 1
 var auto_count := 0
 var constants := []
+var header := []
 var output := []
 var usedvars := []
 var declaredvars := []
@@ -81,6 +82,10 @@ method forceLineNumber(n)comment(c) {
         output.push "{indent}setLineNumber({priorLineSeen});    // {priorLineComment}"
     }
     priorLineEmitted := priorLineSeen
+}
+
+method outH(s) {
+    header.push(s)
 }
 
 method out(s) {
@@ -1067,14 +1072,18 @@ method compileNativeCode(o) {
             atLine(param2.line)
     }
     def codeString = param2.value
-    out "   // start native code from line {o.line}"
-    out "var result = GraceDone;"
-    out(codeString)
-    def reg = "nat" ++ auto_count
-    auto_count := auto_count + 1
-    out "var {reg} = result;"
-    o.register := reg
-    out "   // end native code insertion"
+    if (o.nameString == "native(1)code(1)") then {
+        out "   // start native code from line {o.line}"
+        out "var result = GraceDone;"
+        out(codeString)
+        def reg = "nat" ++ auto_count
+        auto_count := auto_count + 1
+        out "var {reg} = result;"
+        o.register := reg
+        out "   // end native code insertion"
+    } else {
+        outH(codeString)
+    }
 }
 
 method compilenode(o) {
@@ -1132,6 +1141,8 @@ method compilenode(o) {
             if (o.nameString == "print(1)") then {
                 compilePrint(o)
             } elseif {o.nameString == "native(1)code(1)"} then {
+                compileNativeCode(o)
+            } elseif {o.nameString == "native(1)header(1)"} then {
                 compileNativeCode(o)
             } else {
                 compilecall(o)
@@ -1284,10 +1295,8 @@ method compile(moduleObject, of, rm, bt, glPath) {
     out "  global.{generatedModuleName} = {generatedModuleName};"
     out "if (typeof window !== \"undefined\")"
     out "  window.{generatedModuleName} = {generatedModuleName};"
-
-    for (output) do { o ->
-        util.outprint(o)
-    }
+    header.do { each -> util.outprint(each) }
+    output.do { each -> util.outprint(each) }
     outfile.close
     util.log_verbose "done."
     if (buildtype == "run") then { runJsCode(of, glPath) }

@@ -3535,7 +3535,7 @@ Object alloc_Octets(const char *data, int len) {
         add_Method(Octets, "==(1)", &Octets_Equals);
         add_Method(Octets, "≠(1)", &Object_NotEquals);
         add_Method(Octets, "size", &Octets_size);
-        add_Method(Octets, "decode", &Octets_decode);
+        add_Method(Octets, "decode(1)", &Octets_decode);
     }
     Object o = alloc_obj(sizeof(int) + len, Octets);
     struct OctetsObject *oo = (struct OctetsObject*)o;

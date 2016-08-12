@@ -77,7 +77,7 @@ size_t CurlEasy__receive(char *ptr, size_t size, size_t nmemb,
     char buf[bsz];
     int tmp = 1;
     Object arg = alloc_Octets(ptr, bsz);
-    callmethod(blk, "apply", 1, &tmp, &arg);
+    callmethod(blk, "apply(1)", 1, &tmp, &arg);
     return bsz;
 }
 
@@ -96,7 +96,7 @@ size_t CurlEasy__receiveHeader(char *ptr, size_t size, size_t nmemb,
     char buf[bsz];
     int tmp = 1;
     Object arg = alloc_Octets(ptr, bsz);
-    callmethod(blk, "apply", 1, &tmp, &arg);
+    callmethod(blk, "apply(1)", 1, &tmp, &arg);
     return bsz;
 }
 
@@ -224,8 +224,6 @@ Object alloc_CurlEasy() {
 
 Object curl_easy(Object self, int nparams, int *argcv, Object *argv,
         int flags) {
-    if (nparams != 1)
-        gracedie("curl.easy requires one argument");
     return alloc_CurlEasy();
 }
 

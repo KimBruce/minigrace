@@ -1,0 +1,21 @@
+req.url = http://web.cecs.pdx.edu/~grace/minigrace/exp/index.html
+ready to perform ...
+data received
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+  <head>
+
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+    <meta http-equiv="refresh" content="0;
+      URL='http://www.cs.pdx.edu/~grace/ide'">
+    <title>Grace Editor</title>
+  </head>
+  <body>
+    <br>
+    The <font face="Zapfino">Grace</font>&nbsp; IDE has moved. Your
+    browser is being redirected; <a
+      href="http://www.cs.pdx.edu/%7Egrace/ide">click here</a> if this
+    doesn't work.<br>
+    <br>
+  </body>
+</html>

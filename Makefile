@@ -13,10 +13,11 @@ STATIC_STUBS := $(filter-out $(DYNAMIC_STUBS) $(INTERNAL_STUBS) $(JS_STUBS), $(S
 EXTERNAL_STUBS := $(filter-out $(INTERNAL_STUBS) $(JS_STUBS), $(STUBS))
 CFILES = ast.c buildinfo.c genc.c genjs.c lexer.c parser.c util.c stringMap.c xmodule.c identifierresolution.c  errormessages.c
 HEADERFILES = gracelib.c gracelib.h definitions.h debugger.c
+LIBRARY_WO_CURL_OD = $(filter-out curl.grace $(OBJECTDRAW), $(LIBRARY_MODULES))
 
 # COMPILER_MODULES are the parts of the compiler that should go into the modules
 # directory on an install (in addition to ALL_LIBRARY_MODULES)
-COMPILER_MODULES = standardGrace.grace collectionsPrelude.grace ast.grace util.grace identifierKinds.grace stringMap.grace
+COMPILER_MODULES = standardGrace.grace collectionsPrelude.grace ast.grace util.grace identifierKinds.grace stringMap.grace unixFilePath.grace
 
 DIALECT_DEPENDENCIES = modules/mirrors.gct modules/mirrors.gso errormessages.gct errormessages.gso ast.gct ast.gso util.gct util.gso modules/gUnit.gct modules/gUnit.gso modules/math.gso
 DIALECTS_NEED = modules/dialect util ast modules/gUnit modules/math
@@ -37,7 +38,7 @@ OBJECTDRAW = objectdraw.grace rtobjectdraw.grace stobjectdraw.grace animation.gr
 OBJECTDRAW_REAL = $(filter-out %tobjectdraw.grace, $(OBJECTDRAW))
 
 PRELUDESOURCEFILES = collectionsPrelude.grace standardGrace.grace
-REALSOURCEFILES = $(sort compiler.grace errormessages.grace util.grace ast.grace identifierKinds.grace lexer.grace parser.grace genjs.grace genc.grace stringMap.grace xmodule.grace identifierresolution.grace)
+REALSOURCEFILES = $(sort compiler.grace errormessages.grace util.grace ast.grace identifierKinds.grace lexer.grace parser.grace genjs.grace genc.grace stringMap.grace xmodule.grace identifierresolution.grace unixFilePath.grace)
 ALLSOURCEFILES = $(REALSOURCEFILES) $(PRELUDESOURCEFILES) $(HEADERFILES)
 SOURCEFILES = $(MGSOURCEFILES) $(PRELUDESOURCEFILES)
 STABLE=2e7432b299d4ba499027a17319654f4bcd9372c2
@@ -300,9 +301,6 @@ l1/mirrors.gso: $(KG)/mirrors.gso
 l1/unicode.gso: $(KG)/unicode.gso
 	cd l1 && ln -f ../$(KG)/unicode.gso .
 
-l1/unixFilePath.gct: modules/unixFilePath.grace $(KG)/minigrace l1/standardGrace.gct
-	GRACE_MODULE_PATH=. $(KG)/minigrace $(VERBOSITY) --make --noexec -XNoMain --dir l1 $<
-
 $(C_MODULES_GSO:%.gso=%.gct): modules/%.gct: stubs/%.gct
 	cd modules && ln -sf ../$< .
 
@@ -310,13 +308,13 @@ $(LIBRARY_MODULES:%.grace=modules/%.gcn): modules/%.gcn: modules/%.gso
 
 $(LIBRARY_MODULES:%.grace=modules/%.gct): modules/%.gct: modules/%.gso
 
-$(LIBRARY_MODULES:%.grace=%.gct): %.gct: modules/%.grace l1/minigrace
-	cd l1 && ./minigrace $(VERBOSITY) --make --dir .. --noexec ../$<
+$(LIBRARY_WO_CURL_OD:%.grace=modules/%.gct): modules/%.gct: modules/%.grace minigrace
+	GRACE_MODULE_PATH=modules ./minigrace $(VERBOSITY) --make --noexec $<
 
-$(LIBRARY_WO_OBJECTDRAW:%.grace=modules/%.gso): modules/%.gso: modules/%.grace minigrace
+$(LIBRARY_WO_CURL_OD:%.grace=modules/%.gso): modules/%.gso: modules/%.grace minigrace
 	GRACE_MODULE_PATH=modules ./minigrace $(VERBOSITY) --make --noexec -XNoMain $<
 
-$(LIBRARY_WO_OBJECTDRAW:%.grace=js/%.js): js/%.js: modules/%.grace minigrace
+$(LIBRARY_WO_CURL_OD:%.grace=js/%.js): js/%.js: modules/%.grace minigrace
 	GRACE_MODULE_PATH=modules ./minigrace $(VERBOSITY) --make --target js --dir js $<
 
 $(LIBRARY_WO_OBJECTDRAW:%.grace=js/%.gct): js/%.gct: js/%.js

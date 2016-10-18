@@ -145,7 +145,9 @@ class create(canvasWidth, canvasHeight) {
     }
 
     method drawall {
+        print "drawall called"
         for (shapes) do {x -> x.draw}
+        for (inputs) do {x -> x.draw}
     }
     method play(sound) {
         native "js" code ‹
@@ -191,6 +193,7 @@ class create(canvasWidth, canvasHeight) {
     method clear {
         stage.removeAllChildren
         stage.removeAllEventListeners
+        inputs.do { each -> each.destroy }
         stage.createClearButton
         stage.update
     }
@@ -650,26 +653,40 @@ class create(canvasWidth, canvasHeight) {
     }
 
     class addInputBox {
-        var width is public := 50
-        var height is public := 20
-        var location is public := 0@0
-        var fontSize is public := 14
-        var fontFamily is public := "Arial"
-        var fontColor is public := "black"
-        var backgroundColor is public := "white"
-        var borderColor is public := "black"
-        var jsInputObject := 0
-        var submitBlock := {}
+        def theInputBox = gr.inputBox(stage)
+
+        theInputBox.location := 0@0
+        theInputBox.width := 40
+        theInputBox.height := 20
+        theInputBox.fontSize := 14
+        theInputBox.fontFamily := "Arial"
+        theInputBox.fontColor := "black"
+        theInputBox.backgroundColor := "white"
+        theInputBox.borderColor := "black"
+
+        stage.add(theInputBox)
+
+        method location { theInputBox.location }
+        method location:= (val) { theInputBox.location := val }
+        method width { theInputBox.width }
+        method width:= (val) { theInputBox.width := val }
+        method height { theInputBox.height }
+        method height:= (val) { theInputBox.height := val }
+        method fontSize { theInputBox.fontSize }
+        method fontSize:= (val) { theInputBox.fontSize := val }
+        method fontFamily { theInputBox.fontFamily }
+        method fontFamily:= (val) { theInputBox.fontFamily := val }
+        method fontColor { theInputBox.fontColor }
+        method fontColor:= (val) { theInputBox.fontColor := val }
+        method backgroundColor { theInputBox.backgroundColor }
+        method backgroundColor:= (val) { theInputBox.backgroundColor := val }
+        method borderColor { theInputBox.borderColor }
+        method borderColor:= (val) { theInputBox.borderColor := val }
+        method value { theInputBox.value }
+        method value:= (val) { theInputBox.value := val }
 
         method asString {
             "anInputBox({width}×{height})"
-        }
-        method value {
-            jsInputObject.value
-        }
-
-        method value := (val) {
-            jsInputObject.value := val
         }
 
         method setWidth(w) {
@@ -710,6 +727,11 @@ class create(canvasWidth, canvasHeight) {
             self
         }
 
+        method setFontColor(c) {
+            fontColor := c
+            self
+        }
+
         method setBackgroundColor(c) {
             backgroundColor := c
             self
@@ -721,34 +743,21 @@ class create(canvasWidth, canvasHeight) {
         }
 
         method draw {
-            jsInputObject := gr.inputBox(stage)
-            jsInputObject.location := location
-            jsInputObject.width := width
-            jsInputObject.height := height
-            jsInputObject.fontSize := fontSize
-            jsInputObject.fontFamily := fontFamily
-            jsInputObject.fontColor := fontColor
-            jsInputObject.backgroundColor := backgroundColor
-            jsInputObject.borderColor := borderColor
-            jsInputObject.onSubmit(jsInputObject,submitBlock)
-            jsInputObject.draw
+            theInputBox.draw
             self
         }
 
         method focus {
-            jsInputObject.focus
+            theInputBox.focus
         }
 
         method onSubmitDo(block) {
-            if (0 ≠ jsInputObject) then {
-                jsInputObject.onSubmit(jsInputObject, block)
-            }
-            submitBlock := block
+            theInputBox.onSubmit(block)
             self
         }
 
         method destroy {
-            jsInputObject.destroy
+            theInputBox.destroy
         }
         inputs.add(self)
     }

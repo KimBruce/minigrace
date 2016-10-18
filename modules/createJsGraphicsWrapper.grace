@@ -182,7 +182,7 @@ class stage(width', height') {
         native "js" code ‹
               var width = var_width._value;
               var height = var_height._value;
-              var size = "height=" + height.toString() + ",width=" + width.toString()
+              var size = "height=" + height.toString() + ",width=" + width.toString();
               var canvas = document.getElementById("graphics");
               var ctx = canvas.getContext("2d");
               ctx.setTransform(1, 0, 0, 1, 0, 0);
@@ -193,7 +193,7 @@ class stage(width', height') {
               canvas.setAttribute('tabindex','0');
               canvas.focus();
               canvas = stage.canvas;
-              this.stage = stage
+              this.stage = stage;
               return stage;
         ›
     }
@@ -201,17 +201,20 @@ class stage(width', height') {
     method createClearButton {
         native "js" code ‹
               var stage = this.data.mystage;
+              var timeout = this.data.jsTimeout
               var container = new createjs.Container();
               var text = new createjs.Text("clear", "12px Arial", "black");
               text.x = 5;
               text.y = 3;
               function removeRecursively(c) {
-                c.removeAllEventListeners();
+                if (typeof c.removeAllEventListeners === "function")
+                    c.removeAllEventListeners();
                 var subs = c.children;
                 if (! subs) return;
                 for (var ix = 0, len = subs.length; ix < len; ix++)
                     removeRecursively(subs[ix]);
-                c.removeAllChildren();
+                if (typeof c.removeAllChildren === "function")
+                    c.removeAllChildren();
               }
               container.x = stage.canvas.width - 35;
               var rect = new createjs.Shape();
@@ -222,7 +225,7 @@ class stage(width', height') {
                   removeRecursively(stage);
                   stage.enableDOMEvents(false);
                   stage.update();
-                  callmethod(stage, "clearTimeout", [0]);
+                  clearTimeout(timeout);
                   createjs.Ticker.removeAllEventListeners();
         });
         stage.addChild(container);
@@ -281,7 +284,7 @@ class stage(width', height') {
 
     method enableMouseOver(frequency) {
         native "js" code ‹
-              var freq = var_frequency._value
+              var freq = var_frequency._value;
               this.data.mystage.enableMouseOver(freq);
         ›
     }
@@ -304,7 +307,7 @@ class stage(width', height') {
 
     method clearTimeout {
         native "js" code ‹
-              var timeout = this.data.jsTimeout
+              var timeout = this.data.jsTimeout;
               clearTimeout(timeout);
         ›
     }
@@ -374,7 +377,7 @@ class commonGraphics{
 
     method setVisible(isVisible) {
         native "js" code ‹
-              var isVisible = var_isVisible._value
+              var isVisible = var_isVisible._value;
               this.data.createJsGraphics.visible = isVisible;
         ›
     }
@@ -475,8 +478,8 @@ class rectangle {
         native "js" code ‹
               var x = this.data.location.data.x._value;
               var y = this.data.location.data.y._value;
-              var height = this.data.height._value
-              var width = this.data.width._value
+              var height = this.data.height._value;
+              var width = this.data.width._value;
               this.data.createJsGraphics.graphics.drawRect(x, y, width, height);
         ›
     }
@@ -518,9 +521,9 @@ class roundRect {
         native "js" code ‹
               var x = this.data.location.data.x._value;
               var y = this.data.location.data.y._value;
-              var height = this.data.height._value
-              var width = this.data.width._value
-              var radius = this.data.radius._value
+              var height = this.data.height._value;
+              var width = this.data.width._value;
+              var radius = this.data.radius._value;
               this.data.createJsGraphics.graphics.drawRoundRect(x, y, width, height, radius);
         ›
     }
@@ -536,8 +539,8 @@ class ellipse {
         native "js" code ‹
               var x = this.data.location.data.x._value;
               var y = this.data.location.data.y._value;
-              var height = this.data.height._value
-              var width = this.data.width._value
+              var height = this.data.height._value;
+              var width = this.data.width._value;
               this.data.createJsGraphics.graphics.drawEllipse(x, y, width, height);
         ›
     }
@@ -556,16 +559,15 @@ class arc {
         endAngle := endAngle'
         anticlockwise := anticlockwise'
         native "js" code ‹
-              var x = this.data.location.data.x._value;
-              var y = this.data.location.data.y._value;
-              var radius = this.data.radius._value;
-              var startAngle = this.data.startAngle._value;
-              var endAngle = this.data.endAngle._value;
-              startAngle = startAngle * Math.PI / 180;
-              endAngle = endAngle * Math.PI / 180;
-              var anticlockwise = this.data.anticlockwise._value
-
-        this.data.createJsGraphics.graphics.arc(x, y, radius, startAngle, endAngle, anticlockwise);
+            var x = this.data.location.data.x._value;
+            var y = this.data.location.data.y._value;
+            var radius = this.data.radius._value;
+            var startAngle = this.data.startAngle._value;
+            var endAngle = this.data.endAngle._value;
+            startAngle = startAngle * Math.PI / 180;
+            endAngle = endAngle * Math.PI / 180;
+            var anticlockwise = this.data.anticlockwise._value;
+            this.data.createJsGraphics.graphics.arc(x, y, radius, startAngle, endAngle, anticlockwise);
         ›
     }
 }
@@ -587,14 +589,14 @@ class text {
     method width {
         native "js" code ‹
               var b = this.data.createJsGraphics.getBounds();
-              return new GraceNum(b.width)
+              return new GraceNum(b.width);
         ›
     }
 
     method height {
         native "js" code ‹
               var b = this.data.createJsGraphics.getBounds();
-              return new GraceNum(b.height)
+              return new GraceNum(b.height);
         ›
     }
 
@@ -687,9 +689,7 @@ class customShape {
                   this.data.createJsGraphics.graphics.lineTo(endX, endY);
             ›
         }
-        native "js" code ‹
-              this.data.createJsGraphics.graphics.closePath()
-        ›
+        native "js" code ‹this.data.createJsGraphics.graphics.closePath();›
     }
 }
 
@@ -713,81 +713,168 @@ class tween(jsGraphicsObj, myStage) {
 }
 
 class inputBox(mystage) {
-    var location is public
-    var width is public
-    var height is public
-    var fontSize is public
-    var fontFamily is public
-    var fontColor is public
-    var backgroundColor is public
-    var borderColor is public
-    var submitBlock := {}
-    var input
+    inherit commonGraphics
+
+    createJsGraphics := new
+    onSubmit { }
+    focus
+
+    method new {
+        native "js" code ‹
+            var mycanvas = var_mystage.stage.canvas;
+            result = new CanvasInput({canvas: mycanvas});
+            result.dispatchEvent = function(){};
+            result.isVisible = function() { return true; };
+            result.parent = null;
+            result.draw = result.render;
+            result.updateContext = function(a) {};
+        ›
+    }
+
+    method jsInputBox { createJsGraphics }
 
     method value {
         native "js" code ‹
-              var input = this.data.input;
-              return new GraceString(input.value());
+              var theBox = this.data.createJsGraphics;
+              return new GraceString(theBox.value());
         ›
     }
-
     method value := (newval) {
         native "js" code ‹
               var newval = var_newval._value;
-              var input = this.data.input;
-              input.value(newval);
-              input.focus();
+              var theBox = this.data.createJsGraphics;
+              theBox.value(newval);
+              theBox.focus();
         ›
     }
 
+
+    method location {
+        def xCoord = native "js" code ‹
+            result = new GraceNum(this.data.createJsGraphics.x);
+        ›
+        def yCoord = native "js" code ‹
+            result = new GraceNum(this.data.createJsGraphics.y);
+        ›
+        xCoord@yCoord
+    }
+    method location:= (p) {
+        def xCoord = p.x
+        def yCoord = p.y
+        native "js" code ‹
+            var theBox = this.data.createJsGraphics;
+            theBox._x = var_xCoord._value;
+            theBox._y = var_yCoord._value;
+        ›
+    }
+
+    method width {
+        native "js" code ‹
+            result = new GraceNum(this.data.createJsGraphics._width);
+        ›
+    }
+    method width:= (val) {
+        native "js" code ‹
+            var theBox = this.data.createJsGraphics;
+            theBox._width = var_val._value;
+        ›
+    }
+
+    method height {
+        native "js" code ‹
+            result = new GraceNum(this.data.createJsGraphics._height);
+        ›
+    }
+    method height:= (val) {
+        native "js" code ‹
+            var theBox = this.data.createJsGraphics;
+            theBox._height = var_val._value;
+        ›
+    }
+
+    method fontSize {
+        native "js" code ‹
+            result = new GraceNum(this.data.createJsGraphics._fontSize);
+        ›
+    }
+    method fontSize:= (val) {
+        native "js" code ‹
+            var theBox = this.data.createJsGraphics;
+            theBox._fontSize = var_val._value;
+        ›
+    }
+    method fontFamily {
+        native "js" code ‹
+            result = new GraceNum(this.data.createJsGraphics._fontFamily);
+        ›
+    }
+    method fontFamily:= (val) {
+        native "js" code ‹
+            var theBox = this.data.createJsGraphics;
+            theBox._fontFamily = var_val._value;
+        ›
+    }
+    method fontColor {
+        native "js" code ‹
+            result = new GraceNum(this.data.createJsGraphics._fontColor);
+        ›
+    }
+    method fontColor:= (val) {
+        native "js" code ‹
+            var theBox = this.data.createJsGraphics;
+            theBox._fontColor = var_val._value;
+        ›
+    }
+    method backgroundColor {
+        native "js" code ‹
+            result = new GraceNum(this.data.createJsGraphics._backgroundColor);
+        ›
+    }
+    method backgroundColor:= (val) {
+        native "js" code ‹
+            var theBox = this.data.createJsGraphics;
+            theBox._backgroundColor = var_val._value;
+        ›
+    }
+    method borderColor {
+        native "js" code ‹
+            result = new GraceNum(this.data.createJsGraphics._borderColor);
+        ›
+    }
+    method borderColor:= (val) {
+        native "js" code ‹
+            var theBox = this.data.createJsGraphics;
+            theBox._borderColor = var_val._value;
+        ›
+    }
     method draw {
         native "js" code ‹
-              var stage = var_mystage;
-              var mycanvas = stage.stage.canvas;
-              var input = new CanvasInput({
-                  canvas: mycanvas,
-                  x: this.data.location.data.x._value,
-                  y: this.data.location.data.y._value,
-                  width: this.data.width._value,
-                  height: this.data.height._value,
-                  fontSize: this.data.fontSize._value,
-                  fontFamily: this.data.fontFamily._value,
-                  fontColor: this.data.fontColor._value,
-                  backgroundColor: this.data.backgroundColor._value,
-                  borderColor: this.data.borderColor._value
-        });
-        input.focus();
-        this.data.input = input;
+              var theBox = this.data.createJsGraphics;
+              if (theBox) theBox.render;
         ›
-        onSubmit(self, submitBlock)
     }
 
     method focus {
         native "js" code ‹
-              var input = this.data.input;
-              input.focus();
+              var theBox = this.data.createJsGraphics;
+              theBox.focus();
         ›
     }
 
     method destroy {
         native "js" code ‹
-              var input = this.data.input;
-              input.destroy();
+              var theBox = this.data.createJsGraphics;
+              theBox.destroy();
         ›
     }
 
-    method callSubmit {
-        submitBlock.apply
-    }
-
-    method onSubmit(inputObj, block) {
-        submitBlock := block
+    method onSubmit(block) {
         native "js" code ‹
-              if(this.data.input != null) {
-                  var input = this.data.input;
-                  input.onsubmit(function(event) {
+              var theBox = this.data.createJsGraphics;
+              if (theBox) {
+                  theBox.onsubmit(function(event) {
                       minigrace.trapErrors(function() {
-                          callmethod(var_inputObj, "callSubmit", [0])
+                          callmethod(var_block, "apply", [0]);
                 });
             });
         }

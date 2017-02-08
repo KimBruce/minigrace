@@ -5144,7 +5144,7 @@ Object alloc_MatchFailed() {
     }
     return MatchFailed;
 }
-Object matchCase(Object matchee, Object *cases, int ncases) {
+Object matchCase(Object matchee, Object *cases, int ncases, ...) {
     int i;
     int partcv[] = {1};
     for (i=0; i<ncases; i++) {

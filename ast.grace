@@ -645,7 +645,7 @@ def matchCaseNode is public = object {
         s
     }
     method shallowCopy {
-        matchCaseNode.new(nullNode, emptySeq, false).shallowCopyFieldsFrom(self)
+        matchCaseNode.new(nullNode, emptySeq).shallowCopyFieldsFrom(self)
     }
   }
 }

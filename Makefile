@@ -367,22 +367,17 @@ self.test: minigrace.env $(STUBS:%.grace=j2/%.gct)
 	cat selftest/compiler-js-head j2/gracelib.js $(MGSOURCEFILES:%.grace=j2/%.js) selftest/compiler-js-tail > selftest/mgc
 	chmod a+x selftest/mgc
 	@if [ "$(TRAVIS)" ]; \
-		then \
-			echo "GRACE_MODULE_PATH=.:modules:js selftest/mgc $(VERBOSITY) --make --dir selftest compiler.grace"; \
-			GRACE_MODULE_PATH=.:modules:js selftest/mgc $(VERBOSITY) --make --dir selftest compiler.grace; \
-		else \
-			echo "GRACE_MODULE_PATH=.:modules:js time selftest/mgc $(VERBOSITY) --make --dir selftest compiler.grace"; \
-			GRACE_MODULE_PATH=.:modules:js /usr/bin/env time selftest/mgc $(VERBOSITY) --make --dir selftest compiler.grace; \
-	fi
-	cp js/compiler-js js/minigrace-js js/gracelib.js js/tests/harness-js selftest
-	@if [ "$(TRAVIS)" ]; \
-		then \
-			echo "selftest/harness-js selftest/minigrace-js js/tests" ; \
-			selftest/harness-js selftest/minigrace-js js/tests "" ; \
-    	else \
-			echo "time selftest/harness-js selftest/minigrace-js js/tests"; \
-			/usr/bin/env time selftest/harness-js selftest/minigrace-js js/tests "" ; \
-	fi
+		then PREAMBLE="" ;\
+		else PREAMBLE="time " ;\
+	fi ;\
+	if [ ! "$(VERBOSITY)" ]; \
+		then VERB="--verbose" ;\
+		else VERB="$(VERBOSITY)" ;\
+	fi ;\
+	echo "GRACE_MODULE_PATH=.:modules:js /usr/bin/env $${PREAMBLE}selftest/mgc $${VERB} --make --dir selftest compiler.grace" ; \
+	GRACE_MODULE_PATH=.:modules:js /usr/bin/env $${PREAMBLE}selftest/mgc $${VERB} --make --dir selftest compiler.grace ; \
+	cp js/compiler-js js/minigrace-js js/gracelib.js js/tests/harness-js selftest ; \
+    $${PREAMBLE}GRACE_MODULE_PATH=.:modules:js selftest/harness-js selftest/minigrace-js js/tests ""
 
 $(SOURCEFILES:%.grace=js/tests/%.js): js/tests/%.js: js/%.js
 	cd js/tests; ln -sf ../$(<F) .

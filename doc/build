@@ -32,20 +32,20 @@ The build process
 
 There is a folk-theorem that if a self-hosting system can compile itself
 three times, then it is correct.  This theorem is of course false, but
-compiling three times does give one some confidence that the features
-of minigrace exercised by the minigrace compiler are being compiled
+compiling three times does give one some confidence that _the features 
+of minigrace exercised by he minigrace compiler_ are being compiled
 correctly.  (It does nothing at all for the features of minigrace not
-exercised by the compiler, such as minigraces's behaviour when given
+exercised by the compiler, such as minigraces's behaviour when given 
 non-programs, or dialects).
 
-The subdirectory js-kg contains old but working javascript versions
+The subdirectory js-kg comptains old but working javascript versions
 of the minigrace compiler. The version identified by
 the NPM_STABLE_VERSION variable in the makefile is used to compile the
-compiler.  The output of this compilation is stored in the j1
+compiler.  The output of this compilation is stired in the j1
 subdirectory.
 
 If this is successful, then the j1/minigrace-js compiler is used to
-compile the compiler again; the resulting files are saved to the j2
+compile the compiler again; the resulting files are saved the the j2
 directory.
 
 If you run
@@ -56,7 +56,7 @@ the j2 compiler will be used to run minigrace's test suite.
 
 Finally, if you run
 
-    make self.test
+    make sellf.test
 
 the j2/minigrace compiler is used to compile the compiler once
 again. The resulting compiler is then used to run the test suite again.
@@ -98,3 +98,6 @@ Most development has taken place on Mac OS X.  minigrace has
 also been successfully built on Linux.  I don't know if it will
 work on Cygwin; if you can test it, and provide necessary corrections,
 please do so and submit a pull request.
+
+
+

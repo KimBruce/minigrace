@@ -1,0 +1,15 @@
+dialect "gradualTypesND"
+
+type m = {
+
+}
+
+var x : m = 0
+
+if(false)then{
+  x := "five"
+} elseif(true) then{
+  x := 5
+}
+
+print x

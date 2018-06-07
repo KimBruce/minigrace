@@ -302,7 +302,7 @@ type Param = {
 
 type ParamFactory = {
     withName (name' : String) ofType (type' : ObjectType) -> Param
-    ofType (type' : Object) -> Param
+    ofType (type' : ObjectType) -> Param
 }
 
 // Create parameter with given name' and type'
@@ -1622,15 +1622,13 @@ def astVisitor: ast.AstVisitor = object {
           //io.error.write("\nThe scope's methods stack contains {scope.methods.stack}")
           //io.error.write("\nThe scope's variables stack contains {scope.variables.stack}")
 
-          //This is how we check if something is a case{n:Number} vs case{47},
-          //not correct, but close
+          //If param is a general case(ie. n:Number), accumulate its type to paramTypesList
+          //ignore if it is a specific case(ie. 47)
           if (block.params.at(1).dtype.kind == "identifier") then {
 
             def typeOfParam = anObjectType.getParamTypeFromBlock(block)
             io.error.write "\nGettingParamType for {block.params.at(1).dtype}"
             io.error.write "\nReturns: {typeOfParam}"
-
-
 
             if (paramTypesList.contains(typeOfParam).not) then {
               paramTypesList.add(typeOfParam)
@@ -1649,14 +1647,14 @@ def astVisitor: ast.AstVisitor = object {
 
         }
 
-
-
         io.error.write("\n\nThe paramTypesList contains {paramTypesList}\n")
         io.error.write("\n\nThe returnTypesList contains {returnTypesList}\n")
 
         //check if v is a subtype of the list of types of the cases
         paramVariantType := fromObjectTypeList(paramTypesList)
         returnVariantType := fromObjectTypeList(returnTypesList)
+
+        //io.error.write "\nIs it a subtype of the params? {matchee.isConsistentSubtypeOf(paramVariantType)}"
 
         io.error.write "\nparamVariantType now equals: {paramVariantType}"
         io.error.write "\nreturnVariantType now equals: {returnVariantType}"
@@ -1669,11 +1667,18 @@ def astVisitor: ast.AstVisitor = object {
     }
 
     //Takes a non-empty list of objectTypes and combines them into a variant type
-    method fromObjectTypeList(oList : List[[ObjectType]])-> ObjectType{
+    method fromObjectTypeList(oList : List[[ObjectType]])-> ObjectType is confidential{
       var varType: ObjectType := oList.at(1)
       var index:Number := 2
       while{index<=oList.size}do{
-        varType := varType | oList.at(index)
+
+        //Combine types that are subsets of one-another
+        if (varType.isConsistentSubtypeOf (oList.at(index))) then {
+            varType := oList.at(index)
+        } elseif {oList.at(index).isConsistentSubtypeOf(varType).not} then {
+            varType := varType | oList.at(index)
+        }
+
         index := index +1
       }
       varType

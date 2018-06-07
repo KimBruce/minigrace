@@ -1606,9 +1606,9 @@ def astVisitor: ast.AstVisitor = object {
         def matchee = node.value
         //Note: currently only one matchee is supported
         var paramTypesList: List[[ObjectType]] := emptyList
-
-        //This counts the first case's return type twice, will be fixed later
-        var returnType: ObjectType := anObjectType.fromBlock(node.cases.at(1))
+        var returnTypesList: List[[ObjectType]] := emptyList
+        var paramVariantType: ObjectType
+        var returnVariantType: ObjectType
 
         //goes through each case{} and accumulates its parameter and return types
         for(node.cases) do{block ->
@@ -1617,58 +1617,70 @@ def astVisitor: ast.AstVisitor = object {
             //wrong number of parameters, raise error?
           }
 
-          //Incorrect wildcard checking
-          if (block.params.at(1).wildcard.not) then {
 
-            //io.error.write("\nParam's dtype is: {block.params.at(1).dtype}")
-            //io.error.write("\nParam's kind is: {block.params.at(1).kind}")
-            //io.error.write("\nParam's dtype.kind is: {block.params.at(1).dtype.kind}")
+          //io.error.write("\nThe scope's types stack contains {scope.types.stack}")
+          //io.error.write("\nThe scope's methods stack contains {scope.methods.stack}")
+          //io.error.write("\nThe scope's variables stack contains {scope.variables.stack}")
 
+          //This is how we check if something is a case{n:Number} vs case{47},
+          //not correct, but close
+          if (block.params.at(1).dtype.kind == "identifier") then {
 
-            //io.error.write("\nThe scope's types stack contains {scope.types.stack}")
-            //io.error.write("\nThe scope's methods stack contains {scope.methods.stack}")
-            //io.error.write("\nThe scope's variables stack contains {scope.variables.stack}")
-
-            //This is how we check if something is a case{n:Number} vs case{47},
-            //not correct, but close
-            if (block.params.at(1).dtype.kind == "identifier") then {
-
-              def typeOfParam = anObjectType.getParamTypeFromBlock(block)
-              io.error.write "\nGettingParamType for {block.params.at(1).dtype}"
-              io.error.write "\nReturns: {typeOfParam}"
+            def typeOfParam = anObjectType.getParamTypeFromBlock(block)
+            io.error.write "\nGettingParamType for {block.params.at(1).dtype}"
+            io.error.write "\nReturns: {typeOfParam}"
 
 
 
-              if (paramTypesList.contains(typeOfParam).not) then {
-                paramTypesList.add(typeOfParam)
-              }
+            if (paramTypesList.contains(typeOfParam).not) then {
+              paramTypesList.add(typeOfParam)
             }
-          } else {
-            //has wildcard, so break out of loop?
-            //Add the ObjectType 'Object' to the list of types
-            io.error.write"\nHad Wildcard!"
           }
 
           //*********************************************************
           //Return type collection
 
-          //returnType := returnType | anObjectType.fromBlock(block)
+          //currently does not work for return type "Done"
+          def returnType : ObjectType = anObjectType.fromBlock(block)
+
+          if (returnTypesList.contains(returnType).not) then {
+            returnTypesList.add(returnType)
+          }
 
         }
 
 
 
         io.error.write("\n\nThe paramTypesList contains {paramTypesList}\n")
+        io.error.write("\n\nThe returnTypesList contains {returnTypesList}\n")
 
         //check if v is a subtype of the list of types of the cases
+        paramVariantType := fromObjectTypeList(paramTypesList)
+        returnVariantType := fromObjectTypeList(returnTypesList)
 
+        io.error.write "\nparamVariantType now equals: {paramVariantType}"
+        io.error.write "\nreturnVariantType now equals: {returnVariantType}"
 
         //checkMatch (node) -> just prints an error
 
-        cache.at(node) put (returnType)
+        cache.at(node) put (returnVariantType)
 
-        true
+        false
     }
+
+    //Takes a non-empty list of objectTypes and combines them into a variant type
+    method fromObjectTypeList(oList : List[[ObjectType]])-> ObjectType{
+      var varType: ObjectType := oList.at(1)
+      var index:Number := 2
+      while{index<=oList.size}do{
+        varType := varType | oList.at(index)
+        index := index +1
+      }
+      varType
+
+    }
+
+
 
     // not implemented yet
     method visitTryCatch (node) -> Boolean {

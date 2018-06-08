@@ -700,85 +700,51 @@ def anObjectType: ObjectTypeFactory = object {
         method isSubtypeOf(other : ObjectType) -> Boolean {
 
             if(self.isMe(other)) then {
-                io.error.write"\nother isMe" //Joe-Make Sure to delete
                 return true
             }
 
             if(other.isDynamic) then {
-                io.error.write"\nother is dynamic"
                 return true
             }
 
             // If this test is already being performed, assume it succeeds.
             if(currentlyTesting.contains(other)) then {
-                io.error.write"\nother is currentlyTesting"
                 return true
             }
-            currentlyTesting.push(other)
-            //Joe -added a check for if other is a variant type
-            if(other.getVariantTypes.size == 0)then{
-                var mct1 := 0
-                for (other.methods) doWithContinue { a, continue ->
-                    for (methods) do { b ->
-                        if (b.isSpecialisationOf (a)) then {
-                            mct1 := mct1 + 1
-                            if ((mct1 == other.methods.size)
-                                && (self.getVariantTypes.size == 0)) then {
-                                // If each of our methods is a specialisation of
-                                // some method from other, self must be a subtype of other,
-                                // unless self is a variant type (handled later).
-                                io.error.write"\nother is specialisation"
-                                return true
-                            }
-                            continue.apply
+
+            // Divides subtyping into 4 cases
+            if(self.getVariantTypes.size == 0) then {
+                if (other.getVariantTypes.size == 0) then {
+                    //Neither self nor other are variant types
+                    return self.isNonvariantSubtypeOf(other)
+                } else {
+                    //self is not a variant type; other is
+                    for (other.getVariantTypes) do {t:ObjectType ->
+                        if (self.isNonvariantSubtypeOf(t)) then{
+                            return true
                         }
                     }
-                    currentlyTesting.pop
                     return false
                 }
-            }
-            var subtypeOfVariantTypes: Boolean := true
-
-            // if self is a variant type, check if each of its variant types
-            // is a variant type in other.
-            // Basically: is self's set of variant types contained in other's
-            // set of variant types.
-            if (self.getVariantTypes.size != 0) then {
-              for (self.getVariantTypes) doWithContinue { selfType: ObjectType, continue ->
-                var subtypeOfAVariantType: Boolean := false
-
-                for (other.getVariantTypes) do { otherType: ObjectType ->
-                  if (selfType.isSubtypeOf(otherType)) then {
-                    subtypeOfAVariantType := true
-                    continue.apply
-                  }
-                }
-
-                if (!subtypeOfAVariantType) then {
-                  subtypeOfVariantTypes := false
-                }
-              }
-
             } else {
-              // Check if self is a subtype of any of the other's variant types.
-              // If other is not a variant type, this loop does not run.
-              // Note that this case runs only if self is NOT a variant type.
-              // This is a bit of a hack since there is not a straightforward way
-              // to check if a type is a subtype of a variant type using the
-              // "standard" subtyping algorithm.
-              subtypeOfVariantTypes := false
-              for (other.getVariantTypes) doWithBreak { otherType: ObjectType, break ->
-                if(self.isSubtypeOf(otherType)) then {
-                  io.error.write"\nSuccessfully found self as subType of a variantType"
-                  subtypeOfVariantTypes := true
-                  break.apply
+                if (other.getVariantTypes.size == 0) then {
+                    //self is a variant type; other is not
+                    for (self.getVariantTypes) do {t:ObjectType ->
+                        if (t.isNonvariantSubtypeOf(other).not) then {
+                            return false
+                        }
+                    }
+                    return true
+                } else {
+                    //Both self and other are variant types
+                    for (self.getVariantTypes) do {t:ObjectType ->
+                        if (t.isSubtypeOf(other).not) then {
+                            return false
+                        }
+                    }
+                    return true
                 }
-              }
             }
-
-            currentlyTesting.pop
-
-            return (true && subtypeOfVariantTypes)
         }
 
         // Consistent-subtyping:
@@ -792,6 +758,31 @@ def anObjectType: ObjectTypeFactory = object {
             return selfRestType.isSubtypeOf(otherRestType)  //  FIX!!!
             //true
         }
+
+        //helper method for subtyping a pair of non-variant types
+        method isNonvariantSubtypeOf(other:ObjectType)->Boolean {
+            currentlyTesting.push(other)
+            var mct1 := 0
+            for (other.methods) doWithContinue { a, continue ->
+                for (methods) do { b ->
+                    if (b.isSpecialisationOf (a)) then {
+                        mct1 := mct1 + 1
+                        if ((mct1 == other.methods.size)
+                            && (self.getVariantTypes.size == 0)) then {
+                            // If each of our methods is a specialisation of
+                            // some method from other, self must be a subtype of other,
+                            // unless self is a variant type (handled later).
+                            return true
+                        }
+                        continue.apply
+                    }
+                }
+                currentlyTesting.pop
+                return false
+            }
+        }
+
+
 
 
         // Variant
@@ -1045,7 +1036,7 @@ def anObjectType: ObjectTypeFactory = object {
     }
 
     // Joe - this is used only in matchCase
-    method getParamTypeFromBlock(block: AstNode) -> ObjectType {
+    method getParamTypeFromBlock(block: AstNode) -> ObjectType{
       def bType = typeOf(block)
 
       //if(bType.isDynamic) then { return dynamic }
@@ -1621,7 +1612,9 @@ def astVisitor: ast.AstVisitor = object {
         for(node.cases) do{block ->
 
           if(block.params.size != 1) then{
-            //wrong number of parameters, raise error?
+            outer.RequestError.raise("1518: The case you are matching to, " ++
+              "{stripNewLines(block.toGrace(0))}, has more than one argument "++
+              "on the left side. This is not currently supported.") with (matchee)
           }
 
           //If param is a general case(ie. n:Number), accumulate its type to
@@ -1629,18 +1622,15 @@ def astVisitor: ast.AstVisitor = object {
           if (block.params.at(1).dtype.kind == "identifier") then {
 
             def typeOfParam = anObjectType.getParamTypeFromBlock(block)
-//            io.error.write "\nGettingParamType for {block.params.at(1).dtype}"
-//            io.error.write "\nReturns: {typeOfParam}"
 
             if (paramTypesList.contains(typeOfParam).not) then {
               paramTypesList.add(typeOfParam)
             }
           }
 
-          //*********************************************************
           //Return type collection
-
           def blockReturnType : ObjectType = anObjectType.fromBlock(block)
+
           //checks if it has no methods, this ensures type Done is handled.
           if(blockReturnType.methods.size > 0)then{
             if (returnTypesList.contains(blockReturnType).not) then {
@@ -1654,7 +1644,6 @@ def astVisitor: ast.AstVisitor = object {
         io.error.write("\n\nThe paramTypesList contains {paramTypesList}\n")
         io.error.write("\n\nThe returnTypesList contains {returnTypesList}\n")
 
-
         //Handles instances where Done is a return type
         if(returnTypesList.size > 0) then{
           returnType := fromObjectTypeList(returnTypesList)
@@ -1665,20 +1654,18 @@ def astVisitor: ast.AstVisitor = object {
           returnType := anObjectType.doneType
         }
 
-
-
         paramType := fromObjectTypeList(paramTypesList)
-        io.error.write "\nmatchee is of type: {matcheeType}"
-        io.error.write "\nIs it a subtype of the params? {matcheeType.isSubtypeOf(paramType)}"
-
-
         //io.error.write ("\nString <: Number | Boolean? " ++
         //  "{anObjectType.string.isSubtypeOf(anObjectType.number|anObjectType.boolean)}")
 
         io.error.write "\nparamType now equals: {paramType}"
         io.error.write "\nreturnType now equals: {returnType}"
 
-        //checkMatch (node) -> just prints an error
+        if (matcheeType.isSubtypeOf(paramType).not) then {
+          outer.RequestError.raise("1519: the matchee `{stripNewLines(matchee.toGrace(0))}`"++
+            " of type {matcheeType} does not " ++
+            "match the type(s) {paramTypesList} of the case(s)") with (matchee)
+        }
 
         cache.at(node) put (returnType)
 
@@ -1687,7 +1674,7 @@ def astVisitor: ast.AstVisitor = object {
 
     //Takes a non-empty list of objectTypes and combines them into a variant type
     //Does not handle type Done
-    method fromObjectTypeList(oList : List[[ObjectType]])-> ObjectType is confidential{
+    method fromObjectTypeList(oList : List[[ObjectType]])->ObjectType is confidential{
       var varType: ObjectType := oList.at(1)
       var index:Number := 2
       while{index<=oList.size}do{

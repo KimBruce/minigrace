@@ -700,15 +700,18 @@ def anObjectType: ObjectTypeFactory = object {
         method isSubtypeOf(other : ObjectType) -> Boolean {
 
             if(self.isMe(other)) then {
+                io.error.write"\nother isMe" //Joe-Make Sure to delete
                 return true
             }
 
             if(other.isDynamic) then {
+                io.error.write"\nother is dynamic"
                 return true
             }
 
             // If this test is already being performed, assume it succeeds.
             if(currentlyTesting.contains(other)) then {
+                io.error.write"\nother is currentlyTesting"
                 return true
             }
             currentlyTesting.push(other)
@@ -723,6 +726,7 @@ def anObjectType: ObjectTypeFactory = object {
                             // If each of our methods is a specialisation of
                             // some method from other, self must be a subtype of other,
                             // unless self is a variant type (handled later).
+                            io.error.write"\nother is specialisation"
                             return true
                         }
                         continue.apply
@@ -764,6 +768,7 @@ def anObjectType: ObjectTypeFactory = object {
               subtypeOfVariantTypes := false
               for (other.getVariantTypes) doWithBreak { otherType: ObjectType, break ->
                 if(self.isSubtypeOf(otherType)) then {
+                  io.error.write"\nSuccessfully found self as subType of a variantType"
                   subtypeOfVariantTypes := true
                   break.apply
                 }
@@ -1602,13 +1607,14 @@ def astVisitor: ast.AstVisitor = object {
 
     // not implemented yet
     method visitMatchCase (node: MatchCase) -> Boolean {
-        // matchee, cases
         def matchee = node.value
+        var matcheeType: ObjectType := typeOf(matchee)
         //Note: currently only one matchee is supported
         var paramTypesList: List[[ObjectType]] := emptyList
         var returnTypesList: List[[ObjectType]] := emptyList
-        var paramVariantType: ObjectType
-        var returnVariantType: ObjectType
+        var paramType: ObjectType
+        var returnType: ObjectType
+        var hasDone: Boolean := false
 
         //goes through each case{} and accumulates its parameter and return types
         for(node.cases) do{block ->
@@ -1617,18 +1623,13 @@ def astVisitor: ast.AstVisitor = object {
             //wrong number of parameters, raise error?
           }
 
-
-          //io.error.write("\nThe scope's types stack contains {scope.types.stack}")
-          //io.error.write("\nThe scope's methods stack contains {scope.methods.stack}")
-          //io.error.write("\nThe scope's variables stack contains {scope.variables.stack}")
-
-          //If param is a general case(ie. n:Number), accumulate its type to paramTypesList
-          //ignore if it is a specific case(ie. 47)
+          //If param is a general case(ie. n:Number), accumulate its type to
+          //paramTypesList; ignore if it is a specific case(ie. 47)
           if (block.params.at(1).dtype.kind == "identifier") then {
 
             def typeOfParam = anObjectType.getParamTypeFromBlock(block)
-            io.error.write "\nGettingParamType for {block.params.at(1).dtype}"
-            io.error.write "\nReturns: {typeOfParam}"
+//            io.error.write "\nGettingParamType for {block.params.at(1).dtype}"
+//            io.error.write "\nReturns: {typeOfParam}"
 
             if (paramTypesList.contains(typeOfParam).not) then {
               paramTypesList.add(typeOfParam)
@@ -1638,35 +1639,54 @@ def astVisitor: ast.AstVisitor = object {
           //*********************************************************
           //Return type collection
 
-          //currently does not work for return type "Done"
-          def returnType : ObjectType = anObjectType.fromBlock(block)
-
-          if (returnTypesList.contains(returnType).not) then {
-            returnTypesList.add(returnType)
+          def blockReturnType : ObjectType = anObjectType.fromBlock(block)
+          //checks if it has no methods, this ensures type Done is handled.
+          if(blockReturnType.methods.size > 0)then{
+            if (returnTypesList.contains(blockReturnType).not) then {
+              returnTypesList.add(blockReturnType)
+            }
+          } else{
+            hasDone := true
           }
-
         }
 
         io.error.write("\n\nThe paramTypesList contains {paramTypesList}\n")
         io.error.write("\n\nThe returnTypesList contains {returnTypesList}\n")
 
-        //check if v is a subtype of the list of types of the cases
-        paramVariantType := fromObjectTypeList(paramTypesList)
-        returnVariantType := fromObjectTypeList(returnTypesList)
 
-        //io.error.write "\nIs it a subtype of the params? {matchee.isConsistentSubtypeOf(paramVariantType)}"
+        //Handles instances where Done is a return type
+        if(returnTypesList.size > 0) then{
+          returnType := fromObjectTypeList(returnTypesList)
+          if(hasDone)then{
+            returnType := returnType | anObjectType.doneType
+          }
+        } else{
+          returnType := anObjectType.doneType
+        }
 
-        io.error.write "\nparamVariantType now equals: {paramVariantType}"
-        io.error.write "\nreturnVariantType now equals: {returnVariantType}"
+
+
+        paramType := fromObjectTypeList(paramTypesList)
+
+        io.error.write "\nmatchee is of type: {matcheeType}"
+        io.error.write "\nIs it a subtype of the params? {matcheeType.isConsistentSubtypeOf(paramType)}"
+
+
+        //io.error.write ("\nString <: Number | Boolean? " ++
+        //  "{anObjectType.string.isConsistentSubtypeOf(anObjectType.number|anObjectType.boolean)}")
+
+        io.error.write "\nparamType now equals: {paramType}"
+        io.error.write "\nreturnType now equals: {returnType}"
 
         //checkMatch (node) -> just prints an error
 
-        cache.at(node) put (returnVariantType)
+        cache.at(node) put (returnType)
 
         false
     }
 
     //Takes a non-empty list of objectTypes and combines them into a variant type
+    //Does not handle type Done
     method fromObjectTypeList(oList : List[[ObjectType]])-> ObjectType is confidential{
       var varType: ObjectType := oList.at(1)
       var index:Number := 2

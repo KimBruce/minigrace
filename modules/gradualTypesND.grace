@@ -715,27 +715,28 @@ def anObjectType: ObjectTypeFactory = object {
                 return true
             }
             currentlyTesting.push(other)
-
-            var mct1 := 0
-            for (other.methods) doWithContinue { a, continue ->
-                for (methods) do { b ->
-                    if (b.isSpecialisationOf (a)) then {
-                        mct1 := mct1 + 1
-                        if ((mct1 == other.methods.size)
-                            && (self.getVariantTypes.size == 0)) then {
-                            // If each of our methods is a specialisation of
-                            // some method from other, self must be a subtype of other,
-                            // unless self is a variant type (handled later).
-                            io.error.write"\nother is specialisation"
-                            return true
+            //Joe -added a check for if other is a variant type
+            if(other.getVariantTypes.size == 0)then{
+                var mct1 := 0
+                for (other.methods) doWithContinue { a, continue ->
+                    for (methods) do { b ->
+                        if (b.isSpecialisationOf (a)) then {
+                            mct1 := mct1 + 1
+                            if ((mct1 == other.methods.size)
+                                && (self.getVariantTypes.size == 0)) then {
+                                // If each of our methods is a specialisation of
+                                // some method from other, self must be a subtype of other,
+                                // unless self is a variant type (handled later).
+                                io.error.write"\nother is specialisation"
+                                return true
+                            }
+                            continue.apply
                         }
-                        continue.apply
                     }
+                    currentlyTesting.pop
+                    return false
                 }
-                currentlyTesting.pop
-                return false
             }
-
             var subtypeOfVariantTypes: Boolean := true
 
             // if self is a variant type, check if each of its variant types
@@ -1667,13 +1668,12 @@ def astVisitor: ast.AstVisitor = object {
 
 
         paramType := fromObjectTypeList(paramTypesList)
-
         io.error.write "\nmatchee is of type: {matcheeType}"
-        io.error.write "\nIs it a subtype of the params? {matcheeType.isConsistentSubtypeOf(paramType)}"
+        io.error.write "\nIs it a subtype of the params? {matcheeType.isSubtypeOf(paramType)}"
 
 
         //io.error.write ("\nString <: Number | Boolean? " ++
-        //  "{anObjectType.string.isConsistentSubtypeOf(anObjectType.number|anObjectType.boolean)}")
+        //  "{anObjectType.string.isSubtypeOf(anObjectType.number|anObjectType.boolean)}")
 
         io.error.write "\nparamType now equals: {paramType}"
         io.error.write "\nreturnType now equals: {returnType}"
@@ -1693,9 +1693,9 @@ def astVisitor: ast.AstVisitor = object {
       while{index<=oList.size}do{
 
         //Combine types that are subsets of one-another
-        if (varType.isConsistentSubtypeOf (oList.at(index))) then {
+        if (varType.isSubtypeOf (oList.at(index))) then {
             varType := oList.at(index)
-        } elseif {oList.at(index).isConsistentSubtypeOf(varType).not} then {
+        } elseif {oList.at(index).isSubtypeOf(varType).not} then {
             varType := varType | oList.at(index)
         }
 

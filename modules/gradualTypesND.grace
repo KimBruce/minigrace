@@ -824,6 +824,7 @@ def anObjectType: ObjectTypeFactory = object {
         }
 
         method restriction(other : ObjectType) -> ObjectType {
+            io.error.write"{other}"
             if (other.isDynamic) then { return dynamic}
             def restrictTypes:Set⟦ObjectType⟧ = emptySet
             // Restrict matching methods
@@ -850,8 +851,40 @@ def anObjectType: ObjectTypeFactory = object {
 
         method &(other : ObjectType) -> ObjectType {
             if(self == other) then { return self }
-            if(other.isDynamic) then { return dynamic }
+            if(other.isDynamic) then {
+              return dynamic
+            }
 
+            def components:List[[ObjectType]] = emptyList
+
+            if(self.getVariantTypes.size == 0) then {
+                if (other.getVariantTypes.size == 0) then {
+                    //Neither self nor other are variant types
+                    return self.andHelper(other)
+                } else {
+                    //self is not a variant type; other is
+                    for (other.getVariantTypes) do {t:ObjectType ->
+                        components.add(self.andHelper(t))
+                    }
+                }
+            } else {
+                if (other.getVariantTypes.size == 0) then {
+                    //self is a variant type; other is not
+                    for (self.getVariantTypes) do {t:ObjectType ->
+                        components.add(other.andHelper(t))
+                    }
+                } else {
+                    //Both self and other are variant types
+                    for (self.getVariantTypes) do {t:ObjectType ->
+                        components.add(t&(other))
+                    }
+                }
+            }
+            //Helper method does not work with Done
+            astVisitor.fromObjectTypeList(components)
+        }
+
+        method andHelper(other: ObjectType) -> ObjectType {
             def combine: Set⟦ObjectType⟧ = emptySet
             def twice = emptySet
 
@@ -874,7 +907,6 @@ def anObjectType: ObjectTypeFactory = object {
                         continue.apply
                     }
                 }
-
                 combine.add(meth)
             }
 
@@ -884,12 +916,19 @@ def anObjectType: ObjectTypeFactory = object {
                 }
             }
 
+            def tempMeth: List[[MethodType]] = self.methods
+
             object {
                 inherit anObjectType.fromMethods(combine)
 
+                //method asString -> String is override {
+                //    "\{{self.methods}\} & {other}"
+                //}
+
                 method asString -> String is override {
-                    "\{{self.methods}\} & {other}"
+                    "\{{tempMeth}\} & {other}"
                 }
+
             }
         }
 
@@ -1618,7 +1657,7 @@ def astVisitor: ast.AstVisitor = object {
 
           //Return type collection
           def blockReturnType : ObjectType = anObjectType.fromBlock(block)
-
+          //io.error.write "\n\n\n    BLOCKRETURNTYPE = {blockReturnType}\n\n\n"
           //checks if it has no methods, this ensures type Done is handled.
           if(blockReturnType.methods.size > 0)then{
             if (returnTypesList.contains(blockReturnType).not) then {
@@ -1662,7 +1701,7 @@ def astVisitor: ast.AstVisitor = object {
 
     //Takes a non-empty list of objectTypes and combines them into a variant type
     //Does not handle type Done
-    method fromObjectTypeList(oList : List[[ObjectType]])->ObjectType is confidential{
+    method fromObjectTypeList(oList : List[[ObjectType]])->ObjectType{
       var varType: ObjectType := oList.at(1)
       var index:Number := 2
       while{index<=oList.size}do{

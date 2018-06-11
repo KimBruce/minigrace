@@ -761,25 +761,17 @@ def anObjectType: ObjectTypeFactory = object {
 
         //helper method for subtyping a pair of non-variant types
         method isNonvariantSubtypeOf(other:ObjectType)->Boolean {
-            currentlyTesting.push(other)
             var mct1 := 0
             for (other.methods) doWithContinue { a, continue ->
                 for (methods) do { b ->
                     if (b.isSpecialisationOf (a)) then {
                         mct1 := mct1 + 1
-                        if ((mct1 == other.methods.size)
-                            && (self.getVariantTypes.size == 0)) then {
-                            // If each of our methods is a specialisation of
-                            // some method from other, self must be a subtype of other,
-                            // unless self is a variant type (handled later).
-                            return true
-                        }
                         continue.apply
                     }
                 }
-                currentlyTesting.pop
                 return false
             }
+            true
         }
 
 
@@ -1035,19 +1027,15 @@ def anObjectType: ObjectTypeFactory = object {
         }
     }
 
-    // Joe - this is used only in matchCase
+    //Takes in a block that has only one parameter and returns the type of its parameter
     method getParamTypeFromBlock(block: AstNode) -> ObjectType{
       def bType = typeOf(block)
 
-      //if(bType.isDynamic) then { return dynamic }
-
+      //retrieves the MethodType of the apply method from the block
       def apply: MethodType = bType.getMethod("apply(1)")
 
-      io.error.write("\nParam type is {apply.signature.at(1).parameters.at(1).typeAnnotation}")
-
-      def paramType: ObjectType = apply.signature.at(1).parameters.at(1).typeAnnotation
-
-      paramType
+      //goes into the data structure of a MethodType to get its parameter's type
+      return apply.signature.at(1).parameters.at(1).typeAnnotation
     }
 
     method dynamic -> ObjectType {

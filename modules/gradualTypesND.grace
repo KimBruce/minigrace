@@ -694,9 +694,6 @@ def anObjectType: ObjectTypeFactory = object {
           variantTypes := newVariantTypes
         }
 
-        // Necessary to prevent infinite loops of subtype testing.
-        def currentlyTesting: List⟦ObjectType⟧ = emptyList
-
         method isSubtypeOf(other : ObjectType) -> Boolean {
 
             if(self.isMe(other)) then {
@@ -707,9 +704,10 @@ def anObjectType: ObjectTypeFactory = object {
                 return true
             }
 
-            // If this test is already being performed, assume it succeeds.
-            if(currentlyTesting.contains(other)) then {
+            if(other == anObjectType.doneType) then {
                 return true
+            } elseif{self == anObjectType.doneType} then {
+                return false
             }
 
             // Divides subtyping into 4 cases
@@ -1633,7 +1631,6 @@ def astVisitor: ast.AstVisitor = object {
         var returnTypesList: List[[ObjectType]] := emptyList
         var paramType: ObjectType
         var returnType: ObjectType
-        var hasDone: Boolean := false
 
         //goes through each case{} and accumulates its parameter and return types
         for(node.cases) do{block ->
@@ -1657,33 +1654,16 @@ def astVisitor: ast.AstVisitor = object {
 
           //Return type collection
           def blockReturnType : ObjectType = anObjectType.fromBlock(block)
-          //io.error.write "\n\n\n    BLOCKRETURNTYPE = {blockReturnType}\n\n\n"
-          //checks if it has no methods, this ensures type Done is handled.
-          if(blockReturnType.methods.size > 0)then{
-            if (returnTypesList.contains(blockReturnType).not) then {
-              returnTypesList.add(blockReturnType)
-            }
-          } else{
-            hasDone := true
+          if (returnTypesList.contains(blockReturnType).not) then {
+            returnTypesList.add(blockReturnType)
           }
         }
 
-        io.error.write("\n\nThe paramTypesList contains {paramTypesList}\n")
-        io.error.write("\n\nThe returnTypesList contains {returnTypesList}\n")
-
-        //Handles instances where Done is a return type
-        if(returnTypesList.size > 0) then{
-          returnType := fromObjectTypeList(returnTypesList)
-          if(hasDone)then{
-            returnType := returnType | anObjectType.doneType
-          }
-        } else{
-          returnType := anObjectType.doneType
-        }
+        //io.error.write("\n\nThe paramTypesList contains {paramTypesList}\n")
+        //io.error.write("\n\nThe returnTypesList contains {returnTypesList}\n")
 
         paramType := fromObjectTypeList(paramTypesList)
-        //io.error.write ("\nString <: Number | Boolean? " ++
-        //  "{anObjectType.string.isSubtypeOf(anObjectType.number|anObjectType.boolean)}")
+        returnType := fromObjectTypeList(returnTypesList)
 
         io.error.write "\nparamType now equals: {paramType}"
         io.error.write "\nreturnType now equals: {returnType}"

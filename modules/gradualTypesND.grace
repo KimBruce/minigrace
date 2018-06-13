@@ -110,6 +110,8 @@ method dtypeToString(dtype) {
 
 // The cached type assignments.
 def cache: Dictionary = emptyDictionary
+// cache holding confidential as well as public types
+def allCache: Dictionary = emptyDictionary
 
 // Scope represents stack of scopes using stackOfKind
 
@@ -1156,6 +1158,8 @@ def anObjectType: ObjectTypeFactory = object {
         this.methods.addAll(that.methods)
     }
 
+    // TODO: Make sure get everything from standardGrace and
+    // StandardPrelude
     var base : ObjectType is readable := dynamic
     def doneType : ObjectType is public = fromMethods(sg.emptySet) withName("Done")
     base := fromMethods(sg.emptySet) withName("Object")
@@ -2141,7 +2145,7 @@ method outerAt(i : Number) -> ObjectType is confidential {
 
 
 // Typing methods.
-
+// Type check body of object definition
 method processBody(body : List⟦AstNode⟧, superclass: AstNode | false) -> ObjectType is confidential {
     io.error.write "\n1958: superclass: {superclass}\n"
     // Collect the declarative types directly in the object body.
@@ -2198,6 +2202,7 @@ method processBody(body : List⟦AstNode⟧, superclass: AstNode | false) -> Obj
         def publicTypes: Dictionary⟦String,ObjectType⟧ = emptyDictionary
         def allTypes: Dictionary⟦String,ObjectType⟧ = emptyDictionary
 
+        // gather types for all methods in object
         for(body) do { stmt: AstNode ->
             io.error.write "\n2009: processing {stmt}"
             match(stmt) case { meth : Method ->
@@ -2220,7 +2225,7 @@ method processBody(body : List⟦AstNode⟧, superclass: AstNode | false) -> Obj
                     publicMethods.add(mType)
                 }
                 if(defd.isWritable) then {
-                    def name': String = defd.nameString ++ ":=" //(1)"
+                    def name': String = defd.nameString ++ ":=" //(1)"  ?? is name right?
                     def dType: ObjectType = anObjectType.fromDType(defd.dtype)
                     def param: Param = aParam.withName(defd.nameString) ofType(dType)
                     def sig: List⟦MixPart⟧ = list[aMixPartWithName(name') parameters(list[param])]
@@ -2239,6 +2244,7 @@ method processBody(body : List⟦AstNode⟧, superclass: AstNode | false) -> Obj
         scope.types.at("$elf") put (internalType)
         // io.error.write "added $elf to scope"
         if (hasInherits) then {
+            // Need to worry about overriding with different signature!! TODO
             def allMethodsWithInheritedMethods: Set⟦MethodType⟧ =
                     allMethods ++ inheritedMethods
             anObjectType.fromMethods(allMethodsWithInheritedMethods)

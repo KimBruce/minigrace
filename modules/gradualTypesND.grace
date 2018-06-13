@@ -655,7 +655,7 @@ type ObjectTypeFactory = {
     enumerable -> ObjectType
 }
 
-def anObjectType: ObjectTypeFactory = object {
+def anObjectType: ObjectTypeFactory is public = object {
 
     class placeholder → ObjectType {
         inherit fromMethods(emptySet)
@@ -1510,7 +1510,7 @@ method split(input : String, separator : String) -> List⟦String⟧ {
 
 // Static type checker visitor
 // methods return false if goes no further recursively
-def astVisitor: ast.AstVisitor = object {
+def astVisitor: ast.AstVisitor is public= object {
     inherit ast.baseVisitor
 
     // Default behavior serving as placeholder only for cases not yet implemented

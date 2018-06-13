@@ -37,6 +37,54 @@ def input = sequence [
     "       case\{\"Hello\" , \"World\" -> \"Hello World\" \}",
     "       case\{s:String -> \"\" \}",
     "\}",
+    "",
+    "def testBlock4: Object = object \{",
+    "   def value: String | Number = \"Hello World\"",
+    "",
+    "   var answer: String := match(value)",
+    "       case\{s:String -> \"\" \}",
+    "       case\{n:Number -> \"\" \}",
+    "\}",
+    "",
+    "def testBlock5: Object = object \{",
+    "   def value: String | Number = \"Hello World\"",
+    "",
+    "   var answer: String := match(value)",
+    "       case\{s:String -> \"\" \}",
+    "       case\{b:Boolean -> \"\" \}",
+    "\}",
+    "",
+    "def testBlock6: Object = object \{",
+    "   def value: String = \"Hello World\"",
+    "",
+    "   var answer: String | Boolean := match(value)",
+    "       case\{\"Hello World\" -> \"Hello World\" \}",
+    "       case\{s:String -> true \}",
+    "\}",
+    "",
+    "def testBlock7: Object = object \{",
+    "   def value: String = \"Hello World\"",
+    "",
+    "   var answer: String | Boolean := match(value)",
+    "       case\{\"Hello World\" -> \"Hello World\" \}",
+    "       case\{s:String -> 5 \}",
+    "\}",
+    "",
+    "def testBlock8: Object = object \{",
+    "   var value: Number := 0",
+    "",
+    "   var answer: Done := match(value)",
+    "       case\{0 -> def foobar: Number = value + 1 \}",
+    "       case\{n:Number -> def foobar: Number = value + 2 \}",
+    "\}",
+    "",
+    "def testBlock9: Object = object \{",
+    "   var value: Number := 0",
+    "",
+    "   var answer: Done := match(value)",
+    "       case\{0 -> def foobar: Number = value + 1 \}",
+    "       case\{n:Number -> 2 \}",
+    "\}",
     ""
 ]
 
@@ -52,34 +100,52 @@ print "{nodes}"
 //TODO rename everything
 
 testSuiteNamed "visitMatchCase tests" with {
-  test "match specific case" by {
-    //print ("{nodes.first.value}")
-    //print ("{nodes.first.name.name}")
 
-    def firstDef = nodes.filter{n -> n.name.name == "testBlock1"}.first
-    assert ({firstDef.accept(gt.astVisitor)})
-        shouldntRaise (TypeError)
+  test "match specific, general, and wildcard cases" by {
+    def blk1 = nodes.filter{n -> n.name.name == "testBlock1"}.first
+    assert ({blk1.accept(gt.astVisitor)}) shouldntRaise (Exception)
   }
 
+  //Use testBlock1 to test type-checking of non-variant return type
   test "returnType" by {
-    def firstDef = nodes.filter{n -> n.name.name == "testBlock1"}.first
-    def block1Answer = firstDef.value.value.at(2)
+    def blk1 = nodes.filter{n -> n.name.name == "testBlock1"}.first
+    def blk1Answer = blk1.value.value.at(2)
     //checks that the type of the var answer is String
-    assert(gt.anObjectType.fromDType(block1Answer.dtype))
+    assert(gt.anObjectType.fromDType(blk1Answer.dtype))
         shouldBe (gt.anObjectType.string)
   }
 
-  test "paramType mismatch error" by {
-    def firstDef = nodes.filter{n -> n.name.name == "testBlock2"}.first
-    assert ({firstDef.accept(gt.astVisitor)}) shouldRaise (TypeError)
+  test "matchee and param type-mismatch error" by {
+    def blk2 = nodes.filter{n -> n.name.name == "testBlock2"}.first
+    assert ({blk2.accept(gt.astVisitor)}) shouldRaise (TypeError)
   }
 
   test "multiple params error" by {
-    def firstDef = nodes.filter{n -> n.name.name == "testBlock3"}.first
-    assert ({firstDef.accept(gt.astVisitor)}) shouldRaise (RequestError)
+    def blk3 = nodes.filter{n -> n.name.name == "testBlock3"}.first
+    assert ({blk3.accept(gt.astVisitor)}) shouldRaise (RequestError)
   }
 
+  test "variant type matchee and params" by {
+    def blk4 = nodes.filter{n -> n.name.name == "testBlock4"}.first
+    assert({blk4.accept(gt.astVisitor)}) shouldntRaise (Exception)
 
+    def blk5 = nodes.filter{n -> n.name.name == "testBlock5"}.first
+    assert ({blk5.accept(gt.astVisitor)}) shouldRaise (TypeError)
+  }
 
+  test "variant return-type" by {
+    def blk6 = nodes.filter{n -> n.name.name == "testBlock6"}.first
+    assert ({blk6.accept(gt.astVisitor)}) shouldntRaise (Exception)
 
+    def blk7 = nodes.filter{n -> n.name.name == "testBlock7"}.first
+    assert ({blk7.accept(gt.astVisitor)}) shouldRaise (TypeError)
+  }
+
+  test "return-type Done" by {
+    def blk8 = nodes.filter{n -> n.name.name == "testBlock8"}.first
+    assert ({blk8.accept(gt.astVisitor)}) shouldntRaise (Exception)
+
+    def blk9 = nodes.filter{n -> n.name.name == "testBlock9"}.first
+    assert ({blk9.accept(gt.astVisitor)}) shouldntRaise (Exception)
+  }
 }

@@ -748,12 +748,16 @@ def anObjectType: ObjectTypeFactory = object {
         // Consistent-subtyping:
         // If self restrict other is a subtype of other restrict self.
         method isConsistentSubtypeOf(other : ObjectType) -> Boolean {
-            def selfRestType = self.restriction(other)
-            def otherRestType = other.restriction(self)
+
+            return self.isSubtypeOf(other)
+
+            //TODO: Fix restriction() so that it handles variant types
+            //def selfRestType = self.restriction(other)
+            //def otherRestType = other.restriction(self)
 //            io.error.write "self's restricted type is {selfRestType}"
 //            io.error.write "other's restricted type is {otherRestType}"
 
-            return selfRestType.isSubtypeOf(otherRestType)  //  FIX!!!
+            //return selfRestType.isSubtypeOf(otherRestType)  //  FIX!!!
             //true
         }
 
@@ -822,7 +826,6 @@ def anObjectType: ObjectTypeFactory = object {
         }
 
         method restriction(other : ObjectType) -> ObjectType {
-            io.error.write"{other}"
             if (other.isDynamic) then { return dynamic}
             def restrictTypes:Set⟦ObjectType⟧ = emptySet
             // Restrict matching methods
@@ -1669,7 +1672,7 @@ def astVisitor: ast.AstVisitor = object {
         io.error.write "\nreturnType now equals: {returnType}"
 
         if (matcheeType.isSubtypeOf(paramType).not) then {
-          outer.RequestError.raise("1519: the matchee `{stripNewLines(matchee.toGrace(0))}`"++
+          outer.TypeError.raise("1519: the matchee `{stripNewLines(matchee.toGrace(0))}`"++
             " of type {matcheeType} does not " ++
             "match the type(s) {paramTypesList} of the case(s)") with (matchee)
         }

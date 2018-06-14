@@ -95,10 +95,6 @@ def module = parser.parse(tokens)
 def inputTree = ir.resolve(module)
 def nodes  = inputTree.value
 
-print "{nodes}"
-
-//TODO rename everything
-
 testSuiteNamed "visitMatchCase tests" with {
 
   test "match specific, general, and wildcard cases" by {

@@ -408,6 +408,10 @@ $(TYPE_DIALECTS:%=js/%.js): js/%.js: $(DIALECTS_NEED:%=%.js) $(patsubst modules/
 test: minigrace.env
 	js/tests/harness-js j2/minigrace-js js/tests "" $(TESTS)
 
+#only test gradualTypesND dialect
+gradualTypesTest: minigrace.env
+	modules/gradualTypesNDTest/harness-js j2/minigrace-js modules/gradualTypesNDTest "" $(TESTS)
+
 togracetest: minigrace
 	tests/harness minigrace tests tograce $(TESTS)
 

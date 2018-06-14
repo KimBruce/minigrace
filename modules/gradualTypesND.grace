@@ -346,7 +346,7 @@ type MethodTypeFactory = {
 }
 
 // factory for creating method types from various inputs
-def aMethodType: MethodTypeFactory = object {
+def aMethodType: MethodTypeFactory is public = object {
     // create method type from list of mixparts and return type
     method signature (signature' : List⟦MixPart⟧)
             returnType (rType : ObjectType) -> MethodType {

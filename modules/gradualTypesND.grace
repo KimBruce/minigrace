@@ -1067,15 +1067,31 @@ def anObjectType: ObjectTypeFactory is public = object {
         }
     }
 
-    //Takes in a block that has only one parameter and returns the type of its parameter
+    //Takes a TypeNode and returns an ObjectType from its methods
+    method fromTypeNode(node: AstNode) -> ObjectType {
+
+        //assemble the list of MethodType
+        def typeMethods: Collection[[AstNode]] = node.value.methods
+        def methodTypeList: List[[MethodType]] = emptyList
+
+        for (typeMethods) do {m : AstNode ->
+            methodTypeList.add(aMethodType.fromNode(m))
+        }
+
+        //construct and return an ObjectType from list of MethodType
+        anObjectType.fromMethods(methodTypeList)
+    }
+
+
+    //Takes a block with only one parameter and returns its parameter's type
     method getParamTypeFromBlock(block: AstNode) -> ObjectType{
       def bType = typeOf(block)
 
       //retrieves the MethodType of the apply method from the block
       def apply: MethodType = bType.getMethod("apply(1)")
 
-      //goes into the data structure of a MethodType to get its parameter's type
-      return apply.signature.at(1).parameters.at(1).typeAnnotation
+      //returns parameter type from MethodType
+      apply.signature.at(1).parameters.at(1).typeAnnotation
     }
 
     method dynamic -> ObjectType {

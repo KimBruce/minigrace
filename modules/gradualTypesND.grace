@@ -279,8 +279,43 @@ def Module: Pattern is public = aPatternMatchingNode "module"
 // Type declarations for type representations to use for type checking
 // -------------------------------------------------------------------
 
+//This type is used for checking subtyping
+type TypePair = {
+    first -> ObjectType
+    second -> ObjectType
+    == (other:Object)-> Boolean
+    asString -> String
+}
+
+class typePair(first':ObjectType, second':ObjectType) -> TypePair is confidential{
+    method first -> ObjectType {first'}
+
+    method second -> ObjectType {second'}
+
+    method == (other:Object) -> Boolean {
+        (first == other.first) && (second == other.second)
+    }
+
+    method asString {"<{first'} , {second'}>"}
+}
+
+//This type is used for checking subtyping
+type Answer = {
+    ans -> Boolean
+    trials -> List[[TypePair]]
+    asString -> String
+}
+
+class answerConstructor(ans':Boolean, trials':List[[TypePair]]) -> Answer {
+    method ans -> Boolean {ans'}
+
+    method trials -> List[[TypePair]] {trials'}
+
+    method asString -> String{"Answer is {ans'}\n Trials is {trials}"}
+}
+
 // Method signature information.
-// isSpecialization and restriction are used for type-checking
+// isSpecialisation and restriction are used for type-checking
 type MethodType = {
     // name of the method
     name -> String
@@ -289,7 +324,7 @@ type MethodType = {
     // return type
     returnType -> ObjectType
     // Does it extend other
-    isSpecialisationOf (other : MethodType) -> Boolean
+    isSpecialisationOf (trials : List[[TypePair]], other : MethodType) -> Boolean
     // create restriction of method type using other
     restriction (other : MethodType) -> MethodType
 }
@@ -427,28 +462,28 @@ def aMethodType: MethodTypeFactory is public = object {
             }
 
             // Determines if this method is a specialisation of the given one.
-            method isSpecialisationOf (other : MethodType) -> Boolean {
+            method isSpecialisationOf (trials : List[[TypePair]], other : MethodType) -> Answer {
 
                 if (self.isMe (other)) then {
-                    return true
+                    return answerConstructor(true, trials)
                 }
 
                 if (name != other.name) then {
-                    return false
+                    return answerConstructor(false, trials)
                 }
 
                 if (other.signature.size != signature.size) then {
-                    return false
+                    return answerConstructor(false, trials)
                 }
 
                 for (signature) and (other.signature)
                                             do { part: MixPart, part': MixPart ->
                     if (part.name != part'.name) then {
-                        return false
+                        return answerConstructor(false, trials)
                     }
 
                     if (part.parameters.size != part'.parameters.size) then {
-                        return false
+                        return answerConstructor(false, trials)
                     }
 
                     for (part.parameters) and (part'.parameters)
@@ -457,13 +492,14 @@ def aMethodType: MethodTypeFactory is public = object {
                         def pt': ObjectType = p'.typeAnnotation
 
                         // Contravariant in parameter types.
-                        if (pt'.isSubtypeOf (pt).not) then {
-                            return false
+                        def paramSubtyping : Answer = pt'.isSubtypeHelper(trials, pt)
+
+                        if (paramSubtyping.ans.not) then {
+                            return paramSubtyping
                         }
                     }
                 }
-
-                return returnType.isSubtypeOf (other.returnType)
+                return returnType.isSubtypeHelper (trials, other.returnType)
             }
 
             def asString : String is public, override = show
@@ -679,6 +715,7 @@ def anObjectType: ObjectTypeFactory is public = object {
             return noSuchMethod
         }
 
+        //TODO: not sure we trust this. May have to refine == in the future
         method == (other:ObjectType) → Boolean {
             self.isMe(other)
         }
@@ -710,39 +747,10 @@ def anObjectType: ObjectTypeFactory is public = object {
                 return false
             }
 
-            // Divides subtyping into 4 cases
-            if(self.getVariantTypes.size == 0) then {
-                if (other.getVariantTypes.size == 0) then {
-                    //Neither self nor other are variant types
-                    return self.isNonvariantSubtypeOf(other)
-                } else {
-                    //self is not a variant type; other is
-                    for (other.getVariantTypes) do {t:ObjectType ->
-                        if (self.isNonvariantSubtypeOf(t)) then{
-                            return true
-                        }
-                    }
-                    return false
-                }
-            } else {
-                if (other.getVariantTypes.size == 0) then {
-                    //self is a variant type; other is not
-                    for (self.getVariantTypes) do {t:ObjectType ->
-                        if (t.isNonvariantSubtypeOf(other).not) then {
-                            return false
-                        }
-                    }
-                    return true
-                } else {
-                    //Both self and other are variant types
-                    for (self.getVariantTypes) do {t:ObjectType ->
-                        if (t.isSubtypeOf(other).not) then {
-                            return false
-                        }
-                    }
-                    return true
-                }
-            }
+            def helperResult : Answer = self.isSubtypeHelper(emptyList, other)
+            //io.error.write("\n751 The trials from subtyping were: {helperResult.trials}")
+
+            return helperResult.ans
         }
 
         // Consistent-subtyping:
@@ -754,26 +762,86 @@ def anObjectType: ObjectTypeFactory is public = object {
             //TODO: Fix restriction() so that it handles variant types
             //def selfRestType = self.restriction(other)
             //def otherRestType = other.restriction(self)
-//            io.error.write "self's restricted type is {selfRestType}"
-//            io.error.write "other's restricted type is {otherRestType}"
+            //io.error.write "self's restricted type is {selfRestType}"
+            //io.error.write "other's restricted type is {otherRestType}"
 
             //return selfRestType.isSubtypeOf(otherRestType)  //  FIX!!!
             //true
         }
 
         //helper method for subtyping a pair of non-variant types
-        method isNonvariantSubtypeOf(other:ObjectType)->Boolean {
-            var mct1 := 0
-            for (other.methods) doWithContinue { a, continue ->
-                for (methods) do { b ->
-                    if (b.isSpecialisationOf (a)) then {
-                        mct1 := mct1 + 1
-                        continue.apply
+        method isNonvariantSubtypeOf(trials': List[[TypePair]], other:ObjectType)->Answer {
+            def selfOtherPair : TypePair = typePair(self, other)
+
+            //if trials already contains selfOtherPair, we can assume self <: other
+            if(trials'.contains(selfOtherPair) || self.isMe(other)) then{
+                io.error.write"\nList contains {selfOtherPair}"
+                return answerConstructor(true, trials')
+            } else{
+                io.error.write"\n781 List did not contain {selfOtherPair}"
+                var trials : List[[TypePair]] := trials'
+                trials.add(selfOtherPair)
+
+                //for each method in other, check that there is a corresponding
+                //method in self
+                for (other.methods) doWithContinue { otherMeth, continue->
+                    for (self.methods) do { selfMeth->
+                        var isSpec: Answer := selfMeth.isSpecialisationOf(trials, otherMeth)
+                        trials := isSpec.trials
+
+                        if (isSpec.ans) then { continue.apply }
                     }
+                    //fails to find corresponding method
+                    return answerConstructor(false, trials)
                 }
-                return false
+                return answerConstructor(true, trials)
             }
-            true
+        }
+
+        //helper method for subtyping a pair of ObjectTypes
+        //
+        //Param trials - Holds pairs of previously subtype-checked ObjectTypes
+        //          Prevents infinite subtype checking of self-referential types
+        //Param other - The ObjectType that self is checked against
+        method isSubtypeHelper(trials:List[[TypePair]], other:ObjectType) -> Answer {
+            var helperResult : Answer := answerConstructor(false, trials)
+
+            // Divides subtyping into 4 cases
+            if(self.getVariantTypes.size == 0) then {
+                if (other.getVariantTypes.size == 0) then {
+                    //Neither self nor other are variant types
+                    return self.isNonvariantSubtypeOf(trials, other)
+                } else {
+                    //self is not a variant type; other is
+                    for (other.getVariantTypes) do {t:ObjectType ->
+                        helperResult := self.isNonvariantSubtypeOf(trials, t)
+                        if (helperResult.ans) then{
+                            return helperResult
+                        }
+                    }
+                    return helperResult
+                }
+            } else {
+                if (other.getVariantTypes.size == 0) then {
+                    //self is a variant type; other is not
+                    for (self.getVariantTypes) do {t:ObjectType ->
+                        helperResult := t.isNonvariantSubtypeOf(trials, other)
+                        if (helperResult.ans.not) then {
+                            return helperResult
+                        }
+                    }
+                    return helperResult
+                } else {
+                    //Both self and other are variant types
+                    for (self.getVariantTypes) do {t:ObjectType ->
+                        helperResult := t.isSubtypeHelper(helperResult.trials, other)
+                        if (helperResult.ans.not) then {
+                            return helperResult
+                        }
+                    }
+                    return helperResult
+                }
+            }
         }
 
 
@@ -893,9 +961,9 @@ def anObjectType: ObjectTypeFactory is public = object {
             for(methods) doWithContinue { meth, continue ->
                 for(other.methods) do { meth':MethodType ->
                     if(meth.name == meth'.name) then {
-                        if(meth.isSpecialisationOf(meth')) then {
+                        if(meth.isSpecialisationOf(emptyList,meth')) then {
                             combine.add(meth)
-                        } elseif{meth'.isSpecialisationOf(meth)} then {
+                        } elseif{meth'.isSpecialisationOf(emptyList,meth)} then {
                             combine.add(meth')
                         } else {
                             // TODO: Perhaps generate lub of two types?
@@ -1641,7 +1709,6 @@ def astVisitor: ast.AstVisitor is public= object {
         false
     }
 
-    // not implemented yet
     method visitMatchCase (node: MatchCase) -> Boolean {
         def matchee = node.value
         var matcheeType: ObjectType := typeOf(matchee)
@@ -1662,14 +1729,24 @@ def astVisitor: ast.AstVisitor is public= object {
 
           //If param is a general case(ie. n:Number), accumulate its type to
           //paramTypesList; ignore if it is a specific case(ie. 47)
-          if (block.params.at(1).dtype.kind == "identifier") then {
 
-            def typeOfParam = anObjectType.getParamTypeFromBlock(block)
+          match (block.params.at(1).dtype)
+            case{s:StringLiteral -> io.error.write"\n Got StringLiteral"}
+            case{n:NumberLiteral -> io.error.write"\n Got NumberLiteral"}
+            //case{true -> io.error.write"\n Got BooleanLiteral"}
+            //case{false -> io.error.write"\n Got BooleaneLiteral"}
+            case{_ ->
+                def typeOfParam = anObjectType.getParamTypeFromBlock(block)
 
-            if (paramTypesList.contains(typeOfParam).not) then {
-              paramTypesList.add(typeOfParam)
+                if (paramTypesList.contains(typeOfParam).not) then {
+                  paramTypesList.add(typeOfParam)
+                }
             }
-          }
+
+          //if (block.params.at(1).dtype.kind == "identifier") then {
+
+
+          //}
 
           //Return type collection
           def blockReturnType : ObjectType = anObjectType.fromBlock(block)
@@ -1699,7 +1776,6 @@ def astVisitor: ast.AstVisitor is public= object {
     }
 
     //Takes a non-empty list of objectTypes and combines them into a variant type
-    //Does not handle type Done
     method fromObjectTypeList(oList : List[[ObjectType]])->ObjectType{
       var varType: ObjectType := oList.at(1)
       var index:Number := 2
@@ -2304,6 +2380,7 @@ method collectTypes(nodes : Collection⟦AstNode⟧) -> Done is confidential {
 
     for(nodes) do { node ->
         match(node) case { td : TypeDeclaration ->
+            io.error.write"\nmatched as typeDec"
             if(names.contains(td.nameString)) then {
                 TypeDeclarationError.raise("the type {td.nameString} uses " ++
                     "the same name as another type in the same scope") with(td)
@@ -2318,6 +2395,7 @@ method collectTypes(nodes : Collection⟦AstNode⟧) -> Done is confidential {
             placeholders.push(placeholder)
             scope.types.at(td.nameString) put(placeholder)
         } case { _ ->
+            io.error.write"\ndidn't match as typeDec"
         }
     }
 

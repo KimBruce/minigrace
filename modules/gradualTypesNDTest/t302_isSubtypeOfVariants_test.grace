@@ -32,46 +32,30 @@ def inputTree = ir.resolve(module)
 //Returns a list of AstNodes corresponding to each type
 def nodes  = inputTree.value
 
-testSuiteNamed "isSubtypeOf tests" with {
+//Turns type nodes into ObjectTypes so the type checker can process them
+def typeA : ast.AstNode = nodes.at(1)
+def typeB : ast.AstNode = nodes.at(2)
+def typeC : ast.AstNode = nodes.at(3)
+def typeD : ast.AstNode = nodes.at(4)
 
-    //Turns type nodes into ObjectTypes so the type checker can process them
-    def typeA : ast.AstNode = nodes.at(1)
-    def objTypeA : gt.ObjectType = fromTypeNode(typeA)
+def objTypeA : gt.ObjectType = gt.anObjectType.fromTypeNode(typeA)
+def objTypeB : gt.ObjectType = gt.anObjectType.fromTypeNode(typeB)
+def objTypeC : gt.ObjectType = gt.anObjectType.fromTypeNode(typeC)
+def objTypeD : gt.ObjectType = gt.anObjectType.fromTypeNode(typeD)
 
-    def typeB : ast.AstNode = nodes.at(2)
-    def objTypeB : gt.ObjectType = fromTypeNode(typeB)
+//  *****************************
+//  **   start of test suite   **
+//  *****************************
 
-    def typeC : ast.AstNode = nodes.at(3)
-    def objTypeC : gt.ObjectType = fromTypeNode(typeC)
-
-    def typeD : ast.AstNode = nodes.at(4)
-    def objTypeD : gt.ObjectType = fromTypeNode(typeD)
-
-    test "self subtyping" by{
-      //assert A <: A
-      assert(objTypeA.isSubtypeOf(objTypeA)) description
-            ("Type A should have evaluated as a subtype of itself")
-    }
-
-    test "non-variant self and other" by{
-      //assert C <: A
-      assert(objTypeC.isSubtypeOf(objTypeA)) description
-            ("Type C should have evaluated as a subtype of Type A")
-
-      //deny A <: C
-      deny(objTypeA.isSubtypeOf(objTypeC)) description
-            ("Type A should not have evaluated as a subtype of Type C")
-    }
+testSuiteNamed "isSubtypeOf variant tests" with {
 
     test "non-variant self, variant other" by {
       def objTypeAorB : gt.ObjectType = objTypeA | objTypeB
       def objTypeBorC : gt.ObjectType = objTypeB | objTypeC
 
-      //assert C <: A|B
       assert(objTypeC.isSubtypeOf(objTypeAorB)) description
             ("Type C should have evaluated as a subtype of Type A | B")
 
-      //deny A <: B|C
       deny(objTypeA.isSubtypeOf(objTypeBorC)) description
             ("Type A should not have evaluated as a subtype of Type B | C")
     }
@@ -80,11 +64,9 @@ testSuiteNamed "isSubtypeOf tests" with {
       def objTypeCorD : gt.ObjectType = objTypeC | objTypeD
       def objTypeBorC : gt.ObjectType = objTypeB | objTypeC
 
-      //assert C|D <: A
       assert(objTypeCorD.isSubtypeOf(objTypeA)) description
             ("Type C | D should have evaluated as a subtype of Type A")
 
-      //deny B|C <: A
       deny(objTypeBorC.isSubtypeOf(objTypeA)) description
             ("Type B | C should not have evaluated as a subtype of Type A")
 
@@ -97,11 +79,9 @@ testSuiteNamed "isSubtypeOf tests" with {
       def objTypeCorB : gt.ObjectType = objTypeC | objTypeB
       def objTypeAorC : gt.ObjectType = objTypeA | objTypeC
 
-      //assert C|D <: B|A
       assert(objTypeCorD.isSubtypeOf(objTypeBorA)) description
-            ("Type C | D should not have evaluated as a subtype of Type B | A")
+            ("Type C | D should have evaluated as a subtype of Type B | A")
 
-      //deny C|B <: A|C
       deny(objTypeCorB.isSubtypeOf(objTypeAorC)) description
             ("Type C | B should not have evaluated as a subtype of Type A | C")
     }

@@ -324,7 +324,7 @@ type MethodType = {
     // return type
     returnType -> ObjectType
     // Does it extend other
-    isSpecialisationOf (trials : List[[TypePair]], other : MethodType) -> Boolean
+    isSpecialisationOf (trials : List[[TypePair]], other : MethodType) -> Answer
     // create restriction of method type using other
     restriction (other : MethodType) -> MethodType
 }
@@ -733,19 +733,7 @@ def anObjectType: ObjectTypeFactory is public = object {
 
         method isSubtypeOf(other : ObjectType) -> Boolean {
 
-            if(self.isMe(other)) then {
-                return true
-            }
 
-            if(other.isDynamic) then {
-                return true
-            }
-
-            if(other == anObjectType.doneType) then {
-                return true
-            } elseif{self == anObjectType.doneType} then {
-                return false
-            }
 
             def helperResult : Answer = self.isSubtypeHelper(emptyList, other)
             //io.error.write("\n751 The trials from subtyping were: {helperResult.trials}")
@@ -775,10 +763,8 @@ def anObjectType: ObjectTypeFactory is public = object {
 
             //if trials already contains selfOtherPair, we can assume self <: other
             if(trials'.contains(selfOtherPair) || self.isMe(other)) then{
-                io.error.write"\nList contains {selfOtherPair}"
                 return answerConstructor(true, trials')
             } else{
-                io.error.write"\n781 List did not contain {selfOtherPair}"
                 var trials : List[[TypePair]] := trials'
                 trials.add(selfOtherPair)
 
@@ -804,6 +790,22 @@ def anObjectType: ObjectTypeFactory is public = object {
         //          Prevents infinite subtype checking of self-referential types
         //Param other - The ObjectType that self is checked against
         method isSubtypeHelper(trials:List[[TypePair]], other:ObjectType) -> Answer {
+
+            if(self.isMe(other)) then {
+                return answerConstructor(true, trials)
+            }
+
+            if(other.isDynamic) then {
+                return answerConstructor(true,trials)
+            }
+
+            if(other == anObjectType.doneType) then {
+                return answerConstructor(true, trials)
+            } elseif{self == anObjectType.doneType} then {
+                return answerConstructor(false, trials)
+            }
+
+
             var helperResult : Answer := answerConstructor(false, trials)
 
             // Divides subtyping into 4 cases
@@ -924,6 +926,7 @@ def anObjectType: ObjectTypeFactory is public = object {
               return dynamic
             }
 
+            //components from performing &-operator on variant types
             def components:List[[ObjectType]] = emptyList
 
             if(self.getVariantTypes.size == 0) then {
@@ -961,9 +964,9 @@ def anObjectType: ObjectTypeFactory is public = object {
             for(methods) doWithContinue { meth, continue ->
                 for(other.methods) do { meth':MethodType ->
                     if(meth.name == meth'.name) then {
-                        if(meth.isSpecialisationOf(emptyList,meth')) then {
+                        if(meth.isSpecialisationOf(emptyList,meth').ans) then {
                             combine.add(meth)
-                        } elseif{meth'.isSpecialisationOf(emptyList,meth)} then {
+                        } elseif{meth'.isSpecialisationOf(emptyList,meth).ans} then {
                             combine.add(meth')
                         } else {
                             // TODO: Perhaps generate lub of two types?

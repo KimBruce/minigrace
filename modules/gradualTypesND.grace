@@ -208,6 +208,13 @@ method typeOf (node: AstNode) → ObjectType {
     }
 }
 
+method inheritableTypeOf (node: AstNode) → ObjectType {
+    allCache.at (node) ifAbsent {
+        CheckerFailure.raise "cannot find confidential type of {node}" with (node)
+    }
+}
+        
+
 type AstNode = { kind -> String }
 
 // Create a pattern for matching kind
@@ -1643,6 +1650,24 @@ method split(input : String, separator : String) -> List⟦String⟧ {
     return output
 }
 
+// Pair of public and confidential types of an expression
+// Generating objects
+type PublicConfidential = {
+    publicType → ObjectType
+    inheritableType → ObjectType | false
+}
+    
+// Returns pair of public and confidential type of expression that can be
+// inherited from
+class pubConf(pType: ObjectType,cType: ObjectType ) → PublicConfidential{
+    method publicType → ObjectType {pType}
+    method inheritableType → ObjectType {cType}
+    method asString → String {
+        "confidential type is {cType}\npublic type is {pType}"
+    }
+}
+
+
 // Static type checker visitor
 // methods return false if goes no further recursively
 def astVisitor: ast.AstVisitor is public= object {
@@ -2007,13 +2032,16 @@ def astVisitor: ast.AstVisitor is public= object {
         true  // request to continue on arguments
 
     }
-
+    
     // returns false so don't recurse into object
     method visitObject (obj :AstNode) -> Boolean {
-        def objType: ObjectType = scope.enter {
+        def pcType: PublicConfidential = scope.enter {
             processBody (list (obj.value), obj.superclass)
         }
-        cache.at(obj) put (objType)
+        cache.at(obj) put (pcType.publicType)
+        allCache.at(obj) put (pcType.inheritableType)
+        io.error.write "\n1971: *** Visited object {obj}"
+        io.error.write (pcType.asString)
         false
     }
 
@@ -2351,6 +2379,11 @@ method processBody(body : List⟦AstNode⟧, superclass: AstNode | false) -> Obj
     // If the super type is dynamic, then we can't know anything about the
     // self type.  TODO We actually can, because an object cannot have two
     // methods with the same name.
+    
+    // Type including all confidential features
+    var internalType: ObjectType
+    
+    // Type including only public features
     def publicType: ObjectType = if(superType.isDynamic) then {
         scope.types.at("$elf") put(superType)
         superType
@@ -2381,6 +2414,7 @@ method processBody(body : List⟦AstNode⟧, superclass: AstNode | false) -> Obj
                 }
 
                 scope.methods.at(mType.name) put(mType)
+                // WHY?????
                 if(isMember(mType)) then {
                     scope.variables.at(mType.name) put(mType.returnType)
                 }
@@ -2412,11 +2446,15 @@ method processBody(body : List⟦AstNode⟧, superclass: AstNode | false) -> Obj
                 }
             } case { _ -> }
         }
+<<<<<<< HEAD
         //Joe - Why are types showing up here but not in the ObjectType
         io.error.write"\n2410 allTypes is: {allTypes}"
         io.error.write"\n2411 publicTypes is: {publicTypes}"
 
         def internalType: ObjectType = anObjectType.fromMethods(allMethods) withTypes(allTypes)
+=======
+        internalType := anObjectType.fromMethods(allMethods)
+>>>>>>> Start process of getting inheritable type for objects
         io.error.write "\n2045: internalType is {internalType}\n"
         scope.types.at("$elf") put (internalType)
         // io.error.write "added $elf to scope"
@@ -2449,7 +2487,7 @@ method processBody(body : List⟦AstNode⟧, superclass: AstNode | false) -> Obj
         checkTypes(body.at(i))
         io.error.write "\n2072: finished index {i}\n"
     }
-    publicType
+    pubConf(publicType,internalType)
 }
 
 

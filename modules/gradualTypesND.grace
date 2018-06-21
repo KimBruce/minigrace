@@ -1628,7 +1628,8 @@ method check(req : Request)
         for (params) and (args) do { param: Param, arg: AstNode ->
             def pType: ObjectType = param.typeAnnotation
             def aType: ObjectType = typeOf(arg)
-
+            io.error.write ("\n1631 Checking {arg} is subtype of {pType}"++
+                "\nwhile checking {req} against {meth}")
             if (typeOf (arg).isConsistentSubtypeOf (pType).not) then {
                 outer.RequestError.raise("the expression " ++
                     "`{stripNewLines(arg.toGrace(0))}` of type '{aType}' does not " ++
@@ -2490,15 +2491,11 @@ method processBody(body : List⟦AstNode⟧, superclass: AstNode | false) -> Obj
                 }
             } case { _ -> }
         }
-<<<<<<< HEAD
         //Joe - Why are types showing up here but not in the ObjectType
         io.error.write"\n2410 allTypes is: {allTypes}"
         io.error.write"\n2411 publicTypes is: {publicTypes}"
 
-        def internalType: ObjectType = anObjectType.fromMethods(allMethods) withTypes(allTypes)
-=======
-        internalType := anObjectType.fromMethods(allMethods)
->>>>>>> Start process of getting inheritable type for objects
+        internalType := anObjectType.fromMethods(allMethods) withTypes(allTypes)
         io.error.write "\n2045: internalType is {internalType}\n"
         io.error.write "\n2046: internalType's types is {internalType.getTypeList}\n"
         scope.types.at("$elf") put (internalType)

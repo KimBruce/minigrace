@@ -689,8 +689,8 @@ type ObjectType = {
 type ObjectTypeFactory = {
     fromMethods (methods' : Set⟦MethodType⟧)
                 withTypes (types' : Dictionary⟦String,ObjectType⟧) -> ObjectType
-    fromMethods (methods' : Set⟦MethodType⟧)
-                                  withName (name : String) -> ObjectType
+    fromMethods (methods' : Set⟦MethodType⟧) withName (name : String)
+                withTypes (types' : Dictionary⟦String,ObjectType⟧) -> ObjectType
     fromDType (dtype) -> ObjectType
     fromBlock (block) -> ObjectType
     fromBlockBody (body) -> ObjectType
@@ -721,8 +721,10 @@ def anObjectType: ObjectTypeFactory is public = object {
     class placeholder → ObjectType {
         inherit fromMethods(emptySet) withTypes(emptyDictionary)
 
-        method updateMethods(meths: Set⟦MethodType⟧) {
+        method updateMethods(meths: Set⟦MethodType⟧)
+                  andTypes(types' : Dictionary[[String,ObjectType]]) {
             methods.addAll (meths)
+            types := types ++ types'
         }
     }
 
@@ -732,8 +734,8 @@ def anObjectType: ObjectTypeFactory is public = object {
             def methods : Set⟦MethodType⟧ is public = (if (base == dynamic)
                 then { emptySet } else { emptySet.addAll(base.methods) }).addAll(methods')
 
-            //Joe - we think that base.types will be empty
-            def types : Dictionary⟦String,ObjectType⟧ is public = types'
+            //Joe - we think that base.getTypeList will be empty
+            var types : Dictionary⟦String,ObjectType⟧ := types'
 
             method getMethod(name : String) -> MethodType | noSuchMethod {
                 for(methods) do { meth ->
@@ -748,6 +750,8 @@ def anObjectType: ObjectTypeFactory is public = object {
             method getType(name : String) -> ObjectType | noSuchType {
                 types.at(name) ifAbsent {return noSuchType}
             }
+
+            method getTypeList -> Dictionary⟦String,ObjectType⟧ { types }
 
             //TODO: not sure we trust this. May have to refine == in the future
             method == (other:ObjectType) → Boolean {
@@ -949,7 +953,7 @@ def anObjectType: ObjectTypeFactory is public = object {
                 return object {
                   //Joe - not sure how to handle restrict; probably wants to keep the types
                   //Maybe check if they share same type name and keep those?
-                  inherit anObjectType.fromMethods(restrictTypes) withTypes(other.types)
+                  inherit anObjectType.fromMethods(restrictTypes) withTypes(other.getTypeList)
 
                   method asString -> String is override {
                     "{outer}|{other}"
@@ -1059,10 +1063,10 @@ def anObjectType: ObjectTypeFactory is public = object {
             }
     }}
 
-    method fromMethods(methods' : Set⟦MethodType⟧)
-            withName(name : String) -> ObjectType {
+    method fromMethods(methods' : Set⟦MethodType⟧) withName(name : String)
+              withTypes(types' : Dictionary[[String,ObjectType]])-> ObjectType {
         object {
-            inherit fromMethods(methods') withTypes(emptyDictionary)
+            inherit fromMethods(methods') withTypes(types')
 
             var out: String := name
             if (!methods.isEmpty) then {
@@ -1091,19 +1095,29 @@ def anObjectType: ObjectTypeFactory is public = object {
 
         } case { typeLiteral : TypeLiteral ->
             //Joe - is a typeDec.value a typeLiteral? do we need to save internal types?
+            //Yes, we need to get types here
+
+            io.error.write"\n1087 The typeLiteral is: {typeLiteral}"
 
             def typeMethods : List⟦MethodType⟧ = list(typeLiteral.methods)
             def typeName : String = typeLiteral.name
             def meths : Set[[MethodType]] = emptySet
+            def embeddedTypes : Dictionary[[String,ObjectType]] = emptyDictionary
             for(typeLiteral.methods) do { mType : AstNode ->
                 meths.add(aMethodType.fromNode(mType))
             }
 
+            for (typeLiteral.types) do { td : TypeDeclaration ->
+                embeddedTypes.at(td.nameString) put(anObjectType.fromDType(td))
+            }
+
+            io.error.write"\n1101 embeddedTypes is: {embeddedTypes}"
+
             // FIX for new type parameter syntax! (OK now?)
             if((typeName != false) && { typeName.at(1) != "⟦" }) then {
-                anObjectType.fromMethods(meths) withName(typeName) //Joe-needs to change
+                anObjectType.fromMethods(meths) withName(typeName) withTypes(embeddedTypes)
             } else {
-                anObjectType.fromMethods(meths) withTypes(emptyDictionary)
+                anObjectType.fromMethods(meths) withTypes(embeddedTypes)
             }
 
         } case { op: Operator ->
@@ -1129,6 +1143,7 @@ def anObjectType: ObjectTypeFactory is public = object {
             }
 
         } case { ident : Identifier ->
+            io.error.write "\n1124identifier name is: {ident.nameString}"
             anObjectType.fromIdentifier(ident)
         } case { generic : Generic ->
 //            io.error.write "\n971: Handling generic: {generic}"
@@ -1145,6 +1160,8 @@ def anObjectType: ObjectTypeFactory is public = object {
     }
 
     method fromIdentifier(ident : Identifier) -> ObjectType {
+        io.error.write "\n1141: typesScope in fromIdentifier of ident: {ident} is: {scope.types.stack}"
+        io.error.write "\nident.value is: {ident.value}"
         scope.types.find(ident.value) butIfMissing { dynamic }
     }
 
@@ -1214,11 +1231,13 @@ def anObjectType: ObjectTypeFactory is public = object {
         object {
             def methods: Set⟦MethodType⟧ is public = sg.emptySet
 
-            def types: Dictionary⟦String,ObjectType⟧ is public = emptyDictionary
+            var types: Dictionary⟦String,ObjectType⟧ := emptyDictionary
 
             method getMethod(_ : String) -> noSuchMethod { noSuchMethod }
 
             method getType(_ : String) -> noSuchType { noSuchType }
+
+            method getTypeList -> Dictionary⟦String,ObjectType⟧ {emptyDictionary}
 
             def isDynamic : Boolean is public = true
 
@@ -1256,7 +1275,7 @@ def anObjectType: ObjectTypeFactory is public = object {
         //when a block has name??
         //when the last stmnt is an object or a typeDec?
         //In here we don't get the astNode; look at returnType?
-        fromMethods(meths) withName("Block")
+        fromMethods(meths) withName("Block") withTypes(emptyDictionary)
     }
 
     method blockReturning(rType : ObjectType) -> ObjectType {
@@ -1327,23 +1346,23 @@ def anObjectType: ObjectTypeFactory is public = object {
     // TODO: Make sure get everything from standardGrace and
     // StandardPrelude
     var base : ObjectType is readable := dynamic
-    def doneType : ObjectType is public = fromMethods(sg.emptySet) withName("Done")
-    base := fromMethods(sg.emptySet) withName("Object")
+    def doneType : ObjectType is public = fromMethods(sg.emptySet) withName("Done") withTypes(emptyDictionary)
+    base := fromMethods(sg.emptySet) withName("Object") withTypes(emptyDictionary)
 
-    def pattern : ObjectType is public = fromMethods(sg.emptySet) withName("Pattern")
-    def iterator : ObjectType is public = fromMethods(sg.emptySet) withName("Iterator")
-    def boolean : ObjectType is public = fromMethods(sg.emptySet) withName("Boolean")
-    def number : ObjectType is public = fromMethods(sg.emptySet) withName("Number")
-    def string : ObjectType is public = fromMethods(sg.emptySet) withName("String")
-    def listTp : ObjectType is public = fromMethods(sg.emptySet) withName("List")
-    def set : ObjectType is public = fromMethods(sg.emptySet) withName("Set")
-    def sequence : ObjectType is public = fromMethods(sg.emptySet) withName("Sequence")
-    def dictionary : ObjectType is public = fromMethods(sg.emptySet) withName("Dictionary")
-    def point : ObjectType is public = fromMethods(sg.emptySet) withName("Point")
-    def binding : ObjectType is public = fromMethods(sg.emptySet) withName("Binding")
-    def collection : ObjectType is public = fromMethods(sg.emptySet) withName("Collection")
-    def enumerable : ObjectType is public = fromMethods(sg.emptySet) withName("Enumerable")
-    def rangeTp : ObjectType is public = fromMethods(sg.emptySet) withName("Range")
+    def pattern : ObjectType is public = fromMethods(sg.emptySet) withName("Pattern") withTypes(emptyDictionary)
+    def iterator : ObjectType is public = fromMethods(sg.emptySet) withName("Iterator") withTypes(emptyDictionary)
+    def boolean : ObjectType is public = fromMethods(sg.emptySet) withName("Boolean") withTypes(emptyDictionary)
+    def number : ObjectType is public = fromMethods(sg.emptySet) withName("Number") withTypes(emptyDictionary)
+    def string : ObjectType is public = fromMethods(sg.emptySet) withName("String") withTypes(emptyDictionary)
+    def listTp : ObjectType is public = fromMethods(sg.emptySet) withName("List") withTypes(emptyDictionary)
+    def set : ObjectType is public = fromMethods(sg.emptySet) withName("Set") withTypes(emptyDictionary)
+    def sequence : ObjectType is public = fromMethods(sg.emptySet) withName("Sequence") withTypes(emptyDictionary)
+    def dictionary : ObjectType is public = fromMethods(sg.emptySet) withName("Dictionary") withTypes(emptyDictionary)
+    def point : ObjectType is public = fromMethods(sg.emptySet) withName("Point") withTypes(emptyDictionary)
+    def binding : ObjectType is public = fromMethods(sg.emptySet) withName("Binding") withTypes(emptyDictionary)
+    def collection : ObjectType is public = fromMethods(sg.emptySet) withName("Collection") withTypes(emptyDictionary)
+    def enumerable : ObjectType is public = fromMethods(sg.emptySet) withName("Enumerable") withTypes(emptyDictionary)
+    def rangeTp : ObjectType is public = fromMethods(sg.emptySet) withName("Range") withTypes(emptyDictionary)
 
     addTo (base) name ("==") param(base) returns(boolean)
     addTo (base) name ("≠") param(base) returns(boolean)
@@ -1361,6 +1380,7 @@ def anObjectType: ObjectTypeFactory is public = object {
     addTo (pattern) name ("match") param (base) returns (dynamic)
     addTo (pattern) name ("|") param (pattern) returns (pattern)
     addTo (pattern) name("&") param (pattern) returns (pattern)
+
     extend (iterator) with (base)
     addTo (iterator) name ("hasNext") returns (boolean)
     addTo (iterator) name ("next") returns (dynamic)
@@ -1983,7 +2003,26 @@ def astVisitor: ast.AstVisitor is public= object {
 
     method visitCall (req) -> Boolean {
         def rec: AstNode = req.receiver
-        io.error.write "1672: receiver is {rec}"
+        io.error.write "\n1672: receiver is {rec}"
+
+        io.error.write "\n1673: reciever name is: {rec.nameString}"
+        //io.error.write "\nTypes scope at visitCall is : {scope.types.stack}"\
+        //io.error.write "\nVariable scope at visitCall is : {scope.variables.stack}"
+
+        var tempDef := scope.types.find("$elf") butIfMissing{anObjectType.dynamic}
+        //io.error.write "\nSelf's .types is: {tempDef.getTypeList}"
+        //io.error.write "\nCache at visitCall is: {cache}"
+
+        tempDef := scope.types.find("SuperA") butIfMissing{anObjectType.dynamic}.getTypeList
+        io.error.write "\n1980: Embedded type of SuperA is: {tempDef}"
+
+
+        if (rec.nameString == "myObject") then {
+            tempDef := scope.types.find("$elf") butIfMissing{anObjectType.dynamic}
+                                        .getMethod(rec.nameString).returnType.getTypeList
+            //io.error.write "\nmyObject's .types is: {tempDef}"
+        }
+
         // receiver type
         def rType: ObjectType = if(rec.isIdentifier &&
             {(rec.nameString == "self") || (rec.nameString =="module()object")}) then {
@@ -1995,6 +2034,7 @@ def astVisitor: ast.AstVisitor is public= object {
             typeOf(rec)
         }
         io.error.write "\n1680: type of receiver {rec} is {typeOf(rec)}"
+        io.error.write "\n1681: rType is {rType}"
 
         def callType: ObjectType = if (rType.isDynamic) then {
             anObjectType.dynamic
@@ -2004,16 +2044,20 @@ def astVisitor: ast.AstVisitor is public= object {
             //Just have to assume that the programmer - Joe
 
             def name: String = req.nameString
-            io.error.write "request on {name}"
+            io.error.write "\nrequest on {name}"
+
+            io.error.write "\n1999: rType.getTypeList is: {rType.getTypeList} and name is {name}"
 
             match(rType.getMethod(name))
                 case { (noSuchMethod) ->
+                    io.error.write "\n2001: got to case noSuchMethod"
                     match(rType.getType(name))
                         case{ (noSuchType) ->
                             //Joe - possibly come back and change error msg
                             //maybe less informative, but less confusing msg
-                            io.error.write("\nThe types of the receiver are: {rType.types}\n")
-                            outer.RequestError.raise("no such method '{name}' in " ++
+                            io.error.write("\nThe types of the receiver are: {rType.getTypeList}\n")
+
+                            outer.RequestError.raise("no such method or type'{name}' in " ++
                                 "`{stripNewLines(rec.toGrace(0))}` of type\n" ++
                                 "    '{rType}' \nin type \n  '{rType.methods}'")
                                     with(req)
@@ -2448,6 +2492,7 @@ method processBody(body : List⟦AstNode⟧, superclass: AstNode | false) -> Obj
         }
         internalType := anObjectType.fromMethods(allMethods)
         io.error.write "\n2045: internalType is {internalType}\n"
+        io.error.write "\n2046: internalType's types is {internalType.getTypeList}\n"
         scope.types.at("$elf") put (internalType)
         // io.error.write "added $elf to scope"
 
@@ -2457,7 +2502,7 @@ method processBody(body : List⟦AstNode⟧, superclass: AstNode | false) -> Obj
             def allMethodsWithInheritedMethods: Set⟦MethodType⟧ =
                     allMethods ++ inheritedMethods
             anObjectType.fromMethods(allMethodsWithInheritedMethods)
-                                    withTypes(superType.types ++ allTypes)
+                                    withTypes(superType.getTypeList ++ allTypes)
         } else {
             anObjectType.fromMethods(publicMethods) withTypes(publicTypes)
         }
@@ -2515,7 +2560,11 @@ method collectTypes(nodes : Collection⟦AstNode⟧) -> Done is confidential {
 
     for(types) and(placeholders) do { td: AstNode, ph: ObjectType ->
         def oType = anObjectType.fromDType(td)
-        ph.updateMethods(oType.methods)
+
+        //Joe - maybe delete?
+        io.error.write("\n2518 The type name is: {td.nameString} and it has embedded types of: {oType.getTypeList}")
+
+        ph.updateMethods(oType.methods) andTypes(oType.getTypeList)
     }
     // io.error.write "1881: done collecting types"
 }

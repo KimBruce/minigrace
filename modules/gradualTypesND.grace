@@ -22,6 +22,7 @@ def typeVisitor: ast.AstVisitor = object {
     inherit ast.baseVisitor
     var literalCount := 1
     method visitTypeLiteral(lit) {
+        io.error.write"\n 25 visiting Type Literal"
         for (lit.methods) do { meth ->
             var mtstr := "{literalCount} "
             for (meth.signature) do { part ->
@@ -213,7 +214,7 @@ method inheritableTypeOf (node: AstNode) → ObjectType {
         CheckerFailure.raise "cannot find confidential type of {node}" with (node)
     }
 }
-        
+
 
 type AstNode = { kind -> String }
 
@@ -962,6 +963,9 @@ def anObjectType: ObjectTypeFactory is public = object {
             }
 
             method &(other : ObjectType) -> ObjectType {
+                io.error.write "\n966: ampersand called"
+                io.error.write "\n967: &Self is: {self}"
+                io.error.write "\n968: &other is: {other}"
                 if(self == other) then { return self }
                 if(other.isDynamic) then {
                   return dynamic
@@ -1086,34 +1090,48 @@ def anObjectType: ObjectTypeFactory is public = object {
     method fromDType(dtype: AstNode) -> ObjectType {
         match(dtype)
           case { (false) ->
+            io.error.write"\n947: dtype went to false case"
+
             dynamic
         } case { typeDec : TypeDeclaration ->
             io.error.write "\n1008: converting {dtype} to ObjectType\n"
 //        TODO: re-write this code to understand the syntax of type expressions
 //          and type declarations, which are not the same!
-            anObjectType.fromDType(typeDec.value)
+            io.error.write "\n1100 typeDec.value = {typeDec.value}"
 
+            anObjectType.fromDType(typeDec.value)
         } case { typeLiteral : TypeLiteral ->
+            io.error.write"\n957: fromdType matched typeLiteral: {typeLiteral}"
+
             //Joe - is a typeDec.value a typeLiteral? do we need to save internal types?
             //Yes, we need to get types here
 
             io.error.write"\n1087 The typeLiteral is: {typeLiteral}"
 
+            io.error.write"\n1098 name is: {typeLiteral.name}"
+            io.error.write"\n1099 nameString is: {typeLiteral.nameString}"
+
             def typeMethods : List⟦MethodType⟧ = list(typeLiteral.methods)
             def typeName : String = typeLiteral.name
             def meths : Set[[MethodType]] = emptySet
             def embeddedTypes : Dictionary[[String,ObjectType]] = emptyDictionary
+
+            //Collect methods
             for(typeLiteral.methods) do { mType : AstNode ->
                 meths.add(aMethodType.fromNode(mType))
             }
 
+            //Collect embedded types and create corresponding MethodType
             for (typeLiteral.types) do { td : TypeDeclaration ->
                 embeddedTypes.at(td.nameString) put(anObjectType.fromDType(td))
+
+                def sig : List⟦MixPart⟧ = list[aMixPartWithName(td.nameString)
+                                                          parameters(emptyList)]
+                meths.add(aMethodType.signature(sig) returnType (anObjectType.pattern))
             }
 
             io.error.write"\n1101 embeddedTypes is: {embeddedTypes}"
 
-            // FIX for new type parameter syntax! (OK now?)
             if((typeName != false) && { typeName.at(1) != "⟦" }) then {
                 anObjectType.fromMethods(meths) withName(typeName) withTypes(embeddedTypes)
             } else {
@@ -1121,6 +1139,8 @@ def anObjectType: ObjectTypeFactory is public = object {
             }
 
         } case { op: Operator ->
+            io.error.write"\n973: fromdType matched op: {op}"
+
             // Operator takes care of type expressions: Ex. A & B, A | C
             // What type of operator (& or |)?
             var opValue: String := op.value
@@ -1129,12 +1149,14 @@ def anObjectType: ObjectTypeFactory is public = object {
             // Left side of operator
             var left: AstNode := op.left
             var leftType: ObjectType := fromDType(left)
-            // io.error.write "leftType is {leftType}"
             // Right side of operator
             var right: AstNode := op.right
             var rightType: ObjectType := fromDType(right)
+            io.error.write "\nleftType is {leftType}"
+            io.error.write "\nrightType is {rightType}"
             // io.error.write "693:about to match"
             match(opValue) case { "&" ->
+              io.error.write"\nAmpersand result is: {leftType & rightType}"
               leftType & rightType
             } case { "|" ->
               leftType | rightType
@@ -1146,13 +1168,40 @@ def anObjectType: ObjectTypeFactory is public = object {
             io.error.write "\n1124identifier name is: {ident.nameString}"
             anObjectType.fromIdentifier(ident)
         } case { generic : Generic ->
-//            io.error.write "\n971: Handling generic: {generic}"
+            io.error.write "\n971: Handling generic: {generic}"
             anObjectType.fromIdentifier(generic.value)
         } case { memb : Member ->
-             scope.types.find("{memb.receiver.value}.{memb.value}") butIfMissing {dynamic}
+            io.error.write "\n1172 is member {memb}"
+            io.error.write "\n1173 finding {memb.receiver.value}.{memb.value}"
+
+            io.error.write "\n1174 memb.receiver is: {memb.receiver}"
+            //def recType : ObjectType = typeOf(memb.receiver)
+
+            //io.error.write"\nScope types in member search is: {scope.types.stack}"
+            //io.error.write"\nScope methods in member search is: {scope.methods.stack}"
+            //io.error.write"\nScope variables in member search is: {scope.variables.stack}"
+
+            //JOE - change but if missing clause to raise an error?
+            def recName : String = memb.receiver.value
+            def recType : ObjectType = scope.types.find(recName) butIfMissing
+                { scope.methods.find(recName) butIfMissing {aMethodType.member("dynamic") ofType(dynamic)} .returnType }
+
+            def valueType : ObjectType | noSuchType = match (memb.value)
+                case { p : Pattern -> recType.getType(p) }
+                case { _ ->
+                    TypeError.raise("{memb.value} in " ++
+                        "{memb.receiver.value}.{memb.value} does not have the type Pattern")}
+            io.error.write"\n1183 recType is: {recType}"
+            io.error.write"\n1185 recType's type list is: {recType.getTypeList}"
+            io.error.write"\n1184 member valueType is: {valueType}"
+            match (valueType)
+                case { (noSuchType) -> dynamic }
+                case { o : ObjectType -> valueType }
         } case { str : StringLiteral ->
+            io.error.write "\ndtype stringliteral"
             anObjectType.string
         } case { num : NumberLiteral ->
+            io.error.write "\ndtype numberLiteral"
             anObjectType.number
         } case { _ ->
             ProgrammingError.raise "No case for node of kind {dtype.kind}" with(dtype)
@@ -1677,7 +1726,7 @@ type PublicConfidential = {
     publicType → ObjectType
     inheritableType → ObjectType | false
 }
-    
+
 // Returns pair of public and confidential type of expression that can be
 // inherited from
 class pubConf(pType: ObjectType,cType: ObjectType ) → PublicConfidential{
@@ -2014,10 +2063,6 @@ def astVisitor: ast.AstVisitor is public= object {
         //io.error.write "\nSelf's .types is: {tempDef.getTypeList}"
         //io.error.write "\nCache at visitCall is: {cache}"
 
-        tempDef := scope.types.find("SuperA") butIfMissing{anObjectType.dynamic}.getTypeList
-        io.error.write "\n1980: Embedded type of SuperA is: {tempDef}"
-
-
         if (rec.nameString == "myObject") then {
             tempDef := scope.types.find("$elf") butIfMissing{anObjectType.dynamic}
                                         .getMethod(rec.nameString).returnType.getTypeList
@@ -2048,6 +2093,7 @@ def astVisitor: ast.AstVisitor is public= object {
             io.error.write "\nrequest on {name}"
 
             io.error.write "\n1999: rType.getTypeList is: {rType.getTypeList} and name is {name}"
+            io.error.write "\n2000: rType.methods is: {rType.methods}"
 
             match(rType.getMethod(name))
                 case { (noSuchMethod) ->
@@ -2068,16 +2114,16 @@ def astVisitor: ast.AstVisitor is public= object {
                         }
                 }
                 case { meth : MethodType ->
-                    io.error.write "checking request {req} against {meth}"
+                    io.error.write "\nchecking request {req} against {meth}"
                     check(req) against(meth)
                 }
         }
-        io.error.write "1701: callType: {callType}"
+        io.error.write "\n1701: callType: {callType}"
         cache.at(req) put (callType)
         true  // request to continue on arguments
 
     }
-    
+
     // returns false so don't recurse into object
     method visitObject (obj :AstNode) -> Boolean {
         def pcType: PublicConfidential = scope.enter {
@@ -2424,10 +2470,10 @@ method processBody(body : List⟦AstNode⟧, superclass: AstNode | false) -> Obj
     // If the super type is dynamic, then we can't know anything about the
     // self type.  TODO We actually can, because an object cannot have two
     // methods with the same name.
-    
+
     // Type including all confidential features
     var internalType: ObjectType
-    
+
     // Type including only public features
     def publicType: ObjectType = if(superType.isDynamic) then {
         scope.types.at("$elf") put(superType)
@@ -2459,7 +2505,9 @@ method processBody(body : List⟦AstNode⟧, superclass: AstNode | false) -> Obj
                 }
 
                 scope.methods.at(mType.name) put(mType)
-                // WHY?????
+
+                //A method that is a Member has no parameter and is identical to
+                //a variable, so we also store it inside the variables scope
                 if(isMember(mType)) then {
                     scope.variables.at(mType.name) put(mType.returnType)
                 }
@@ -2471,6 +2519,11 @@ method processBody(body : List⟦AstNode⟧, superclass: AstNode | false) -> Obj
                 if(defd.isReadable) then {
                     publicMethods.add(mType)
                 }
+
+                //Joe - added these
+                scope.methods.at(mType.name) put(mType)
+                scope.variables.at(mType.name) put(mType.returnType)
+
                 if(defd.isWritable) then {
                     def name': String = defd.nameString ++ ":=" //(1)"  ?? is name right?
                     def dType: ObjectType = anObjectType.fromDType(defd.dtype)
@@ -2484,10 +2537,19 @@ method processBody(body : List⟦AstNode⟧, superclass: AstNode | false) -> Obj
                     publicMethods.add(aType)
                 }
             } case { td : TypeDeclaration ->
-                allTypes.at(td.nameString) put(anObjectType.fromDType(td))
+                def oType : ObjectType = anObjectType.fromDType(td)
+                def sig : List⟦MixPart⟧ = list[aMixPartWithName(td.nameString)
+                                                          parameters(emptyList)]
+                def mType  : MethodType = aMethodType.signature(sig) returnType (anObjectType.pattern)
+
+                allTypes.at(td.nameString) put(oType)
+
+                io.error.write"\n2493 mType is: {mType}"
+                allMethods.add(mType)
 
                 if (td.isPublic) then {
-                    publicTypes.at(td.nameString) put(anObjectType.fromDType(td))
+                    publicTypes.at(td.nameString) put(oType)
+                    publicMethods.add(mType)
                 }
             } case { _ -> }
         }
@@ -2501,7 +2563,6 @@ method processBody(body : List⟦AstNode⟧, superclass: AstNode | false) -> Obj
         scope.types.at("$elf") put (internalType)
         // io.error.write "added $elf to scope"
 
-        //Joe - why use allMethods instead of just publicMethods???
         if (hasInherits) then {
             // Need to worry about overriding with different signature!! TODO
             def allMethodsWithInheritedMethods: Set⟦MethodType⟧ =
@@ -2568,7 +2629,7 @@ method collectTypes(nodes : Collection⟦AstNode⟧) -> Done is confidential {
 
         //Joe - maybe delete?
         io.error.write("\n2518 The type name is: {td.nameString} and it has embedded types of: {oType.getTypeList}")
-
+        io.error.write "\n2518.5 The type itself is: {oType}"
         ph.updateMethods(oType.methods) andTypes(oType.getTypeList)
     }
     // io.error.write "1881: done collecting types"

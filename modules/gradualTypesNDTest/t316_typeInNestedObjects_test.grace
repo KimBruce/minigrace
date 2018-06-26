@@ -1,7 +1,15 @@
 dialect "gradualTypesND"
 
-def o : Object = object {
-    def internalObject : Object is public = object {
+type U = {
+    internalObject -> V
+}
+
+type V = {
+    type T = Number
+}
+
+def o : U = object {
+    def internalObject : V is public = object {
         type T = Number
     }
 }

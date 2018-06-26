@@ -1,6 +1,10 @@
 dialect "gradualTypesND"
 
-def o : Object = object {
+type U = {
+    type T = Number
+}
+
+def o : U = object {
     type T = Number
 }
 

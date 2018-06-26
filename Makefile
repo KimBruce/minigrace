@@ -431,6 +431,10 @@ test: minigrace.env
 gradualTypesTest: minigrace.env
 	modules/gradualTypesNDTest/harness-js j2/minigrace-js modules/gradualTypesNDTest "" $(TESTS)
 
+#temporary; allow testing of specific tests moved within the CurrentlyTesting folder
+currentlyTestingTest: minigrace.env
+	modules/CurrentlyTesting/harness-js j2/minigrace-js modules/CurrentlyTesting "" $(TESTS)
+
 togracetest: minigrace
 	tests/harness minigrace tests tograce $(TESTS)
 

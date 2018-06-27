@@ -821,6 +821,35 @@ def anObjectType: ObjectTypeFactory is public = object {
                         //fails to find corresponding method
                         return answerConstructor(false, trials)
                     }
+
+                    //retrieve embedded types of 'other' and 'self'
+                    def otherTypes: Dictionary⟦String,ObjectType⟧ = other.getTypeList
+                    def selfTypes: Dictionary⟦String,ObjectType⟧ = self.getTypeLists
+
+                    //for each embedded type in other, check that there is a
+                    //corresponding embedded type in self
+                    for (otherTypes.keys) doWithContinue { otherKey, continue ->
+                        for (selfTypes.keys) doWithBreak { selfKey, break ->
+
+                            //only check subtyping if the embedded types have
+                            //the same name
+                            if (otherKey == selfKey) then {
+                                def otherVal: ObjectType = otherTypes.at(otherKey)
+                                def selfVal: ObjectType = selfTypes.at(selfKey)
+
+                                def isSubtype: Answer =
+                                      selfVal.isSubtypeHelper(trials, otherVal)
+
+                                trials := isSubtype.trials
+
+                                //only continue checking if isSubtype is true
+                                if(isSubtype.ans) then{continue.apply} else{break}
+                            }
+                        }
+                        //fails to find corresponding type
+                        return answerConstructor(false, trials)
+                    }
+
                     return answerConstructor(true, trials)
                 }
             }

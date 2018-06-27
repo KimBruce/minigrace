@@ -41,12 +41,12 @@ def typeNodeD : ast.AstNode = nodes.at(4)
 def typeNodeAB: ast.AstNode = nodes.at(5)
 def typeNodeAC: ast.AstNode = nodes.at(6)
 
-def A : gt.ObjectType = gt.anObjectType.fromTypeNode(typeNodeA)
-def B : gt.ObjectType = gt.anObjectType.fromTypeNode(typeNodeB)
-def C : gt.ObjectType = gt.anObjectType.fromTypeNode(typeNodeC)
-def D : gt.ObjectType = gt.anObjectType.fromTypeNode(typeNodeD)
-def AB: gt.ObjectType = gt.anObjectType.fromTypeNode(typeNodeAB)
-def AC: gt.ObjectType = gt.anObjectType.fromTypeNode(typeNodeAC)
+def A : gt.ObjectType = gt.anObjectType.fromDType(typeNodeA)
+def B : gt.ObjectType = gt.anObjectType.fromDType(typeNodeB)
+def C : gt.ObjectType = gt.anObjectType.fromDType(typeNodeC)
+def D : gt.ObjectType = gt.anObjectType.fromDType(typeNodeD)
+def AB: gt.ObjectType = gt.anObjectType.fromDType(typeNodeAB)
+def AC: gt.ObjectType = gt.anObjectType.fromDType(typeNodeAC)
 
 //  *****************************
 //  **   start of test suite   **

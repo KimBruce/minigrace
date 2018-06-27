@@ -38,10 +38,10 @@ def typeB : ast.AstNode = nodes.at(2)
 def typeC : ast.AstNode = nodes.at(3)
 def typeD : ast.AstNode = nodes.at(4)
 
-def objTypeA : gt.ObjectType = gt.anObjectType.fromTypeNode(typeA)
-def objTypeB : gt.ObjectType = gt.anObjectType.fromTypeNode(typeB)
-def objTypeC : gt.ObjectType = gt.anObjectType.fromTypeNode(typeC)
-def objTypeD : gt.ObjectType = gt.anObjectType.fromTypeNode(typeD)
+def objTypeA : gt.ObjectType = gt.anObjectType.fromDType(typeA)
+def objTypeB : gt.ObjectType = gt.anObjectType.fromDType(typeB)
+def objTypeC : gt.ObjectType = gt.anObjectType.fromDType(typeC)
+def objTypeD : gt.ObjectType = gt.anObjectType.fromDType(typeD)
 
 //  *****************************
 //  **   start of test suite   **

@@ -824,7 +824,7 @@ def anObjectType: ObjectTypeFactory is public = object {
 
                     //retrieve embedded types of 'other' and 'self'
                     def otherTypes: Dictionary⟦String,ObjectType⟧ = other.getTypeList
-                    def selfTypes: Dictionary⟦String,ObjectType⟧ = self.getTypeLists
+                    def selfTypes: Dictionary⟦String,ObjectType⟧ = self.getTypeList
 
                     //for each embedded type in other, check that there is a
                     //corresponding embedded type in self
@@ -1331,9 +1331,9 @@ def anObjectType: ObjectTypeFactory is public = object {
         def meths: Set⟦MethodType⟧ = emptySet
         meths.add(aMethodType.signature(signature) returnType(rType))
 
-        //Joe - Is there anytime where we want to save the internarl types?
+        //Joe - Is there anytime where we want to save the internal types?
         //when a block has name??
-        //when the last stmnt is an object or a typeDec?
+        //when the last statement is an object or a typeDec?
         //In here we don't get the astNode; look at returnType?
         fromMethods(meths) withName("Block") withTypes(emptyDictionary)
     }
@@ -2131,6 +2131,7 @@ def astVisitor: ast.AstVisitor is public= object {
 
     // returns false so don't recurse into object
     method visitObject (obj :AstNode) -> Boolean {
+        visitModule(obj)
         def pcType: PublicConfidential = scope.enter {
             processBody (list (obj.value), obj.superclass)
         }
@@ -2141,10 +2142,104 @@ def astVisitor: ast.AstVisitor is public= object {
         false
     }
 
-    // skip for now
+    //This method should process dialects and import statements
     method visitModule (node: AstNode) → Boolean {  // added kim
         io.error.write "\n1698: visiting module {node}"
-        checkMatch (node)
+
+        for (list (node.value)) do{ nd : AstNode ->
+            match (nd)
+                //case {//dialect}
+                case {imp: Import -> scope.types.at(imp.nameString)
+                                                        put(processImport(imp))}
+                case {_ -> }//do nothing, or perhaps break out of for-loop?
+
+        }
+        true
+        //return visitObject (node)
+    }
+
+    method processImport (imp: AstNode) -> Boolean {
+        io.error.write "\n1861: visiting import {imp}"
+        def gct: Dictionary⟦String, List⟦String⟧⟧ = xmodule.parseGCT(imp.path)
+        // headers of sections of gct form keys
+        // Associated values are lines beneath the header
+        def placeholders: List⟦ObjectType⟧ = list[]
+        def typeNames: List⟦ObjectType⟧ = list[]
+        io.error.write("\n1953 gct is {gct}")
+        io.error.write("\n1954 keys are {gct.keys}\n")
+
+        //use typeliterals/uniontypes/varianttypes instead?
+        def importTypes : Dictionary⟦String, ObjectType⟧ = emptyDictionary
+
+        // Add to scope imported types w/placeholder as values
+        if (gct.containsKey("types")) then {
+            for(gct.at("types")) do { typ ->
+                typeNames.push(typ)
+                placeholders.push(anObjectType.dynamic)
+
+                //scope.types.at("{imp.nameString}.{typ}")put(anObjectType.dynamic)
+                //TODO. collect types and just put them into the import:ObjectType
+            }
+        }
+
+        if (typeNames.size > 0) then {
+            gct.keys.do { key : String ->
+
+              //example key: 'methodtypes-of:MyType:'
+              if (key.startsWith("methodtypes-of:")) then {
+
+                  //parsing line that says methodtypes
+                  var parseMethodTypes: List⟦String⟧ := split(key, ":")
+
+                  //gets the name of the type
+                  var typeName: String := parseMethodTypes.at(2)
+                  io.error.write "\n1881: typeName is {typeName}"
+
+                  //Joe - added type signature; might break things
+                  //outer.dictionary.empty seems to refer to a empty ObjectType with name "dictionary"
+                  def typeMeths: Set⟦MethodType⟧ = emptySet
+
+                  //list to collect & and | types; never used
+                  //change these to sets???
+                  var unionTypes: List⟦ObjectType⟧ := list[]
+                  var variantTypes: List ⟦ObjectType⟧ := list[]
+
+                  //saving value associated with type
+                  for (gct.at(key)) do { methodSignature: String ->
+                      if (typeName == "&") then {
+                          unionTypes.push (methodSignature.substringFrom(3)
+                                                  to (methodSignature.size))
+                      } elseif {typeName == "|"} then {
+                          variantTypes.push(methodSignature.substringFrom(3)
+                                                  to (methodSignature.size))
+                      } else {
+                          typeMeths.add(aMethodType.fromGctLine(methodSignature))
+                      }
+                  }
+
+                  //save embedded types once gct is working
+                  importTypes.at(typeName) put (anObjectType.fromMethods(typeMeths)
+                                        withName(typeName) withTypes(emptyDictionary))
+              }
+            }
+        }
+        cache.at(imp) put (anObjectType.doneType)
+
+        def importedMethodTypes: List⟦String⟧ = gct.at("publicMethodTypes") ifAbsent {
+            io.error.write "\nnothing imported from {imp.nameString}"
+            list[]
+        }
+
+        def importMethods : Set⟦MethodType⟧ = emptySet
+
+        //retrieves public defs vars and methods from imported module
+        for (importedMethodTypes) do {methodSignature →
+            io.error.write "\n1998: methodSignature is {methodSignature}"
+            importMethods.add(aMethodType.fromGctLine(methodSignature))
+        }
+
+        //Joe - importType is the type of the Object; probably want to save
+        return anObjectType.fromMethods (importMethods) withTypes (importTypes)
     }
 
     // array literals represent collections (should fix to be lineups)
@@ -2303,6 +2398,7 @@ def astVisitor: ast.AstVisitor is public= object {
     }
 
     // Grab information from gct file
+    //delete this method?
     method visitImport (imp: AstNode) -> Boolean {
         io.error.write "\n1861: visiting import {imp}"
         def gct: Dictionary⟦ List⟦String⟧ ⟧ = xmodule.parseGCT(imp.path)
@@ -2310,7 +2406,11 @@ def astVisitor: ast.AstVisitor is public= object {
         // Associated values are lines beneath the header
         def placeholders: List⟦ObjectType⟧ = list[]
         def typeNames: List⟦ObjectType⟧ = list[]
+        io.error.write("\n1953 gct is {gct}")
         io.error.write("\n1954 keys are {gct.keys}\n")
+
+        //use typeliterals/uniontypes/varianttypes instead?
+        //def importTypes : Dictionary⟦ObjectTypes
 
         // Add to scope imported types w/placeholder as values
         if (gct.containsKey("types")) then {
@@ -2318,40 +2418,55 @@ def astVisitor: ast.AstVisitor is public= object {
                 def placeholder: ObjectType = anObjectType.dynamic
                 typeNames.push(typ)
                 placeholders.push(placeholder)
-                scope.types.at("{imp.nameString}.{typ}")put(placeholder)
+
+                //scope.types.at("{imp.nameString}.{typ}")put(placeholder)
+                //TODO. collect types and just put them into the import:ObjectType
             }
         }
 
         if (typeNames.size > 0) then {
             // ID for type declarations
-            var counter := 1
+            var counter := 1 //never used????
             gct.keys.do { key : String ->
+
+              //example key: 'methodtypes-of:MyType:'
               if (key.startsWith("methodtypes-of:")) then {
+
+                  //parsing line that says methodtypes
                   var parseMethodTypes: List⟦String⟧ := split(key, ":")
-                  var typeOfMethods: String := parseMethodTypes.at(2)
-                  io.error.write "\n1881: typeOfMethods is {typeOfMethods}"
+
+                  //gets the name of the type
+                  var typeName: String := parseMethodTypes.at(2)
+                  io.error.write "\n1881: typeName is {typeName}"
+
                   //Joe - added type signature; might break things
+                  //outer.dictionary.empty seems to refer to a empty ObjectType with name "dictionary"
                   def typeliterals: Dictionary⟦String,Set⟦MethodType⟧ ⟧ = outer.dictionary.empty
+
+                  //list to collect & and | types; never used
                   var unionTypes: List⟦ObjectType⟧ := list[]
                   var variantTypes: List ⟦ObjectType⟧ := list[]
+
+                  //saving value associated with type
                   for (gct.at(key)) do { methodSignature: String ->
-                      if (typeOfMethods == "&") then {
+                      if (typeName == "&") then {
                           unionTypes.push (methodSignature.substringFrom(3)
                                                   to (methodSignature.size))
-                      } elseif {typeOfMethods == "|"} then {
-                          variantTypes.push(methodSignature.substringFrom(3)to(methodSignature.size))
+                      } elseif {typeName == "|"} then {
+                          variantTypes.push(methodSignature.substringFrom(3)
+                                                  to (methodSignature.size))
                       } else {
-                          if (!typeliterals.containsKey(typeOfMethods)) then {
-                              typeliterals.at(typeOfMethods)put(emptySet)
+                          if (!typeliterals.containsKey(typeName)) then {
+                              typeliterals.at(typeName)put(emptySet)
                           }
-                          typeliterals.at(typeOfMethods).add
+                          typeliterals.at(typeName).add
                                   (aMethodType.fromGctLine(methodSignature))
                       }
                   }
                   //Joe - Probably want to check for and save internal types from
                   //an import
-                  scope.types.at ("{imp.nameString}.{typeOfMethods}")
-                      put (anObjectType.fromMethods (typeliterals.at (typeOfMethods))
+                  scope.types.at ("{imp.nameString}.{typeName}")
+                      put (anObjectType.fromMethods (typeliterals.at (typeName))
                                                                   withTypes(emptyDictionary))
               }
             }

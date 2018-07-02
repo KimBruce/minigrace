@@ -35,11 +35,11 @@ def typeNodeParam       : ast.AstNode = nodes.at(3)
 def typeNodeParamType   : ast.AstNode = nodes.at(4)
 def typeNodeParamSubtype: ast.AstNode = nodes.at(5)
 
-def Base        : gt.ObjectType = gt.anObjectType.fromTypeNode(typeNodeBase)
-def ReturnType  : gt.ObjectType = gt.anObjectType.fromTypeNode(typeNodeReturnType)
-def Param       : gt.ObjectType = gt.anObjectType.fromTypeNode(typeNodeParam)
-def ParamType   : gt.ObjectType = gt.anObjectType.fromTypeNode(typeNodeParamType)
-def ParamSubtype: gt.ObjectType = gt.anObjectType.fromTypeNode(typeNodeParamSubtype)
+def Base        : gt.ObjectType = gt.anObjectType.fromDType(typeNodeBase)
+def ReturnType  : gt.ObjectType = gt.anObjectType.fromDType(typeNodeReturnType)
+def Param       : gt.ObjectType = gt.anObjectType.fromDType(typeNodeParam)
+def ParamType   : gt.ObjectType = gt.anObjectType.fromDType(typeNodeParamType)
+def ParamSubtype: gt.ObjectType = gt.anObjectType.fromDType(typeNodeParamSubtype)
 
 //  *****************************
 //  **   start of test suite   **

@@ -312,14 +312,14 @@ class typePair(first':ObjectType, second':ObjectType) -> TypePair is confidentia
 //This type is used for checking subtyping
 type Answer = {
     ans -> Boolean
-    trials -> List[[TypePair]]
+    trials -> List⟦TypePair⟧
     asString -> String
 }
 
-class answerConstructor(ans':Boolean, trials':List[[TypePair]]) -> Answer {
+class answerConstructor(ans':Boolean, trials':List⟦TypePair⟧) -> Answer {
     method ans -> Boolean {ans'}
 
-    method trials -> List[[TypePair]] {trials'}
+    method trials -> List⟦TypePair⟧ {trials'}
 
     method asString -> String{"Answer is {ans'}\n Trials is {trials}"}
 }
@@ -334,7 +334,7 @@ type MethodType = {
     // return type
     returnType -> ObjectType
     // Does it extend other
-    isSpecialisationOf (trials : List[[TypePair]], other : MethodType) -> Answer
+    isSpecialisationOf (trials : List⟦TypePair⟧, other : MethodType) -> Answer
     // create restriction of method type using other
     restriction (other : MethodType) -> MethodType
 }
@@ -472,7 +472,7 @@ def aMethodType: MethodTypeFactory is public = object {
             }
 
             // Determines if this method is a specialisation of the given one.
-            method isSpecialisationOf (trials : List[[TypePair]], other : MethodType) -> Answer {
+            method isSpecialisationOf (trials : List⟦TypePair⟧, other : MethodType) -> Answer {
 
                 if (self.isMe (other)) then {
                     return answerConstructor(true, trials)
@@ -723,7 +723,7 @@ def anObjectType: ObjectTypeFactory is public = object {
         inherit fromMethods(emptySet) withTypes(emptyDictionary)
 
         method updateMethods(meths: Set⟦MethodType⟧)
-                  andTypes(types' : Dictionary[[String,ObjectType]]) {
+                  andTypes(types' : Dictionary⟦String,ObjectType⟧) {
             methods.addAll (meths)
             types := types ++ types'
         }
@@ -770,14 +770,14 @@ def anObjectType: ObjectTypeFactory is public = object {
               variantTypes := newVariantTypes
             }
 
+            //Check if 'self', which is the ObjectType calling this method, is
+            //a subtype of 'other'
             method isSubtypeOf(other : ObjectType) -> Boolean {
-
-
 
                 def helperResult : Answer = self.isSubtypeHelper(emptyList, other)
                 //io.error.write("\n751 The trials from subtyping were: {helperResult.trials}")
 
-                return helperResult.ans
+                helperResult.ans
             }
 
             // Consistent-subtyping:
@@ -797,21 +797,23 @@ def anObjectType: ObjectTypeFactory is public = object {
             }
 
             //helper method for subtyping a pair of non-variant types
-            method isNonvariantSubtypeOf(trials': List[[TypePair]], other:ObjectType)->Answer {
+            method isNonvariantSubtypeOf(trials': List⟦TypePair⟧,
+                                                  other:ObjectType) -> Answer {
                 def selfOtherPair : TypePair = typePair(self, other)
 
                 //if trials already contains selfOtherPair, we can assume self <: other
                 if(trials'.contains(selfOtherPair) || self.isMe(other)) then{
                     return answerConstructor(true, trials')
                 } else{
-                    var trials : List[[TypePair]] := trials'
+                    var trials : List⟦TypePair⟧ := trials'
                     trials.add(selfOtherPair)
 
                     //for each method in other, check that there is a corresponding
                     //method in self
                     for (other.methods) doWithContinue { otherMeth, continue->
                         for (self.methods) do { selfMeth->
-                            var isSpec: Answer := selfMeth.isSpecialisationOf(trials, otherMeth)
+                            def isSpec: Answer =
+                                  selfMeth.isSpecialisationOf(trials, otherMeth)
                             trials := isSpec.trials
 
                             if (isSpec.ans) then { continue.apply }
@@ -819,6 +821,35 @@ def anObjectType: ObjectTypeFactory is public = object {
                         //fails to find corresponding method
                         return answerConstructor(false, trials)
                     }
+
+                    //retrieve embedded types of 'other' and 'self'
+                    def otherTypes: Dictionary⟦String,ObjectType⟧ = other.getTypeList
+                    def selfTypes: Dictionary⟦String,ObjectType⟧ = self.getTypeList
+
+                    //for each embedded type in other, check that there is a
+                    //corresponding embedded type in self
+                    for (otherTypes.keys) doWithContinue { otherKey, continue ->
+                        for (selfTypes.keys) doWithBreak { selfKey, break ->
+
+                            //only check subtyping if the embedded types have
+                            //the same name
+                            if (otherKey == selfKey) then {
+                                def otherVal: ObjectType = otherTypes.at(otherKey)
+                                def selfVal: ObjectType = selfTypes.at(selfKey)
+
+                                def isSubtype: Answer =
+                                      selfVal.isSubtypeHelper(trials, otherVal)
+
+                                trials := isSubtype.trials
+
+                                //only continue checking if isSubtype is true
+                                if(isSubtype.ans) then{continue.apply} else{break}
+                            }
+                        }
+                        //fails to find corresponding type
+                        return answerConstructor(false, trials)
+                    }
+
                     return answerConstructor(true, trials)
                 }
             }
@@ -828,7 +859,7 @@ def anObjectType: ObjectTypeFactory is public = object {
             //Param trials - Holds pairs of previously subtype-checked ObjectTypes
             //          Prevents infinite subtype checking of self-referential types
             //Param other - The ObjectType that self is checked against
-            method isSubtypeHelper(trials:List[[TypePair]], other:ObjectType) -> Answer {
+            method isSubtypeHelper(trials:List⟦TypePair⟧, other:ObjectType) -> Answer {
 
                 if(self.isMe(other)) then {
                     return answerConstructor(true, trials)
@@ -843,7 +874,6 @@ def anObjectType: ObjectTypeFactory is public = object {
                 } elseif{self == anObjectType.doneType} then {
                     return answerConstructor(false, trials)
                 }
-
 
                 var helperResult : Answer := answerConstructor(false, trials)
 
@@ -884,8 +914,6 @@ def anObjectType: ObjectTypeFactory is public = object {
                     }
                 }
             }
-
-
 
 
             // Variant
@@ -972,7 +1000,7 @@ def anObjectType: ObjectTypeFactory is public = object {
                 }
 
                 //components from performing &-operator on variant types
-                def components:List[[ObjectType]] = emptyList
+                def components:List⟦ObjectType⟧ = emptyList
 
                 if(self.getVariantTypes.size == 0) then {
                     if (other.getVariantTypes.size == 0) then {
@@ -1033,7 +1061,7 @@ def anObjectType: ObjectTypeFactory is public = object {
                     }
                 }
 
-                def tempMeth: List[[MethodType]] = self.methods
+                def tempMeth: List⟦MethodType⟧ = self.methods
 
                 object {
                     //Joe - comeback and write checking for types of same name using subtyping
@@ -1068,7 +1096,7 @@ def anObjectType: ObjectTypeFactory is public = object {
     }}
 
     method fromMethods(methods' : Set⟦MethodType⟧) withName(name : String)
-              withTypes(types' : Dictionary[[String,ObjectType]])-> ObjectType {
+              withTypes(types' : Dictionary⟦String,ObjectType⟧)-> ObjectType {
         object {
             inherit fromMethods(methods') withTypes(types')
 
@@ -1090,7 +1118,6 @@ def anObjectType: ObjectTypeFactory is public = object {
     method fromDType(dtype: AstNode) -> ObjectType {
         match(dtype)
           case { (false) ->
-            io.error.write"\n947: dtype went to false case"
             dynamic
         } case { typeDec : TypeDeclaration ->
 //        TODO: re-write this code to understand the syntax of type expressions
@@ -1100,12 +1127,8 @@ def anObjectType: ObjectTypeFactory is public = object {
             anObjectType.fromDType(typeDec.value)
         } case { typeLiteral : TypeLiteral ->
 
-            //io.error.write"\n1087 The typeLiteral is: {typeLiteral}"
-            //io.error.write"\n1098 name is: {typeLiteral.name}"
-            //io.error.write"\n1099 nameString is: {typeLiteral.nameString}"
-
-            def meths : Set[[MethodType]] = emptySet
-            def embeddedTypes : Dictionary[[String,ObjectType]] = emptyDictionary
+            def meths : Set⟦MethodType⟧ = emptySet
+            def embeddedTypes : Dictionary⟦String,ObjectType⟧ = emptyDictionary
 
             //collect MethodTypes
             for(typeLiteral.methods) do { mType : AstNode ->
@@ -1121,7 +1144,7 @@ def anObjectType: ObjectTypeFactory is public = object {
                 meths.add(aMethodType.signature(sig) returnType (anObjectType.pattern))
             }
 
-            //io.error.write"\n1101 embeddedTypes is: {embeddedTypes}"
+            //io.error.write"\n1147 embeddedTypes is: {embeddedTypes}"
 
             //create and return the ObjectType corresponding to the typeLiteralNode
             def typeName : String = typeLiteral.name
@@ -1159,13 +1182,12 @@ def anObjectType: ObjectTypeFactory is public = object {
             anObjectType.fromIdentifier(generic.value)
 
         } case { memb : Member ->
-            io.error.write "\n1172 is member {memb}"
-            io.error.write "\n1173 finding {memb.receiver.value}.{memb.value}"
+            //io.error.write "\n1172 is member {memb}"
+            //io.error.write "\n1173 finding {memb.receiver.value}.{memb.value}"
+            //io.error.write "\n1174 memb.receiver is: {memb.receiver}"
 
-            io.error.write "\n1174 memb.receiver is: {memb.receiver}"
-
-            io.error.write"\nScope types in member search is: {scope.types.stack}"
-            io.error.write"\nScope methods in member search is: {scope.methods.stack}"
+            //io.error.write"\nScope types in member search is: {scope.types.stack}"
+            //io.error.write"\nScope methods in member search is: {scope.methods.stack}"
             //io.error.write"\nScope variables in member search is: {scope.variables.stack}"
 
             //split the receiver into individual calls
@@ -1190,6 +1212,7 @@ def anObjectType: ObjectTypeFactory is public = object {
 
             io.error.write"\n1176 recName is: {recName}"
 
+<<<<<<< HEAD
             //search for recName in both scope.types and scope.methods
             var notInTypes : Boolean := false
             var recType : ObjectType := scope.types.find(recName)
@@ -1220,6 +1243,7 @@ def anObjectType: ObjectTypeFactory is public = object {
                                     "{memb.receiver.value}.{memb.value} in scope")
                             }
                     }
+
             }
 
             //get the return type of the entire call
@@ -1229,9 +1253,6 @@ def anObjectType: ObjectTypeFactory is public = object {
                     TypeError.raise("{memb.value} in " ++
                               "{memb.receiver.value}.{memb.value} " ++
                               "does not have the type Pattern")}
-            io.error.write"\n1183 recType is: {recType}"
-            io.error.write"\n1185 recType's type list is: {recType.getTypeList}"
-            io.error.write"\n1184 member retType is: {retType}"
 
             //return result of match
             match (retType)
@@ -1249,9 +1270,8 @@ def anObjectType: ObjectTypeFactory is public = object {
         }
     }
 
+    //Find ObjectType corresponding to the identifier in the scope
     method fromIdentifier(ident : Identifier) -> ObjectType {
-        io.error.write "\n1141: typesScope in fromIdentifier of ident: {ident} is: {scope.types.stack}"
-        io.error.write "\nident.value is: {ident.value}"
         scope.types.find(ident.value) butIfMissing { dynamic }
     }
 
@@ -1285,30 +1305,11 @@ def anObjectType: ObjectTypeFactory is public = object {
         }
     }
 
-    //Takes a TypeNode and returns an ObjectType from its methods
-    method fromTypeNode(node: AstNode) -> ObjectType {
-
-        //assemble the list of MethodType
-        def typeMethods: Collection[[AstNode]] = node.value.methods
-        def methodTypeList: List[[MethodType]] = emptyList
-
-        for (typeMethods) do {m : AstNode ->
-            methodTypeList.add(aMethodType.fromNode(m))
-        }
-
-        //construct and return an ObjectType from list of MethodType
-        //Joe- since it's a typeNode, get its types; not sure how?
-        anObjectType.fromMethods(methodTypeList) withTypes(emptyDictionary)
-    }
-
-
     //Takes a block with only one parameter and returns its parameter's type
     method getParamTypeFromBlock(block: AstNode) -> ObjectType{
         def bType: ObjectType = typeOf(block)
 
-        if(bType.isDynamic) then{
-            return dynamic
-        }
+        if (bType.isDynamic) then { return dynamic }
 
         //retrieves the MethodType of the apply method from the block
         def apply: MethodType = bType.getMethod("apply(1)")
@@ -1361,9 +1362,9 @@ def anObjectType: ObjectTypeFactory is public = object {
         def meths: Set⟦MethodType⟧ = emptySet
         meths.add(aMethodType.signature(signature) returnType(rType))
 
-        //Joe - Is there anytime where we want to save the internarl types?
+        //Joe - Is there anytime where we want to save the internal types?
         //when a block has name??
-        //when the last stmnt is an object or a typeDec?
+        //when the last statement is an object or a typeDec?
         //In here we don't get the astNode; look at returnType?
         fromMethods(meths) withName("Block") withTypes(emptyDictionary)
     }
@@ -1677,8 +1678,8 @@ def ScopingError: outer.ExceptionKind = TypeError.refine("ScopingError")
 
 // type of part of method request
 type RequestPart = {
-   args -> List[[AstNode]]
-   args:=(a: List[[AstNode]]) -> Done
+   args -> List⟦AstNode⟧
+   args:=(a: List⟦AstNode⟧) -> Done
 }
 
 type RequestPartFactory = {
@@ -1900,8 +1901,8 @@ def astVisitor: ast.AstVisitor is public= object {
         def matchee = node.value
         var matcheeType: ObjectType := typeOf(matchee)
         //Note: currently only one matchee is supported
-        var paramTypesList: List[[ObjectType]] := emptyList
-        var returnTypesList: List[[ObjectType]] := emptyList
+        var paramTypesList: List⟦ObjectType⟧ := emptyList
+        var returnTypesList: List⟦ObjectType⟧ := emptyList
         var paramType: ObjectType
         var returnType: ObjectType
 
@@ -1963,7 +1964,7 @@ def astVisitor: ast.AstVisitor is public= object {
     }
 
     //Takes a non-empty list of objectTypes and combines them into a variant type
-    method fromObjectTypeList(oList : List[[ObjectType]])->ObjectType{
+    method fromObjectTypeList(oList : List⟦ObjectType⟧)->ObjectType{
       var varType: ObjectType := oList.at(1)
       var index:Number := 2
       while{index<=oList.size}do{
@@ -2161,6 +2162,7 @@ def astVisitor: ast.AstVisitor is public= object {
 
     // returns false so don't recurse into object
     method visitObject (obj :AstNode) -> Boolean {
+        visitModule(obj)
         def pcType: PublicConfidential = scope.enter {
             processBody (list (obj.value), obj.superclass)
         }
@@ -2171,10 +2173,104 @@ def astVisitor: ast.AstVisitor is public= object {
         false
     }
 
-    // skip for now
+    //This method should process dialects and import statements
     method visitModule (node: AstNode) → Boolean {  // added kim
         io.error.write "\n1698: visiting module {node}"
-        checkMatch (node)
+
+        for (list (node.value)) do{ nd : AstNode ->
+            match (nd)
+                //case {//dialect}
+                case {imp: Import -> scope.types.at(imp.nameString)
+                                                        put(processImport(imp))}
+                case {_ -> }//do nothing, or perhaps break out of for-loop?
+
+        }
+        true
+        //return visitObject (node)
+    }
+
+    method processImport (imp: AstNode) -> Boolean {
+        io.error.write "\n1861: visiting import {imp}"
+        def gct: Dictionary⟦String, List⟦String⟧⟧ = xmodule.parseGCT(imp.path)
+        // headers of sections of gct form keys
+        // Associated values are lines beneath the header
+        def placeholders: List⟦ObjectType⟧ = list[]
+        def typeNames: List⟦ObjectType⟧ = list[]
+        io.error.write("\n1953 gct is {gct}")
+        io.error.write("\n1954 keys are {gct.keys}\n")
+
+        //use typeliterals/uniontypes/varianttypes instead?
+        def importTypes : Dictionary⟦String, ObjectType⟧ = emptyDictionary
+
+        // Add to scope imported types w/placeholder as values
+        if (gct.containsKey("types")) then {
+            for(gct.at("types")) do { typ ->
+                typeNames.push(typ)
+                placeholders.push(anObjectType.dynamic)
+
+                //scope.types.at("{imp.nameString}.{typ}")put(anObjectType.dynamic)
+                //TODO. collect types and just put them into the import:ObjectType
+            }
+        }
+
+        if (typeNames.size > 0) then {
+            gct.keys.do { key : String ->
+
+              //example key: 'methodtypes-of:MyType:'
+              if (key.startsWith("methodtypes-of:")) then {
+
+                  //parsing line that says methodtypes
+                  var parseMethodTypes: List⟦String⟧ := split(key, ":")
+
+                  //gets the name of the type
+                  var typeName: String := parseMethodTypes.at(2)
+                  io.error.write "\n1881: typeName is {typeName}"
+
+                  //Joe - added type signature; might break things
+                  //outer.dictionary.empty seems to refer to a empty ObjectType with name "dictionary"
+                  def typeMeths: Set⟦MethodType⟧ = emptySet
+
+                  //list to collect & and | types; never used
+                  //change these to sets???
+                  var unionTypes: List⟦ObjectType⟧ := list[]
+                  var variantTypes: List ⟦ObjectType⟧ := list[]
+
+                  //saving value associated with type
+                  for (gct.at(key)) do { methodSignature: String ->
+                      if (typeName == "&") then {
+                          unionTypes.push (methodSignature.substringFrom(3)
+                                                  to (methodSignature.size))
+                      } elseif {typeName == "|"} then {
+                          variantTypes.push(methodSignature.substringFrom(3)
+                                                  to (methodSignature.size))
+                      } else {
+                          typeMeths.add(aMethodType.fromGctLine(methodSignature))
+                      }
+                  }
+
+                  //save embedded types once gct is working
+                  importTypes.at(typeName) put (anObjectType.fromMethods(typeMeths)
+                                        withName(typeName) withTypes(emptyDictionary))
+              }
+            }
+        }
+        cache.at(imp) put (anObjectType.doneType)
+
+        def importedMethodTypes: List⟦String⟧ = gct.at("publicMethodTypes") ifAbsent {
+            io.error.write "\nnothing imported from {imp.nameString}"
+            list[]
+        }
+
+        def importMethods : Set⟦MethodType⟧ = emptySet
+
+        //retrieves public defs vars and methods from imported module
+        for (importedMethodTypes) do {methodSignature →
+            io.error.write "\n1998: methodSignature is {methodSignature}"
+            importMethods.add(aMethodType.fromGctLine(methodSignature))
+        }
+
+        //Joe - importType is the type of the Object; probably want to save
+        return anObjectType.fromMethods (importMethods) withTypes (importTypes)
     }
 
     // array literals represent collections (should fix to be lineups)
@@ -2333,6 +2429,7 @@ def astVisitor: ast.AstVisitor is public= object {
     }
 
     // Grab information from gct file
+    //delete this method?
     method visitImport (imp: AstNode) -> Boolean {
         io.error.write "\n1861: visiting import {imp}"
         def gct: Dictionary⟦ List⟦String⟧ ⟧ = xmodule.parseGCT(imp.path)
@@ -2340,7 +2437,11 @@ def astVisitor: ast.AstVisitor is public= object {
         // Associated values are lines beneath the header
         def placeholders: List⟦ObjectType⟧ = list[]
         def typeNames: List⟦ObjectType⟧ = list[]
+        io.error.write("\n1953 gct is {gct}")
         io.error.write("\n1954 keys are {gct.keys}\n")
+
+        //use typeliterals/uniontypes/varianttypes instead?
+        //def importTypes : Dictionary⟦ObjectTypes
 
         // Add to scope imported types w/placeholder as values
         if (gct.containsKey("types")) then {
@@ -2348,40 +2449,55 @@ def astVisitor: ast.AstVisitor is public= object {
                 def placeholder: ObjectType = anObjectType.dynamic
                 typeNames.push(typ)
                 placeholders.push(placeholder)
-                scope.types.at("{imp.nameString}.{typ}")put(placeholder)
+
+                //scope.types.at("{imp.nameString}.{typ}")put(placeholder)
+                //TODO. collect types and just put them into the import:ObjectType
             }
         }
 
         if (typeNames.size > 0) then {
             // ID for type declarations
-            var counter := 1
+            var counter := 1 //never used????
             gct.keys.do { key : String ->
+
+              //example key: 'methodtypes-of:MyType:'
               if (key.startsWith("methodtypes-of:")) then {
+
+                  //parsing line that says methodtypes
                   var parseMethodTypes: List⟦String⟧ := split(key, ":")
-                  var typeOfMethods: String := parseMethodTypes.at(2)
-                  io.error.write "\n1881: typeOfMethods is {typeOfMethods}"
+
+                  //gets the name of the type
+                  var typeName: String := parseMethodTypes.at(2)
+                  io.error.write "\n1881: typeName is {typeName}"
+
                   //Joe - added type signature; might break things
-                  def typeliterals: Dictionary[[String,Set[[MethodType]] ]] = outer.dictionary.empty
+                  //outer.dictionary.empty seems to refer to a empty ObjectType with name "dictionary"
+                  def typeliterals: Dictionary⟦String,Set⟦MethodType⟧ ⟧ = outer.dictionary.empty
+
+                  //list to collect & and | types; never used
                   var unionTypes: List⟦ObjectType⟧ := list[]
                   var variantTypes: List ⟦ObjectType⟧ := list[]
+
+                  //saving value associated with type
                   for (gct.at(key)) do { methodSignature: String ->
-                      if (typeOfMethods == "&") then {
+                      if (typeName == "&") then {
                           unionTypes.push (methodSignature.substringFrom(3)
                                                   to (methodSignature.size))
-                      } elseif {typeOfMethods == "|"} then {
-                          variantTypes.push(methodSignature.substringFrom(3)to(methodSignature.size))
+                      } elseif {typeName == "|"} then {
+                          variantTypes.push(methodSignature.substringFrom(3)
+                                                  to (methodSignature.size))
                       } else {
-                          if (!typeliterals.containsKey(typeOfMethods)) then {
-                              typeliterals.at(typeOfMethods)put(emptySet)
+                          if (!typeliterals.containsKey(typeName)) then {
+                              typeliterals.at(typeName)put(emptySet)
                           }
-                          typeliterals.at(typeOfMethods).add
+                          typeliterals.at(typeName).add
                                   (aMethodType.fromGctLine(methodSignature))
                       }
                   }
                   //Joe - Probably want to check for and save internal types from
                   //an import
-                  scope.types.at ("{imp.nameString}.{typeOfMethods}")
-                      put (anObjectType.fromMethods (typeliterals.at (typeOfMethods))
+                  scope.types.at ("{imp.nameString}.{typeName}")
+                      put (anObjectType.fromMethods (typeliterals.at (typeName))
                                                                   withTypes(emptyDictionary))
               }
             }
@@ -2468,7 +2584,8 @@ method outerAt(i : Number) -> ObjectType is confidential {
 
 // Typing methods.
 // Type check body of object definition
-method processBody(body : List⟦AstNode⟧, superclass: AstNode | false) -> ObjectType is confidential {
+method processBody (body : List⟦AstNode⟧, superclass: AstNode | false)
+                                                -> ObjectType is confidential {
     io.error.write "\n1958: superclass: {superclass}\n"
     // Collect the declarative types directly in the object body.
     collectTypes(body)
@@ -2525,7 +2642,7 @@ method processBody(body : List⟦AstNode⟧, superclass: AstNode | false) -> Obj
         def allMethods: Set⟦MethodType⟧ = emptySet
         allMethods.add(isMeMeth)
 
-        // gather types as well?
+        // collect embedded types in these dictionaries
         def publicTypes: Dictionary⟦String,ObjectType⟧ = emptyDictionary
         def allTypes: Dictionary⟦String,ObjectType⟧ = emptyDictionary
 
@@ -2546,19 +2663,21 @@ method processBody(body : List⟦AstNode⟧, superclass: AstNode | false) -> Obj
                 if(isMember(mType)) then {
                     scope.variables.at(mType.name) put(mType.returnType)
                 }
+
             } case { defd : Def | Var ->
-                io.error.write "\n2022: in def or var case"
                 def mType: MethodType = aMethodType.fromNode(defd)
                 allMethods.add(mType)
-                io.error.write "\n2024: add {mType} to allMethods"
+
+                //create method to access def/var
                 if(defd.isReadable) then {
                     publicMethods.add(mType)
                 }
 
-                //Joe - added these
+                //update scope with reference to def/var
                 scope.methods.at(mType.name) put(mType)
                 scope.variables.at(mType.name) put(mType.returnType)
 
+                //constructs setter method for writable vars
                 if(defd.isWritable) then {
                     def name': String = defd.nameString ++ ":=" //(1)"  ?? is name right?
                     def dType: ObjectType = anObjectType.fromDType(defd.dtype)
@@ -2566,20 +2685,23 @@ method processBody(body : List⟦AstNode⟧, superclass: AstNode | false) -> Obj
                     def sig: List⟦MixPart⟧ = list[aMixPartWithName(name') parameters(list[param])]
 
                     def aType: MethodType = aMethodType.signature(sig) returnType(anObjectType.doneType)
-                    scope.methods.at(name')
-                        put(aType)
+                    scope.methods.at(name') put(aType)
                     allMethods.add(aType)
                     publicMethods.add(aType)
                 }
+
             } case { td : TypeDeclaration ->
                 def oType : ObjectType = anObjectType.fromDType(td)
+
+                //construct method with type name that returns Pattern to allow
+                //access to embedded types from outside their object
                 def sig : List⟦MixPart⟧ = list[aMixPartWithName(td.nameString)
                                                           parameters(emptyList)]
-                def mType  : MethodType = aMethodType.signature(sig) returnType (anObjectType.pattern)
+                def mType : MethodType = aMethodType.signature(sig)
+                                              returnType (anObjectType.pattern)
 
+                //update body's methods and types list
                 allTypes.at(td.nameString) put(oType)
-
-                io.error.write"\n2493 mType is: {mType}"
                 allMethods.add(mType)
 
                 if (td.isPublic) then {
@@ -2587,18 +2709,17 @@ method processBody(body : List⟦AstNode⟧, superclass: AstNode | false) -> Obj
                     publicMethods.add(mType)
                 }
 
+                //add type to scope
                 scope.types.at(td.nameString) put(oType)
+
             } case { _ -> }
         }
-        //Joe - Why are types showing up here but not in the ObjectType
-        io.error.write"\n2410 allTypes is: {allTypes}"
-        io.error.write"\n2411 publicTypes is: {publicTypes}"
+
+        //io.error.write"\n2410 allTypes is: {allTypes}"
+        //io.error.write"\n2411 publicTypes is: {publicTypes}"
 
         internalType := anObjectType.fromMethods(allMethods) withTypes(allTypes)
-        io.error.write "\n2045: internalType is {internalType}\n"
-        io.error.write "\n2046: internalType's types is {internalType.getTypeList}\n"
         scope.types.at("$elf") put (internalType)
-        // io.error.write "added $elf to scope"
 
         if (hasInherits) then {
             // Need to worry about overriding with different signature!! TODO
@@ -2610,10 +2731,9 @@ method processBody(body : List⟦AstNode⟧, superclass: AstNode | false) -> Obj
             anObjectType.fromMethods(publicMethods) withTypes(publicTypes)
         }
     }
-    // io.error.write "1820:done calculating publicType"
+    // io.error.write "\n1820: done calculating publicType"
 
     scope.variables.at("self") put(publicType)
-    io.error.write "\n2058: publicType is {publicType}\n"
 
     // Type-check the object body.
     def indices: Collection⟦Number⟧ = if(hasInherits) then {
@@ -2628,7 +2748,6 @@ method processBody(body : List⟦AstNode⟧, superclass: AstNode | false) -> Obj
         io.error.write "\n2072: finished index {i}\n"
     }
 
-    io.error.write"\n2602 types scope is: {scope.types.stack}"
     pubConf(publicType,internalType)
 }
 

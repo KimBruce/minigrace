@@ -1190,21 +1190,29 @@ def anObjectType: ObjectTypeFactory is public = object {
             //io.error.write"\nScope methods in member search is: {scope.methods.stack}"
             //io.error.write"\nScope variables in member search is: {scope.variables.stack}"
 
-            var recType: ObjectType
+            //split the receiver into individual calls
+            var recName : String:= memb.receiver.asString
+            def recList : List[[String]] = split(recName, ".")
 
-            //if the receiver is another call, then recurse to find the type of
-            //the entire receiver; else we have the leftmost part of the receiver
-            //and we search for its type in the scope
-            if (memb.receiver.isCall) then {
-                recType := fromDType(memb.receiver)
-            } else {
-                //search for recName in both scope.types and scope.methods
-                var notInTypes : Boolean := false
+            io.error.write"\n1175 recList is: {recList}"
 
-                //redirects 'self' to '$elf' because '$elf' is in scope.types
-                def recName : String = if (memb.receiver.nameString == "self")
-                                  then {"$elf"} else {memb.receiver.nameString}
+            //extract recName from identifier‹recName›
+            recName := recList.at(1)
+            recName := if(recName.contains("identifier‹"))
+                then {
+                    def start : Number = recName.indexOf("‹")+1
+                    def end : Number = recName.indexOf("›")-1
+                    recName.substringFrom(start) to (end)
+                } else {
+                    recName
+                }
 
+            //redirects 'self' to '$elf' because '$elf' is in scope.types
+            recName := if (recName == "self") then {"$elf"} else {recName}
+
+            io.error.write"\n1176 recName is: {recName}"
+
+<<<<<<< HEAD
                 recType := scope.types.find(recName)
                                     butIfMissing { notInTypes := true; dynamic }
 
@@ -1213,6 +1221,38 @@ def anObjectType: ObjectTypeFactory is public = object {
                         outer.ScopingError.raise ("Cannot locate " ++
                         "{memb.receiver.value}.{memb.value} in scope")}.returnType
                 }
+=======
+            //search for recName in both scope.types and scope.methods
+            var notInTypes : Boolean := false
+            var recType : ObjectType := scope.types.find(recName)
+                                    butIfMissing { notInTypes := true; dynamic }
+
+            if (notInTypes) then {
+                recType := scope.methods.find(recName) butIfMissing {
+                    outer.ScopingError.raise ("Cannot locate " ++
+                    "{memb.receiver.value}.{memb.value} in scope") } .returnType
+            }
+
+            //recType now has the objectType of the 1st call
+            recList.removeFirst
+
+            //if recList has multiple calls, go through in sequence and retrieve
+            //the resulting type of the whole receiver
+            for (recList) do { receiver : String ->
+                io.error.write"\n1197 Looking for: {receiver}"
+
+                //search through types list and then methods list
+                match(recType.getType(receiver))
+                    case { o : ObjectType -> recType := o }
+                    case { (noSuchType) ->
+                        match (recType.getMethod(receiver))
+                            case { m : MethodType -> recType := m.returnType }
+                            case { (noSuchMethod) ->
+                                outer.ScopingError.raise ("Cannot locate " ++
+                                    "{memb.receiver.value}.{memb.value} in scope")
+                            }
+                    }
+>>>>>>> minor changes to comments
             }
 
             //get the return type of the entire call

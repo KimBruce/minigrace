@@ -1210,6 +1210,7 @@ def anObjectType: ObjectTypeFactory is public = object {
             io.error.write"\n1176 recName is: {recName}"
 
 <<<<<<< HEAD
+<<<<<<< HEAD
                 recType := scope.types.find(recName)
                                     butIfMissing { notInTypes := true; dynamic }
 
@@ -1219,6 +1220,8 @@ def anObjectType: ObjectTypeFactory is public = object {
                         "{memb.receiver.value}.{memb.value} in scope")}.returnType
                 }
 =======
+=======
+>>>>>>> comments
             //search for recName in both scope.types and scope.methods
             var notInTypes : Boolean := false
             var recType : ObjectType := scope.types.find(recName)

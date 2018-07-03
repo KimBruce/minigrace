@@ -30,7 +30,6 @@ def operatorChars = "-&|:$#\\%^@?*/+!~"
 method isOperatorChar(c, ordval) {
     if (operatorChars.contains(c)) then { return true }
     if (unicode.isSymbolMathematical(ordval)) then { return true }
-    if (unicode.inCategory(c, "So")) then { return true }
     return false
 }
 
@@ -96,11 +95,12 @@ class new {
         def indent is public = indentLevel
         def linePos is public = startPosition
 
-        var next is public := false
-        var prev is public := false
+        def null = Singleton.named "⏚"
+        var next is public := null
+        var prev is public := null
 
-        method ==(other) {
-            if (false == other) then {
+        method == (other) {
+            if (null == other) then {
                 false
             } else {
                 (other.line == line) && (other.linePos == linePos)
@@ -275,7 +275,7 @@ class new {
             if (c == "#") then {
                 advanceTo(pragmaPrefixState)
             } else {
-                advanceTo(defaultState)
+                advanceTo(indentationState)
                 state.consume(c)
             }
         }
@@ -364,7 +364,7 @@ class new {
             } elseif {c == "."} then {
                 advanceTo(dotState)
                 state.consume(c)
-            } elseif {(c == "<") || isOperatorChar(c, ordval)} then {
+            } elseif {isOperatorChar(c, ordval)} then {
                 advanceTo(operatorState)
                 state.consume(c)
             } elseif {c == ","} then {
@@ -403,7 +403,7 @@ class new {
                         (ordval != 13) &&
                         (ordval != 32)) then {
                     errormessages.syntaxError("{unicode.name(c)} (U+{padl(ordval.inBase 16, 4, "0")}) "
-                        ++ "is not a valid character; use spaces instead.")atRange(
+                        ++ "is not a valid character")atRange(
                         lineNumber, linePosition, linePosition)
                 }
             }
@@ -1031,9 +1031,10 @@ class new {
                 atRange(lineNumber, linePosition, linePosition)
         }
     }
-    // Read the program text from util.infile and return a list of
-    // tokens.
+
     method lexfile(file) {
+        // Reads the program text from file; returns a list of tokens.
+
         def lines = util.lines.makeEmpty
         def cLines = util.cLines.makeEmpty
             // making them empty is necessary for the browser,
@@ -1051,7 +1052,7 @@ class new {
                 wasCR := true
             } elseif {c  == "\n"} then {
                 if (wasCR) then {
-                    // the spec says "LINE FEED that immediately
+                    // the spec says "a LINE FEED that immediately
                     // follows a CARRIAGE RETURN is ignored"
                 } else {
                     lines.push(line)
@@ -1091,9 +1092,18 @@ class new {
     method lexinput(inputLines) {
         // tokens is a doubly-linked list of tokens.
         tokens := object {
-            var first is readable := false
-            var last is readable := false
+            def header = object {
+                var next is public
+                method asString { "⏚" }
+                method == (other) { isMe (other) }
+            }
+            header.next := header
+            var last is readable := header
             var size is readable := 0
+
+            method first { header.next }
+            method first := (nu) is confidential { header.next := nu }
+            method isEmpty { header == last }
 
             method savePosition {
                 return [first, last, size]
@@ -1106,55 +1116,55 @@ class new {
             }
 
             method push(t) {
-                if(first == false) then {
-                    first := t
-                    last := t
-                } else {
-                    last.next := t
-                    t.prev := last
-                    if ((t.indent - last.indent).abs == 1) then {
-                        def m1 = "the indentation for this line can't differ "
-                        def m2 = "from that of the previous line by 1.\n  To start a block, or "
-                        def m3 = "continue a statement on the next line line, indent by 2 or more. "
-                        def m4 = "To end a block, or end the continuation, decrease the indent "
-                        def m5 = "to the prior level. "
-                        def m6 = "Otherwise, use the same indentation as the previous line."
-                        def msg = m1 ++ m2 ++ m3 ++ m4 ++ m5 ++ m6
+                // adds t to the end of the list
+
+                last.next := t
+                t.prev := last
+                if (isEmpty) then {
+                    if (t.indent ≠ 0) then {
+                        def msg = "the first line must not be indented"
                         errormessages.syntaxError(msg) atRange(t.line, 1, t.indent)
                     }
-                    last := t
+                } elseif {(t.indent - last.indent).abs == 1} then {
+                    def m1 = "the indentation for this line can't differ "
+                    def m2 = "from that of the previous line by 1.\n  To start a block, or "
+                    def m3 = "continue a statement on the next line line, indent by 2 or more. "
+                    def m4 = "To end a block, or end the continuation, decrease the indent "
+                    def m5 = "to the prior level. "
+                    def m6 = "Otherwise, use the same indentation as the previous line"
+                    def msg = m1 ++ m2 ++ m3 ++ m4 ++ m5 ++ m6
+                    errormessages.syntaxError(msg) atRange(t.line, 1, t.indent)
                 }
+                last := t
                 size := size + 1
             }
 
             method pop {
-                if(last != false) then {
-                    def popped = last
-                    last := last.prev
-                    if(last == false) then {
-                        first := false
-                    }
-                    size := size - 1
-                    popped
+                // removes the last element and returns it
+                if (isEmpty) then {
+                    ProgrammingError.raise "attempt to pop from an empty token list"
                 }
+                def popped = last
+                last := last.prev
+                size := size - 1
+                popped
             }
 
             method poll {
-                if(first != false) then {
-                    def polled = first
-                    first := first.next
-                    if(first == false) then {
-                        last := false
-                    }
-                    size := size - 1
-                    polled
+                // removes the first element and returns it
+                if (isEmpty) then {
+                    ProgrammingError.raise "attempt to poll from an empty token list"
                 }
+                def polled = first
+                first := first.next
+                size := size - 1
+                polled
             }
 
             class iterator {
                 var n := first
                 method hasNext {
-                    n != false
+                    header ≠ n
                 }
                 method next {
                     def ret = n
@@ -1165,7 +1175,7 @@ class new {
 
             method do(action) {
                 var n := first
-                while { n != false } do {
+                while { header ≠ n } do {
                     action.apply(n)
                     n := n.next
                 }

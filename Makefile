@@ -94,7 +94,6 @@ clean:
 	rm -f $(SOURCEFILES:%.grace=%)
 	rm -f $(OBJECTDRAW:%.grace=%.*)
 	rm -f $(OBJECTDRAW:%.grace=modules/%.*)
-	( cd known-good && $(MAKE) clean )
 	( cd js && for sf in $(SOURCEFILES:.grace=.js) ; do rm -f $$sf ; done )
 	( cd js && for sf in $(SOURCEFILES) ; do rm -f $$sf ; done )
 	cd js && rm -rf $(ALL_LIBRARY_MODULES:%.grace=%.js) standardInput.* *.gct util.*
@@ -166,6 +165,9 @@ gencheck:
 
 gracedoc: tools/gracedoc
 
+grace-debug: js/grace-debug
+	ln -f $< $@
+
 grace-web-editor/index.html: pull-web-editor grace-web-editor/index.in.html
 	./tools/includeJSLibraries $(ALL_LIBRARY_MODULES:%.grace=js/%.js)
 	./tools/calc-IDE-version
@@ -226,12 +228,12 @@ j2-minigrace: $(J2-MINIGRACE)
 $(JSJSFILES:%.js=j2/%.js): j2/%.js: js/%.js
 	cp -p $< $@
 
-$(JS-KG)/minigrace-js: $(JS-KG)/compiler-js
-	cp -p js/minigrace-js $(JS-KG)
-
-$(JS-KG)/compiler-js:
+$(JS-KG)/compiler-js: js/compiler-js
 	if [ ! -e $(JS-KG) ] ; then mkdir -p $(JS-KG) ; fi
 	cp -p js/compiler-js $(JS-KG)
+
+$(JS-KG)/minigrace-js: $(JS-KG)/compiler-js
+	cp -p js/minigrace-js $(JS-KG)
 
 $(JSONLY:%.grace=js/%.js): js/%.js: modules/%.grace js/dom.gct minigrace js/timer.gct
 	GRACE_MODULE_PATH=js:modules ./minigrace --dir js --make $(VERBOSITY) $<
@@ -259,7 +261,7 @@ js/grace: js/grace.in
 	chmod a+x js/grace
 
 js/grace-debug: js/grace
-	sed -e "s|#!/usr/bin/env node|#!/usr/bin/env node --debug-brk|" $< > js/grace-debug
+	sed -e "s|#!/usr/bin/env node|#!/usr/bin/env node --inspect-brk|" $< > js/grace-debug
 	chmod a+x js/grace-debug
 
 js/mgc: minigrace.env $(STUBS:%.grace=j2/%.gct)
@@ -281,11 +283,15 @@ js/minigrace.js: js/minigrace.in.js buildinfo.grace
 
 js/animation%js: js/timer.gct objectdraw/animation.grace
 
+js/compiler-inspect: js/compiler-js
+	sed -e "s|#!/usr/bin/env node|#!/usr/bin/env node --inspect|" $< > $@
+	chmod a+x $@
+
 Makefile.conf: configure stubs modules
 	./configure
 
 $(MGSOURCEFILES:%.grace=j1/%.js): j1/%.js: %.grace $(JS-KG)/minigrace-js
-	$(JS-KG)/minigrace-js $(VERBOSITY) --make --dir j1 $<
+	GRACE_MODULE_PATH=j1 $(JS-KG)/minigrace-js $(VERBOSITY) --make --dir j1 $<
 
 $(MGSOURCEFILES:%.grace=j2/%.js): j2/%.js: %.grace $(J1-MINIGRXCE)
 	GRACE_MODULE_PATH=modules j1/minigrace-js $(VERBOSITY) --make --dir j2 $<
@@ -380,7 +386,7 @@ $(SOURCEFILES:%.grace=js/tests/%.js): js/tests/%.js: js/%.js
 # for making %.gct from stubs/%.grace, but applies only to the targets in $(STUBS:*)
 
 $(STUBS:%.grace=j1/%.gct): j1/%.gct: stubs/%.grace $(JS-KG)/standardGrace.js $(JS-KG)/minigrace-js
-	$(JS-KG)/minigrace-js $(VERBOSITY) --make --gctfile --dir j1 -o /dev/null $<
+	GRACE_MODULE_PATH=j1 $(JS-KG)/minigrace-js $(VERBOSITY) --make --gctfile --dir j1 -o /dev/null $<
 
 $(STUBS:%.grace=j2/%.gct): j2/%.gct: stubs/%.grace j1/standardGrace.js $(J1-MINIGRACE)
 	GRACE_MODULE_PATH=j1 j1/minigrace-js $(VERBOSITY) --make --gctfile --dir j2 -o /dev/null $<
@@ -406,6 +412,8 @@ test.compile: minigrace
 $(TYPE_DIALECTS:%=js/%.js): js/%.js: $(DIALECTS_NEED:%=%.js) $(patsubst modules/%, js/%.js, $(filter modules/%,$(DIALECTS_NEED)))
 
 test: minigrace.env
+# is TESTS is underfined, runs all tests.  Otherwise, TESTS should be set to a
+# space-separated sequence of test-name prefixes, e.g., "TESTS=t001 t027 t041"
 	js/tests/harness-js j2/minigrace-js js/tests "" $(TESTS)
 
 #only test gradualTypesND dialect
@@ -417,6 +425,8 @@ togracetest: minigrace
 
 uninstall:
 	rm -f $(PREFIX)/bin/minigrace
+	rm -f $(PREFIX)/bin/minigrace-js
+	rm -f $(PREFIX)/bin/grace
 	rm -f $(OBJECT_PATH)/gracelib.o
 	rm -f $(INCLUDE_PATH)/gracelib.h
 	rm -rf $(MODULE_PATH)/*.{gct,js,grace,gcn,gso,gso.dSYM,c}

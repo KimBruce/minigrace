@@ -730,7 +730,7 @@ def anObjectType: ObjectTypeFactory is public = object {
 
     method fromMethods (methods' : Set⟦MethodType⟧) withTypes (types' : Dictionary⟦String,ObjectType⟧) → ObjectType {
         object {
- 
+
             def methods : Set⟦MethodType⟧ is public = (if (base == dynamic)
                     then { emptySet } else { emptySet.addAll(base.methods) }).addAll(methods')
 
@@ -2129,7 +2129,7 @@ def astVisitor: ast.AstVisitor is public= object {
             }
             io.error.write "\nrequest on {name}"
             io.error.write "\nrType is {rType}"
- 
+
             io.error.write ("\n1999: receiver type's getTypeList is: {rType.getTypeList}"
                   ++" and request name is {name}")
             io.error.write "\n2000: rType.methods is: {rType.methods}"

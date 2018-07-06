@@ -2200,7 +2200,7 @@ def astVisitor: ast.AstVisitor is public= object {
         }
         def withoutImp : AstNode = ast.moduleNode.body(bodyNodes)
                                 named (node.nameString) scope (node.scope)
-
+        io.error.write "\n2186 Types scope before collecing types is {scope.types.stack}"
         collectTypes (list (withoutImport.body))
         io.error.write "\n2186 Types scope after collecing types is {scope.types.stack}"
 
@@ -2448,6 +2448,9 @@ def astVisitor: ast.AstVisitor is public= object {
                                                   parameters (emptyList)]
         def impMType: MethodType = aMethodType.signature(sig) returnType (impOType)
 
+        for(impOType.getTypeList.keys) do { typeName:String ->
+            scope.types.at("{imp.nameString}."++typeName) put (impOType.getTypeList.at(typeName))
+        }
         scope.variables.at(imp.nameString) put(impOType)
         scope.methods.at(imp.nameString) put(impMType)
         io.error.write"\n2421: ObjectType of the import {imp.nameString} is: {impOType}"
@@ -2725,6 +2728,16 @@ method resolveType(td : AstNode) -> ObjectType {
         scope.types.find("{ident.nameString}")
             butIfMissing{ScopingError.raise("Failed to find {ident.nameString}")}
     } case{ member : Member ->
+        def receiverName: String = member.receiver.nameString
+
+        //if(member.receiver.kind != "identifier") then{
+        //    ProgrammingError.raise("Types are not allowed to be declared inside other types or objects")
+        //}
+        if((receiverName == "self") || (receiverName == "module()object")) then {
+            return scope.types.find ("{member.value}")
+                butIfMissing { ScopingError.raise("Failed to find " ++
+                            "{member.receiver.nameString}.{member.value}")}
+        }
         scope.types.find("{member.receiver.nameString}.{member.value}")
             butIfMissing { ScopingError.raise("Failed to find " ++
                            "{member.receiver.nameString}.{member.value}")}

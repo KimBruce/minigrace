@@ -1057,7 +1057,7 @@ def anObjectType: ObjectTypeFactory is public = object {
                     }
                 }
 
-                def tempMeth: List⟦MethodType⟧ = self.methods
+                def selfToPrint: ObjectType = self
 
                 object {
                     //Joe - comeback and write checking for types of same name using subtyping
@@ -1068,7 +1068,7 @@ def anObjectType: ObjectTypeFactory is public = object {
                     //}
 
                     method asString → String is override {
-                        "\{{tempMeth}\} & {other}"
+                        "{selfToPrint} & {other}"
                     }
 
                 }
@@ -2692,13 +2692,14 @@ method collectTypes(nodes : Collection⟦AstNode⟧) → Done is confidential {
     while{types.size > 0} do {
         def resolvedTypes : List[[Number]] = emptyList
         var count : Number := 1
-        for(types) and(placeholders) do { td: AstNode, ph: ObjectType →
+        for(types) do { td: AstNode  →
 
             def oType = resolveType(td.value)
 
             if (oType.isPlaceholder.not) then {
                 resolvedTypes.addFirst(count)
-                ph.updateMethods(oType.methods) andTypes(oType.getTypeList)
+                //scope.types.removeKey()
+                scope.types.at(td.nameString) put(oType)
             }
 
             count := count + 1
@@ -2711,13 +2712,62 @@ method collectTypes(nodes : Collection⟦AstNode⟧) → Done is confidential {
             io.error.write"\n2705 removing {types.at(index).nameString}"
 
             types.removeAt(index)
-            placeholders.removeAt(index)
         }
     }
     // io.error.write "1881: done collecting types"
 }
 
 
+<<<<<<< HEAD
+=======
+method resolveType(td : AstNode) -> ObjectType {
+    match(td) case{ ident : Identifier ->
+        scope.types.find("{ident.nameString}")
+            butIfMissing{ScopingError.raise("Failed to find {ident.nameString}")}
+    } case{ member : Member ->
+        scope.types.find("{member.receiver.nameString}.{member.value}")
+            butIfMissing { ScopingError.raise("Failed to find " ++
+                           "{member.receiver.nameString}.{member.value}")}
+    } case{ typeLiteral : TypeLiteral ->
+        def meths : Set⟦MethodType⟧ = emptySet
+
+        //collect MethodTypes
+        for(typeLiteral.methods) do { mType : AstNode →
+            meths.add(aMethodType.fromNode(mType))
+        }
+
+        anObjectType.fromMethods(meths) withTypes(emptyDictionary)
+    } case{ op : Operator →
+        // Operator takes care of type expressions: Ex. A & B, A | C
+        // What type of operator (& or |)?
+        var opValue: String := op.value
+
+        // Left side of operator
+        var left: AstNode := op.left
+        var leftType: ObjectType := resolveType(left)
+        if (leftType.isPlaceholder) then {
+            return leftType
+        }
+
+        // Right side of operator
+        var right: AstNode := op.right
+        var rightType: ObjectType := resolveType(right)
+        if (rightType.isPlaceholder) then {
+            return rightType
+        }
+
+        match(opValue) case { "&" →
+          leftType & rightType
+        } case { "|" →
+          leftType | rightType
+        } case { _ →
+          ProgrammingError.raise("Expected '&' or '|', got {opValue}") with(op)
+        }
+    }
+
+}
+
+>>>>>>> collecting variant types
 // Determines if a node is publicly available.
 method isPublic(node : Method | Def | Var) → Boolean is confidential {
     match(node) case { _ : Method →

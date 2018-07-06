@@ -732,7 +732,7 @@ def anObjectType: ObjectTypeFactory is public = object {
         object {
 
             def methods : Set⟦MethodType⟧ is public = (if (base == dynamic)
-                    then { emptySet } else { emptySet.addAll(base.methods) }).addAll(methods')
+                then { emptySet } else { emptySet.addAll(base.methods) }).addAll(methods')
 
             //Joe - we think that base.getTypeList will be empty
             var types : Dictionary⟦String,ObjectType⟧ := types'
@@ -2201,7 +2201,10 @@ def astVisitor: ast.AstVisitor is public= object {
         def withoutImp : AstNode = ast.moduleNode.body(bodyNodes)
                                 named (node.nameString) scope (node.scope)
 
-        return visitObject (withoutImp)
+        collectTypes (list (withoutImport.body))
+        io.error.write "\n2186 Types scope after collecing types is {scope.types.stack}"
+
+        visitObject (withoutImport)
     }
 
     // array literals represent collections (should fix to be lineups)
@@ -2514,8 +2517,6 @@ method outerAt(i : Number) → ObjectType is confidential {
 method processBody (body : List⟦AstNode⟧, superclass: AstNode | false)
                                                 → ObjectType is confidential {
     io.error.write "\n1958: superclass: {superclass}\n"
-    // Collect the declarative types directly in the object body.
-    collectTypes(body)
 
     var inheritedMethods: Set⟦MethodType⟧ := emptySet
     def hasInherits = false ≠ superclass
@@ -2618,28 +2619,8 @@ method processBody (body : List⟦AstNode⟧, superclass: AstNode | false)
                 }
 
             } case { td : TypeDeclaration →
-                def oType : ObjectType = anObjectType.fromDType(td)
-
-                //construct method with type name that returns Pattern to allow
-                //access to embedded types from outside their object
-                def sig : List⟦MixPart⟧ = list[aMixPartWithName(td.nameString)
-                                                          parameters(emptyList)]
-                def mType : MethodType = aMethodType.signature(sig)
-                                              returnType (anObjectType.pattern)
-
-                //update body's methods and types list
-                allTypes.at(td.nameString) put(oType)
-                allMethods.add(mType)
-
-                if (td.isPublic) then {
-                    publicTypes.at(td.nameString) put(oType)
-                    publicMethods.add(mType)
-                }
-
-                //add type to scope
-                scope.types.at(td.nameString) put(oType)
-
-            } case { _ → }
+                //Now does nothing if given type declaration; might make this raise an error later
+            } case { _ → io.error.write"\n2617 ignored {stmt}"}
         }
 
         //io.error.write"\n2410 allTypes is: {allTypes}"
@@ -2705,21 +2686,32 @@ method collectTypes(nodes : Collection⟦AstNode⟧) → Done is confidential {
             placeholders.push(placeholder)
             scope.types.at(td.nameString) put(placeholder)
         } case { _ →
-            io.error.write"\ndidn't match as typeDec"
         }
     }
 
-    for(types) and(placeholders) do { td: AstNode, ph: ObjectType →
-        try {
-            def oType = anObjectType.fromDType(td)
+    while{types.size > 0} do {
+        def resolvedTypes : List[[Number]] = emptyList
+        var count : Number := 1
+        for(types) and(placeholders) do { td: AstNode, ph: ObjectType →
 
-            //Joe - maybe delete?
+            def oType = resolveType(td.value)
+
+            if (oType.isPlaceholder.not) then {
+                resolvedTypes.addFirst(count)
+                ph.updateMethods(oType.methods) andTypes(oType.getTypeList)
+            }
+
+            count := count + 1
+
             io.error.write("\n2518 The type name is: {td.nameString} and it has embedded types of: {oType.getTypeList}")
             io.error.write "\n2518.5 The type itself is: {oType}"
+        }
 
-            ph.updateMethods(oType.methods) andTypes(oType.getTypeList)
-        } catch { e: ScopingError →
-            ph.updateMethods(emptySet) andTypes(emptyDictionary)
+        for(resolvedTypes) do { index:Number ->
+            io.error.write"\n2705 removing {types.at(index).nameString}"
+
+            types.removeAt(index)
+            placeholders.removeAt(index)
         }
     }
     // io.error.write "1881: done collecting types"

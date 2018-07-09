@@ -674,6 +674,7 @@ def noSuchType: outer.Pattern = object {
 // represents the type of an expression as a collection of method types
 type ObjectType = {
     methods → Set⟦MethodType⟧
+    resolve → ObjectType
     // getMethod (name : String) → MethodType | noSuchMethod
     isDynamic → Boolean
     isSubtypeOf (other : ObjectType) → Boolean
@@ -691,6 +692,7 @@ type ObjectTypeFactory = {
                 withTypes (types' : Dictionary⟦String,ObjectType⟧) → ObjectType
     fromMethods (methods' : Set⟦MethodType⟧) withName (name : String)
                 withTypes (types' : Dictionary⟦String,ObjectType⟧) → ObjectType
+    definedByNode (node : AstNode) → ObjectType
     fromDType (dtype) → ObjectType
     fromBlock (block) → ObjectType
     fromBlockBody (body) → ObjectType
@@ -728,8 +730,50 @@ def anObjectType: ObjectTypeFactory is public = object {
         }
     }
 
+<<<<<<< HEAD
     method fromMethods (methods' : Set⟦MethodType⟧) withTypes (types' : Dictionary⟦String,ObjectType⟧) → ObjectType {
         object {
+=======
+    //Version of ObjectType that allows for lazy-implementation of type checking
+    //Holds the AstNode that can be resolved to the real ObjectType
+    class definedByNode (node: AstNode) -> ObjectType{
+
+        method methods -> Set⟦MethodType⟧ {
+            resolve.methods
+        }
+
+        //Process the AstNode to get its ObjectType
+        method resolve -> ObjectType {
+            fromDType(node)
+        }
+
+        def isDynamic : Boolean is public = false
+
+        method isSubtypeOf (other : ObjectType) -> Boolean {
+            resolve.isSubtypeOf(other)
+        }
+
+        method | (other : ObjectType) → ObjectType {
+            resolve | other
+        }
+
+        method & (other : ObjectType) → ObjectType {
+            resolve & other
+        }
+
+        method restriction (other : ObjectType) → ObjectType {
+            resolve.restriction(other)
+        }
+
+        method isConsistentSubtypeOf (other : ObjectType) → Boolean{
+            resolve.isConsistentSubtypeOf(other)
+        }
+    }
+
+
+    method fromMethods (methods' : Set⟦MethodType⟧)
+          withTypes (types' : Dictionary⟦String,ObjectType⟧) → ObjectType { object {
+>>>>>>> New class of ObjectType
 
             def methods : Set⟦MethodType⟧ is public = (if (base == dynamic)
                 then { emptySet } else { emptySet.addAll(base.methods) }).addAll(methods')
@@ -753,6 +797,15 @@ def anObjectType: ObjectTypeFactory is public = object {
 
             method getTypeList → Dictionary⟦String,ObjectType⟧ { types }
 
+<<<<<<< HEAD
+=======
+            method addType (key:String, value: ObjectType) → Done {
+                types.at(key) put(value)
+            }
+
+            method resolve -> ObjectType { self }
+
+>>>>>>> New class of ObjectType
             //TODO: not sure we trust this. May have to refine == in the future
             method == (other:ObjectType) → Boolean {
                 self.isMe(other)
@@ -1325,6 +1378,8 @@ def anObjectType: ObjectTypeFactory is public = object {
             method getType(_ : String) → noSuchType { noSuchType }
 
             method getTypeList → Dictionary⟦String,ObjectType⟧ {emptyDictionary}
+
+            method resolve -> ObjectType { self }
 
             def isDynamic : Boolean is public = true
 

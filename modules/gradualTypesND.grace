@@ -613,7 +613,7 @@ def aMethodType: MethodTypeFactory is public = object {
 
                 for (part.params) do { param: AstNode → // not of type Param??
                     params.push (aParam.withName (param.value)
-                        ofType (anObjectType.fromDType (param.dtype)))
+                        ofType (anObjectType.definedByNode (param.dtype)))
                 }
 
                 signature.push (aMixPartWithName (part.name) parameters (params))
@@ -624,7 +624,7 @@ def aMethodType: MethodTypeFactory is public = object {
                 case { m : MethodSignature → meth.rtype}
 
             return signature (signature)
-                returnType (anObjectType.fromDType (rType))
+                returnType (anObjectType.definedByNode (rType))
         } case { defd : Def | Var →
             io.error.write "\n574: defd: {defd}"
             io.error.write "\n575: defd.dtype {defd.dtype}"
@@ -632,9 +632,15 @@ def aMethodType: MethodTypeFactory is public = object {
                     list[aMixPartWithName (defd.name.value) parameters (list[])]
             def dtype: ObjectType = if (defd.dtype == false) then {
                     anObjectType.dynamic
+<<<<<<< HEAD
             } else {
                     anObjectType.fromDType (defd.dtype)
             }
+=======
+                } else {
+                    anObjectType.definedByNode (defd.dtype)
+                }
+>>>>>>> Using new unresolved ObjectType
             return signature (signature) returnType (dtype)
         } case { _ →
             Exception.raise "unrecognised method node" with(node)
@@ -677,7 +683,9 @@ type ObjectType = {
     resolve → ObjectType
     // getMethod (name : String) → MethodType | noSuchMethod
     isDynamic → Boolean
+    isResolved → Boolean
     isSubtypeOf (other : ObjectType) → Boolean
+    isSubtypeHelper (trials : List⟦TypePair⟧, other : ObjectType) → Answer
     | (other : ObjectType) → ObjectType
     & (other : ObjectType) → ObjectType
     restriction (other : ObjectType) → ObjectType
@@ -749,24 +757,31 @@ def anObjectType: ObjectTypeFactory is public = object {
 
         def isDynamic : Boolean is public = false
 
+        //an ObjectType is unexpanded if it still holds an AstNode
+        def isResolved : Boolean is public = false
+
         method isSubtypeOf (other : ObjectType) -> Boolean {
-            resolve.isSubtypeOf(other)
+            resolve.isSubtypeOf(other.resolve)
+        }
+
+        method isSubtypeHelper (trials : List⟦TypePair⟧, other : ObjectType) -> Answer {
+            resolve.isSubtypeHelper(trials, other.resolve)
         }
 
         method | (other : ObjectType) → ObjectType {
-            resolve | other
+            resolve | (other.resolve)
         }
 
         method & (other : ObjectType) → ObjectType {
-            resolve & other
+            resolve & (other.resolve)
         }
 
         method restriction (other : ObjectType) → ObjectType {
-            resolve.restriction(other)
+            resolve.restriction(other.resolve)
         }
 
         method isConsistentSubtypeOf (other : ObjectType) → Boolean{
-            resolve.isConsistentSubtypeOf(other)
+            resolve.isConsistentSubtypeOf(other.resolve)
         }
     }
 
@@ -811,6 +826,13 @@ def anObjectType: ObjectTypeFactory is public = object {
                 self.isMe(other)
             }
 
+<<<<<<< HEAD
+=======
+            var isPlaceholder : Boolean is public := false
+
+            def isResolved : Boolean is public = true
+
+>>>>>>> Using new unresolved ObjectType
             def isDynamic : Boolean is public = false
 
             // List of variant types (A | B | ... )
@@ -826,7 +848,7 @@ def anObjectType: ObjectTypeFactory is public = object {
             //a subtype of 'other'
             method isSubtypeOf(other : ObjectType) → Boolean {
 
-                def helperResult : Answer = self.isSubtypeHelper(emptyList, other)
+                def helperResult : Answer = self.isSubtypeHelper(emptyList, other.resolve)
                 //io.error.write("\n751 The trials from subtyping were: {helperResult.trials}")
 
                 helperResult.ans
@@ -836,7 +858,7 @@ def anObjectType: ObjectTypeFactory is public = object {
             // If self restrict other is a subtype of other restrict self.
             method isConsistentSubtypeOf(other : ObjectType) → Boolean {
 
-                return self.isSubtypeOf(other)
+                return self.isSubtypeOf(other.resolve)
 
                 //TODO: Fix restriction() so that it handles variant types
                 //def selfRestType = self.restriction(other)
@@ -911,8 +933,8 @@ def anObjectType: ObjectTypeFactory is public = object {
             //Param trials - Holds pairs of previously subtype-checked ObjectTypes
             //          Prevents infinite subtype checking of self-referential types
             //Param other - The ObjectType that self is checked against
-            method isSubtypeHelper(trials:List⟦TypePair⟧, other:ObjectType) → Answer {
-
+            method isSubtypeHelper(trials:List⟦TypePair⟧, other':ObjectType) → Answer {
+                def other : ObjectType = other'.resolve
                 if(self.isMe(other)) then {
                     return answerConstructor(true, trials)
                 }
@@ -971,7 +993,8 @@ def anObjectType: ObjectTypeFactory is public = object {
             // Variant
             // Construct a variant type from two object types.
             // Note: variant types can only be created by this constructor.
-            method |(other : ObjectType) → ObjectType {
+            method |(other' : ObjectType) → ObjectType {
+                def other : ObjectType = other'.resolve
                 if(self == other) then { return self }
                 if(other.isDynamic) then { return dynamic }
 
@@ -1042,7 +1065,9 @@ def anObjectType: ObjectTypeFactory is public = object {
                 }
             }
 
-            method &(other : ObjectType) → ObjectType {
+            method &(other' : ObjectType) → ObjectType {
+                def other : ObjectType = other'.resolve
+
                 if(self == other) then { return self }
                 if(other.isDynamic) then {
                   return dynamic
@@ -1381,9 +1406,17 @@ def anObjectType: ObjectTypeFactory is public = object {
 
             method resolve -> ObjectType { self }
 
+            def isResolved : Boolean is public = true
+
             def isDynamic : Boolean is public = true
 
+            var isPlaceholder : Boolean is public := false
+
             method isSubtypeOf(_ : ObjectType) → Boolean { true }
+
+            method isSubtypeHelper (_ : List⟦TypePair⟧, _ : ObjectType) → Answer {
+                answerConstructor(true , emptyList)
+            }
 
             method |(_ : ObjectType) → dynamic { dynamic }
 

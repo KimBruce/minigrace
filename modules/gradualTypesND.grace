@@ -1917,7 +1917,7 @@ def astVisitor: ast.AstVisitor is public= object {
     method visitBlock (block: AstNode) → Boolean {
         // Raises exception if block parameters not given types
         for (block.params) do {p→
-            if ((p.kind == "identifier") && {p.wildcard.not} && {p.decType.value=="Unknown"}) then {
+            if (((p.kind == "identifier") || {p.wildcard.not}) && {p.decType.value=="Unknown"}) then {
                 CheckerFailure.raise("no type given to declaration"
                     ++ " of parameter '{p.value}'") with (p)
             }

@@ -1210,26 +1210,29 @@ def anObjectType: ObjectTypeFactory is public = object {
         }
     }
 
+    //takes an AstNode and returns its corresponding ObjectType
     method fromDType(dtype: AstNode) → ObjectType {
-        match(dtype)
-          case { (false) →
+        match(dtype) case { (false) →
             dynamic
         } case { typeDec : TypeDeclaration →
+<<<<<<< HEAD
 //        TODO: re-write this code to understand the syntax of type expressions
 //          and type declarations, which are not the same!
 
             //the value of a typeDecNode is a typeLiteralNode
             anObjectType.fromDType(typeDec.value)
+=======
+            ProgrammingError.raise "Types cannot be declared inside other types or objects"
+>>>>>>> fromDType for lazy type-checking
         } case { typeLiteral : TypeLiteral →
-
             def meths : Set⟦MethodType⟧ = emptySet
-            def embeddedTypes : Dictionary⟦String,ObjectType⟧ = emptyDictionary
 
             //collect MethodTypes
             for(typeLiteral.methods) do { mType : AstNode →
                 meths.add(aMethodType.fromNode(mType))
             }
 
+<<<<<<< HEAD
             //collect embedded types and create corresponding MethodTypes
             for (typeLiteral.types) do { td : TypeDeclaration →
                 embeddedTypes.at(td.nameString) put(anObjectType.fromDType(td))
@@ -1248,6 +1251,9 @@ def anObjectType: ObjectTypeFactory is public = object {
             } else {
                 anObjectType.fromMethods(meths) withTypes(embeddedTypes)
             }
+=======
+            anObjectType.fromMethods(meths) withTypes(emptyDictionary)
+>>>>>>> fromDType for lazy type-checking
 
         } case { op: Operator →
             // Operator takes care of type expressions: Ex. A & B, A | C
@@ -1271,11 +1277,11 @@ def anObjectType: ObjectTypeFactory is public = object {
             }
 
         } case { ident : Identifier →
-            anObjectType.fromIdentifier(ident)
-
-        } case { generic : Generic →
             anObjectType.fromIdentifier(generic.value)
+            def oType : ObjectType = scope.types.findAtTop(ident.value)
+                butIfMissing{ScopingError.raise("Failed to find {ident.value}")}
 
+<<<<<<< HEAD
         } case { memb : Member →
             //io.error.write "\n1172 is member {memb}"
             //io.error.write "\n1173 finding {memb.receiver.value}.{memb.value}"
@@ -1353,6 +1359,34 @@ def anObjectType: ObjectTypeFactory is public = object {
                 case { (noSuchType) → dynamic }
                 case { o : ObjectType → retType }
 
+=======
+            //If the type we are referencing is unexpanded, then expand it and
+            //update its entry in the type scope
+            if(oType.isResolved) then{
+                return oType
+            } else {
+                def resolvedOType : ObjectType = oType.resolve
+                scope.types.addToTopAt(ident.value) put (resolvedOType)
+                return resolvedOType
+            }
+        } case { generic : Generic →
+            //should we raise an error or return dynamic if not found in scope?
+            scope.types.findAtTop(generic.value.value)
+                butIfMissing{ScopingError.raise("Failed to find {generic.value.value}")}
+
+        } case { member : Member →
+            def receiverName: String = member.receiver.nameString
+            //all members processed here are references to types, so we can ignore
+            //these receivers since types are always at the top level of the scope
+            if((receiverName == "self") || (receiverName == "module()object")) then {
+                return scope.types.findAtTop ("{member.value}")
+                    butIfMissing { ScopingError.raise("Failed to find " ++
+                                "{member.receiver.nameString}.{member.value}")}
+            }
+            scope.types.findAtTop("{member.receiver.nameString}.{member.value}")
+                butIfMissing { ScopingError.raise("Failed to find " ++
+                               "{member.receiver.nameString}.{member.value}")}
+>>>>>>> fromDType for lazy type-checking
         } case { str : StringLiteral →
             anObjectType.string
 
@@ -2797,6 +2831,7 @@ method collectTypes(nodes : Collection⟦AstNode⟧) → Done is confidential {
 
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 method resolveType(td : AstNode) -> ObjectType {
     match(td) case{ ident : Identifier ->
@@ -2856,6 +2891,8 @@ method resolveType(td : AstNode) -> ObjectType {
 }
 
 >>>>>>> collecting variant types
+=======
+>>>>>>> fromDType for lazy type-checking
 // Determines if a node is publicly available.
 method isPublic(node : Method | Def | Var) → Boolean is confidential {
     match(node) case { _ : Method →

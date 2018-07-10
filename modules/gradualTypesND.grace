@@ -2724,8 +2724,6 @@ def TypeDeclarationError = TypeError.refine "TypeDeclarationError"
 // reference one another declaratively.
 method collectTypes(nodes : Collection⟦AstNode⟧) → Done is confidential {
     def names: List⟦String⟧ = list[]
-    def types: List⟦AstNode⟧ = list[]
-    def placeholders: List⟦ObjectType⟧ = list[]
 
     for(nodes) do { node →
         match(node) case { td : TypeDeclaration →
@@ -2736,40 +2734,9 @@ method collectTypes(nodes : Collection⟦AstNode⟧) → Done is confidential {
             }
 
             names.push(td.nameString)
-
-            // In order to allow the types to be declarative, the scope needs
-            // to be populated by placeholder types first.
-            def placeholder: ObjectType = anObjectType.placeholder
-            types.push(td)
-            placeholders.push(placeholder)
-            scope.types.at(td.nameString) put(placeholder)
+            scope.types.at(td.nameString)
+                                    put(anObjectType.definedByNode (td.value))
         } case { _ →
-        }
-    }
-
-    while{types.size > 0} do {
-        def resolvedTypes : List[[Number]] = emptyList
-        var count : Number := 1
-        for(types) do { td: AstNode  →
-
-            def oType = resolveType(td.value)
-
-            if (oType.isPlaceholder.not) then {
-                resolvedTypes.addFirst(count)
-                //scope.types.removeKey()
-                scope.types.at(td.nameString) put(oType)
-            }
-
-            count := count + 1
-
-            io.error.write("\n2518 The type name is: {td.nameString} and it has embedded types of: {oType.getTypeList}")
-            io.error.write "\n2518.5 The type itself is: {oType}"
-        }
-
-        for(resolvedTypes) do { index:Number ->
-            io.error.write"\n2705 removing {types.at(index).nameString}"
-
-            types.removeAt(index)
         }
     }
     // io.error.write "1881: done collecting types"

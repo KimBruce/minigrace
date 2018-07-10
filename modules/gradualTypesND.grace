@@ -119,7 +119,9 @@ def allCache: Dictionary = emptyDictionary
 type StackOfKind⟦V⟧ = {
     stack → List⟦Dictionary⟧
     at (name : String) put (value:V) → Done
+    addToTopAt(name : String) put (value : V) → Done
     find (name : String) butIfMissing (bl: Function0⟦V⟧) → V
+    findAtTop (name : String) butIfMissing (bl: Function0⟦V⟧) → V
 }
 
 class stackOfKind⟦V⟧(kind : String) → StackOfKind⟦V⟧ is confidential {
@@ -127,6 +129,11 @@ class stackOfKind⟦V⟧(kind : String) → StackOfKind⟦V⟧ is confidential {
     // add <name,value> to current scope
     method at (name : String) put (value:V) → Done {
         stack.last.at(name) put(value)
+    }
+
+    //adds to the first layer of the scope
+    method addToTopAt(name : String) put (value:V) → Done {
+        stack.first.at(name) put(value)
     }
 
     // Find name in stack of current scopes & return its value
@@ -146,6 +153,19 @@ class stackOfKind⟦V⟧(kind : String) → StackOfKind⟦V⟧ is confidential {
         }
 
         return bl.apply
+    }
+
+    //specifically used to find types saved in the first level of the scope
+    method findAtTop (name : String) butIfMissing (bl: Function0⟦V⟧) → V {
+        var found: Boolean := true
+        def val = stack.at(1).at(name) ifAbsent {
+            found := false
+        }
+        if(found) then {
+            return val
+        } else {
+            return bl.apply
+        }
     }
 
 }

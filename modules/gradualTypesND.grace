@@ -168,6 +168,19 @@ class stackOfKind⟦V⟧(kind : String) → StackOfKind⟦V⟧ is confidential {
         }
     }
 
+    method asString → String is override {
+        var out: String := ""
+
+        for(stack) do { dict:Dictionary⟦String, Object⟧ →
+            out := "{out}\ndict⟬"
+
+            dict.keysAndValuesDo { key:String, value:Object →
+                out := "{out}\n  {key}::{value}"
+            }
+            out := "{out}\n⟭"
+        }
+        out
+    }
 }
 
 type Scope = {
@@ -812,6 +825,24 @@ def anObjectType: ObjectTypeFactory is public = object {
 
         method & (other : ObjectType) → ObjectType { resolve & (other.resolve) }
 
+        method asString → String is override {
+            match(node) case { (false) →
+                "Unknown"
+            } case { typeLiteral : TypeLiteral →
+                "UnresolvedTypeLiteral"
+            } case { op : Operator →
+                "{definedByNode(op.left)}{op.value}{definedByNode(op.right)}"
+            } case { ident : Identifier →
+                "{ident.value}"
+            } case { generic : Generic →
+                "{generic.value.value}"
+            } case { member : Member →
+                "{member.receiver.nameString}.{member.value}"
+            } case { _ →
+                ProgrammingError.raise ("No case in method 'asString' of the" ++
+                    "class definedByNode for node of kind {node.kind}") with(node)
+            }
+        }
     }
 
 
@@ -1161,19 +1192,17 @@ def anObjectType: ObjectTypeFactory is public = object {
             }
 
             method asString → String is override {
-                if(methods.size == 3) then {
-                    return "Object"
-                }
+                if(methods.size == base.methods.size) then { return "Object" }
 
                 var out: String := "\{ "
 
                 for(methods) do { mtype: MethodType →
-                    if(["==", "!=", "asString"].contains(mtype.name).not) then {
-                        out := "{out}\n  {mtype}; "
+                    if(base.methods.contains(mtype).not) then {
+                        out := "{out}\n    {mtype}; "
                     }
                 }
 
-                return "{out}\}\n"
+                return "{out}\n  \}"
             }
         }
     }
@@ -1182,12 +1211,23 @@ def anObjectType: ObjectTypeFactory is public = object {
                                           withName(name : String) → ObjectType {
         object {
             inherit fromMethods(methods')
+
+            method asString → String is override {
+                if(methods.size == base.methods.size) then { return "Object" }
+
+                var out: String := name
+
+                for(methods') do { mtype: MethodType →
+                    out := "{out}\{ "
+                    if(base.methods.contains(mtype).not) then {
+                        out := "{out}\n    {mtype}; "
                     }
+                    out := "{out}\n  \}"
                 }
 
-                out := out ++ " \}"
+                return "{out}"
             }
-            def asString : String is public, override = out
+
         }
     }
 
@@ -1384,6 +1424,10 @@ def anObjectType: ObjectTypeFactory is public = object {
 
     //Find ObjectType corresponding to the identifier in the scope
     method fromIdentifier(ident : Identifier) → ObjectType {
+<<<<<<< HEAD
+=======
+        io.error.write "\n1249 looking for {ident.value} inside {scope.types}"
+>>>>>>> Improved asString for scope, ObjectTypes
         scope.types.find(ident.value) butIfMissing { dynamic }
     }
 
@@ -2202,9 +2246,15 @@ def astVisitor: ast.AstVisitor is public= object {
         def rec: AstNode = req.receiver
         //io.error.write "\n1672: receiver is {rec}"
 
+<<<<<<< HEAD
         io.error.write "\n1673: reciever of call is: {rec.nameString}"
         //io.error.write "\nTypes scope at visitCall is : {scope.types.stack}"\
         //io.error.write "\nVariable scope at visitCall is : {scope.variables.stack}"
+=======
+        io.error.write "\n1673: visitCall's call is: {rec.nameString}.{req.nameString}"
+        //io.error.write "\nTypes scope at visitCall is : {scope.types}"\
+        //io.error.write "\nVariable scope at visitCall is : {scope.variables}"
+>>>>>>> Improved asString for scope, ObjectTypes
 
         var tempDef := scope.types.find("$elf") butIfMissing{anObjectType.dynamic}
         //io.error.write "\nCache at visitCall is: {cache}"
@@ -2285,7 +2335,7 @@ def astVisitor: ast.AstVisitor is public= object {
         allCache.at(obj) put (pcType.inheritableType)
         io.error.write "\n1971: *** Visited object {obj}"
         io.error.write (pcType.asString)
-
+        io.error.write "\n2153: Scope at end is: {scope.types}"
         false
     }
 
@@ -2315,9 +2365,9 @@ def astVisitor: ast.AstVisitor is public= object {
         }
         def withoutImp : AstNode = ast.moduleNode.body(bodyNodes)
                                 named (node.nameString) scope (node.scope)
-        io.error.write "\n2186 Types scope before collecing types is {scope.types.stack}"
+        io.error.write "\n2186 Types scope before collecing types is {scope.types}"
         collectTypes (list (withoutImport.body))
-        io.error.write "\n2186 Types scope after collecing types is {scope.types.stack}"
+        io.error.write "\n2186 Types scope after collecing types is {scope.types}"
 
         visitObject (withoutImport)
     }
@@ -2342,7 +2392,7 @@ def astVisitor: ast.AstVisitor is public= object {
     // look up identifier type in scope
     method visitIdentifier (ident: AstNode) → Boolean {
         //io.error.write "\nvisitIdentifier scope.variables processing node
-        //    {ident} is {scope.variables.stack}"
+        //    {ident} is {scope.variables}"
         def idType: ObjectType = match(ident.value)
             case { "outer" →
                 outerAt(scope.size)
@@ -2608,14 +2658,14 @@ method outerAt(i : Number) → ObjectType is confidential {
         return anObjectType.dynamic
     }
     io.error.write "processing outer"
-    def vStack: List⟦Dictionary⟧ = scope.variables.stack
+    def vStack: List⟦Dictionary⟧ = scope.variables
     def curr: ObjectType = vStack.at(i)
 
     //Joe-how does an ObjectType have an 'at' method
     return curr.at("outer") ifAbsent {
         def prev: ObjectType = outerAt(i - 1)
 
-        def mStack: List⟦Dictionary⟧ = scope.methods.stack
+        def mStack: List⟦Dictionary⟧ = scope.methods
 
         def vars: Dictionary = vStack.at(i - 1)
         def meths: Set⟦MethodType⟧ = mStack.at(i - 1).values
@@ -2775,6 +2825,8 @@ method processBody (body : List⟦AstNode⟧, superclass: AstNode | false)
         io.error.write "\n2072: finished index {i}\n"
     }
 
+    io.error.write "\n 2674 types scope is: {scope.types}"
+    io.error.write "\n 2675 methods scope is: {scope.methods}"
     pubConf(publicType,internalType)
 }
 

@@ -4,7 +4,7 @@ import "ast" as ast
 import "util" as util
 
 def input = list [
-    "type Person = type \{",
+    "type Person = interface \{",
     "  age -> Number",
     "  name -> String",
     "\}",
@@ -19,7 +19,7 @@ def input = list [
 ]
 
 util.lines.addAll(input)
-def tokens = lexer.new.lexinput(input)
+def tokens = lexer.new.lexInputLines
 def module = parser.parse(tokens)
 
 print (module.pretty 0)

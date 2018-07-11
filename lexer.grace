@@ -81,122 +81,182 @@ method padl(s, l, w) {
     return s'
 }
 
+def noSuchLine = singleton "noSuchLine"
+
 class new {
     var tokens
     var lineNumber := 1
     var linePosition := 0
     var startPosition := 1
-    var indentLevel := 0
+    var currentLineIndent := 0
     var startLine := 1
     var stringStart
     var unichars := 0
+    var braceChange
+    var currentLineBraceDepth := 0
+    var indentOfLineBeingContinued := noSuchLine
+    var indentStack := list.with 0  // the indent is the number of leading spaces,
+        // and hence one less than the position of the first non-space character.
+    var maxIndentOfContinuation
+    var priorLineBraceDepth := 0
+    var priorLineIndent := 0
+    def inputLines = util.lines
+
+    method incrementBraceDepth {
+        currentLineBraceDepth := currentLineBraceDepth + 1
+    }
+    method decrementBraceDepth {
+        currentLineBraceDepth := currentLineBraceDepth - 1
+    }
+
     class token {
         def line is public = lineNumber
-        def indent is public = indentLevel
+        def indent is public = currentLineIndent
         def linePos is public = startPosition
 
-        def null = Singleton.named "⏚"
+        def null = object {
+            method asString { "⏚" }
+            method == (other) { isMe (other) }
+            method isHeader { true }
+        }
         var next is public := null
         var prev is public := null
 
         method == (other) {
             if (null == other) then {
                 false
+            } elseif {false == other} then {
+                false
             } else {
-                (other.line == line) && (other.linePos == linePos)
+                (line == other.line) && (linePos == other.linePos)
             }
         }
-        method asString { "({line}:{linePos}){self.kind} {self.value}" }
+        method asString { "({line}.{linePos}){self.kind} {self.value}" }
         method value { abstract }
         method size { abstract }
         method kind { abstract }
+        method endLine { line }
         method endPos { linePos + size - 1 }
+        method isHeader { false }
+        method hasPrev { prev.isHeader.not }
+        method hasNext { next.isHeader.not }
+        method isIdentifier { false }
+        method isString { false }
+        method isComment { false }
+        method isLBrace { false }
+        method isRBrace { false }
+        method isLParen { false }
+        method isRParen { false }
+        method isLSquare { false }
+        method isRSquare { false }
+        method isComma { false }
+        method isColon { false }
+        method isDot { false }
+        method isNum { false }
+        method isKeyword { false }
+        method isOp { false }
+        method isArrow { false }
+        method isBind { false }
+        method isSeparator { false }
+        method isLGeneric { false }
+        method isRGeneric { false }
+        method isEof { false }
     }
-
 
     class identifierToken(s) {
         inherit token
         def kind is public = "identifier"
         def value is public = s
         def size is public = s.size
+        method isIdentifier { true }
     }
     class stringToken(s) {
         inherit token
         def kind is public = "string"
         def value is public = s
         def size is public = linePosition - startPosition + 1
+        method isString { true }
     }
     class multiLineStringToken(s) {
         inherit token
         def kind is public = "string"
         def value is public = s
         def size is public = s.size + 2
-        def line' = startLine
-        def linePos' = stringStart
-        method line is override { line' }
-        method linePos is override { linePos' }
-        method endLine { lineNumber }
-        method endPos is override { linePosition }
+        def linePos is public = stringStart
+        def line is override, public = startLine
+        def endLine is override, public = lineNumber
+        def endPos is override, public = linePosition
+        method isString { true }
     }
     class commentToken(s) {
         inherit token
         def kind is public = "comment"
         def value is public = s
         def size is public = s.size + 2
+        method isComment { true }
     }
     class lBraceToken {
         inherit token
         def kind is public = "lbrace"
         def value is public = "\{"
         def size is public = 1
+        method isLBrace { true }
     }
     class rBraceToken {
         inherit token
         def kind is public = "rbrace"
         def value is public = "}"
         def size is public = 1
+        method isRBrace { true }
     }
     class lParenToken {
         inherit token
         def kind is public = "lparen"
         def value is public = "("
         def size is public = 1
+        method isLParen { true }
     }
     class rParenToken {
         inherit token
         def kind is public = "rparen"
         def value is public = ")"
         def size is public = 1
+        method isRParen { true }
     }
     class lSquareToken {
         inherit token
         def kind is public = "lsquare"
         def value is public = "["
         def size is public = 1
+        method isLSquare { true }
     }
     class rSquareToken {
         inherit token
         def kind is public = "rsquare"
         def value is public = "]"
         def size is public = 1
+        method isRSquare { true }
     }
     class commaToken {
         inherit token
         def kind is public = "comma"
         def value is public = ","
         def size is public = 1
+        method isComma { true }
     }
     class colonToken {
         inherit token
         def kind is public = "colon"
         def value is public = ":"
         def size is public = 1
+        method isColon { true }
     }
     class dotToken {
         inherit token
         def kind is public = "dot"
         def value is public = "."
         def size is public = 1
+        method isDot { true }
     }
     class numToken(v, b) {
         inherit token
@@ -204,54 +264,75 @@ class new {
         def value is public = v
         def base is public = b
         def size is public = linePosition - startPosition + 1
+        method isNum { true }
     }
     class keywordToken(v) {
         inherit token
         def kind is public = "keyword"
         def value is public = v
         def size is public = v.size
+        method isKeyword { true }
     }
     class opToken(v) {
         inherit token
         def kind is public = "op"
         def value is public = v
         def size is public = v.size
+        method isOp { true }
     }
     class arrowToken {
         inherit token
         def kind is public = "arrow"
         def value is public = "→"
         def size is public = 1
+        method isArrow { true }
     }
     class bindToken {
         inherit token
         def kind is public = "bind"
         def value is public = ":="
         def size is public = 2
+        method isBind { true }
     }
     class semicolonToken {
         inherit token
         def kind is public = "semicolon"
         def value is public = ";"
         def size is public = 1
+        method isSeparator { true }
+    }
+    class separatorTokenAt(lineNum, pos) {
+        inherit token
+        def kind is public = "separator"
+        def value is public = "\n"
+        def size is public = 1
+        method asString { "({line}.{linePos}){self.kind} \\n" }
+        def line is override, public = lineNum
+        def linePos is override, public = pos
+        def endLine is override, public = lineNumber
+        def endPos is override, public = currentLineIndent
+        method isSeparator { true }
     }
     class lGenericToken {
         inherit token
         def kind is public = "lgeneric"
         def value is public = "⟦"
         def size is public = 1
+        method isLGeneric { true }
     }
     class rGenericToken {
         inherit token
         def kind is public = "rgeneric"
         def value is public = "⟧"
         def size is public = 1
+        method isRGeneric { true }
     }
     class eofToken {
         inherit token
         def kind is public = "eof"
         def value is public = ""
         def size is public = 0
+        method isEof { true }
     }
 
     var state
@@ -268,6 +349,13 @@ class new {
         tokens.push(t)
         accum := ""
     }
+    method emitNewlineSeparator {
+        // we have already consumed the leading spaces on the following line.
+        // We want the newline's coordinates to be those of the end of the prior line.
+        if (tokens.isEmpty) then { return }
+        def lastToken = tokens.last
+        emit(separatorTokenAt(lineNumber - 1, lastToken.endPos + 1))
+    }
     method store(c) { accum := accum ++ c }
 
     def startState = object {
@@ -280,7 +368,6 @@ class new {
             }
         }
     }
-    state := startState
 
     def pragmaPrefixState = object {
         method consume(c){
@@ -370,6 +457,7 @@ class new {
             } elseif {c == ","} then {
                 emit(commaToken)
             } elseif {c == "\{"} then {
+                incrementBraceDepth
                 emit(lBraceToken)
             } elseif {c == "}"} then {
                 advanceTo(rBraceState)
@@ -394,7 +482,7 @@ class new {
             } elseif {c == ";"} then {
                 emit(semicolonToken)
             } elseif {c == "\n"} then {
-                indentLevel := 0
+                currentLineIndent := 0
                 advanceTo(indentationState)
             } else {
                 if((unicode.isSeparator(ordval).not) &&
@@ -415,7 +503,7 @@ class new {
             if (interpdepth > 0) then {
                 if (tokens.last.kind == "lparen") then {
                     def lastPos = tokens.last.linePos
-                    def lineLength = util.lines.at(lineNumber).size
+                    def lineLength = inputLines.at(lineNumber).size
                     def suggestions = []
                     if (lastPos < lineLength) then {
                         def suggestion1 = errormessages.suggestion.new
@@ -439,6 +527,7 @@ class new {
                 inStr := true
                 advanceTo(quotedStringState)
             } else {
+                decrementBraceDepth
                 emit (rBraceToken)
                 advanceTo (defaultState)
             }
@@ -782,8 +871,9 @@ class new {
     def indentationState = object {
         method consume (c) {
             if (spaceChars.contains(c)) then {
-                indentLevel := linePosition
+                currentLineIndent := linePosition
             } else {
+                checkIndentation(c)
                 advanceTo(defaultState)
                 state.consume(c)
             }
@@ -802,7 +892,7 @@ class new {
         method consume (c) {
             if (c == "\n") then {
                 emit (commentToken(accum))
-                indentLevel := 0
+                currentLineIndent := 0
                 advanceTo(indentationState)
             } else {
                 store(c)
@@ -810,16 +900,158 @@ class new {
         }
     }
 
+    method checkIndentation(currentCharacter) {
+        // a newline has been matched (including the spaces that follow it).
+        // Depending on the state of the lexer, classify it as <whitespace> (when
+        // the following line is a continuation line) or a real <newline> token."
+
+        checkAndRecordIndentStatus(currentCharacter)
+        if (isLineEmpty(currentCharacter)) then { return }
+        if (isIndentationChangeOne) then {
+            errormessages.syntaxError "a change of indentation of 1 is not permitted"
+                            atRange (lineNumber, linePosition, linePosition)
+        }
+        terminateContinuationIfNecessary
+        if (isBlockStart) then {
+            recordNewIndentation
+            saveDataForPriorLine
+            if (priorLineEndsWithOpenBracket) then {
+                return
+            } else {
+                emitNewlineSeparator
+                return
+            }
+        }
+        if (isBlockEnd) then { checkIndentationReset }
+        if (isContinuationLine) then {
+            recordContinuationStatus
+            saveDataForPriorLine
+            return
+        }
+        if (currentLineIndent < priorLineIndent) then { checkOutdent }
+        saveDataForPriorLine
+        if ( ")]}⟧".contains(currentCharacter) ) then { return }
+        emitNewlineSeparator
+    }
+
+    method isLineEmpty(currentCharacter) {
+        // answers true if the line that we just started is empty, or just a comment.
+        // Leading spaces have already been consumed in indentationState, so
+        // on a line containing just spaces, currentCharacter will be the next newline.
+        // A line containing nothing but a comment is treated as empty,
+        // so that comments do not reset the indentation.
+
+        if ("\n" == currentCharacter) then { return true }
+        if ("/" ≠ currentCharacter) then { return false }
+        return "/" == followingCharacter
+    }
+    method followingCharacter {
+        def currentLine = inputLines.at (lineNumber)
+        if (currentLine.size == linePosition) then {
+            "\n"
+        } else {
+            currentLine.at (linePosition + 1)
+        }
+    }
+    method isIndentationChangeOne {
+        def indentationChange = currentLineIndent - priorLineIndent
+        return indentationChange.abs == 1
+    }
+
+    method terminateContinuationIfNecessary {
+        if (indentOfLineBeingContinued == noSuchLine) then { return }
+        if ((braceChange < 1) && { currentLineIndent >= maxIndentOfContinuation }) then {
+            maxIndentOfContinuation := currentLineIndent
+            return
+        }
+        // The continuation has ended, either because we have opened a new block,
+        // or because currentLineIndent < maxIndentOfContinuation
+        priorLineIndent := indentOfLineBeingContinued
+        indentOfLineBeingContinued := noSuchLine    // receord termination of continuation
+    }
+
+    method checkAndRecordIndentStatus (currentCharacter) {
+        if ("\t" == currentCharacter) then {
+            lexicalError "Please indent with spaces, not tabs"
+        }
+        braceChange := currentLineBraceDepth - priorLineBraceDepth
+        if ("}" == currentCharacter) then {
+            // treat a line that starts with a "}" as being at the
+            // prior indent level
+            braceChange := braceChange - 1
+        }
+    }
+    method isBlockStart {
+        braceChange > 0
+    }
+    method isBlockEnd {
+        braceChange < 0
+    }
+    method recordNewIndentation {
+        // One or more blocks have just started.  Record the new
+        // indentation(s)
+        if (currentLineIndent ≤ priorLineIndent) then {
+            lexicalError "Please indent the body of a block"
+        }
+        if (braceChange > 1) then {
+            lexicalError "The prior line opened two blocks. There is no way for you to close them correctly! Please split the prior line into two."
+        }
+        repeat (braceChange) times {
+            indentStack.addLast (currentLineIndent)
+        }
+    }
+    method saveDataForPriorLine {
+        priorLineBraceDepth := priorLineBraceDepth + braceChange
+        priorLineIndent := currentLineIndent
+    }
+    method priorLineEndsWithOpenBracket {
+        "[(\{⟦".contains (tokens.last.value)
+    }
+    method checkIndentationReset {
+        // A bock has ended.  Check that the indentation returns
+        // to the previous level
+
+        repeat (- braceChange) times { indentStack.removeLast }
+        if (currentLineIndent ≠ indentStack.last) then {
+            lexicalError "on closing a block, the indentation must return to the same level as when the block was opened\ncurrentLineIndent = {currentLineIndent}; indentStack.last = {indentStack.last}; braceChange = {braceChange}"
+        }
+    }
+    method isContinuationLine {
+        if (noSuchLine ≠ indentOfLineBeingContinued) then {
+            return  true
+        }
+        currentLineIndent > priorLineIndent
+    }
+    method recordContinuationStatus {
+        if (noSuchLine == indentOfLineBeingContinued) then {
+            indentOfLineBeingContinued := indentStack.last
+            maxIndentOfContinuation := currentLineIndent
+        } elseif {currentLineIndent < indentOfLineBeingContinued} then {
+            lexicalError "if this line continues the previous line, its indentation must be at least {indentOfLineBeingContinued}; if it is not part of the continuation, its indentation must be {indentStack.last}"
+        }
+    }
+    method checkOutdent {
+        // The indentation has decreased.  Check that this is ok
+
+        if (braceChange == 0) then {
+            lexicalError "do not reduce the indentation except when ending a block"
+        }
+    }
+    method lexicalError (message) {
+        errormessages.
+            syntaxError (message)
+            atRange (lineNumber, 1, linePosition)
+    }
     method newLineError {
         if (interpdepth > 0) then {
             // Find closest {.
             var line := lineNumber
-            var i := util.lines.at(line).size
-            while { util.lines.at(line).at(i) != "\{" } do {
+            var i := inputLines.at(line).size
+            while { inputLines.at(line).at(i) != "\{" } do {
                 i := i - 1
                 if(i == 0) then {
                     lineNumber := line - 1
-                    i := util.lines.at(line).size
+                    i := inputLines.at(line).size
                 }
             }
             def suggestions = []
@@ -837,9 +1069,9 @@ class new {
                     lineNumber, linePosition - accum.size - 1)withSuggestions(suggestions)
             }
         } else {
-            def errorLine = util.lines.at(lineNumber)
-            def nextLine = if (util.lines.size >= (lineNumber + 1)) then {
-                util.lines.at(lineNumber + 1)
+            def errorLine = inputLines.at(lineNumber)
+            def nextLine = if (inputLines.size >= (lineNumber + 1)) then {
+                inputLines.at(lineNumber + 1)
             } else {
                 ""
             }
@@ -1035,7 +1267,7 @@ class new {
     method lexfile(file) {
         // Reads the program text from file; returns a list of tokens.
 
-        def lines = util.lines.makeEmpty
+        inputLines.makeEmpty
         def cLines = util.cLines.makeEmpty
             // making them empty is necessary for the browser,
             // where these variables persist from one compilation
@@ -1045,7 +1277,7 @@ class new {
         var wasCR := false
         for(file.read) do { c ->
             if (c == "\r") then {
-                lines.push(line)
+                inputLines.push(line)
                 cLines.push(cLine)
                 line := ""
                 cLine := ""
@@ -1055,14 +1287,14 @@ class new {
                     // the spec says "a LINE FEED that immediately
                     // follows a CARRIAGE RETURN is ignored"
                 } else {
-                    lines.push(line)
+                    inputLines.push(line)
                     cLines.push(cLine)
                     line := ""
                     cLine := ""
                 }
                 wasCR := false
             } elseif {c == "\l"} then {
-                lines.push(line)
+                inputLines.push(line)
                 cLines.push(cLine)
                 line := ""
                 cLine := ""
@@ -1083,19 +1315,27 @@ class new {
         }
         if (line != "") then {
             // this deals with an un-terminated final line
-            lines.push(line)
+            inputLines.push(line)
             cLines.push(cLine)
         }
-        lexinput(lines)
+        lexInputLines
     }
 
-    method lexinput(inputLines) {
+    method lexString (inputString) {
+        // this method is here to make it easier to test the lexer
+        def input = inputString.split "\n"
+        util.lines.addAll(input)
+        lexInputLines
+    }
+
+    method lexInputLines {
         // tokens is a doubly-linked list of tokens.
         tokens := object {
             def header = object {
                 var next is public
                 method asString { "⏚" }
                 method == (other) { isMe (other) }
+                method isHeader { true }
             }
             header.next := header
             var last is readable := header
@@ -1175,7 +1415,7 @@ class new {
 
             method do(action) {
                 var n := first
-                while { header ≠ n } do {
+                while { n.isHeader.not } do {
                     action.apply(n)
                     n := n.next
                 }
@@ -1220,7 +1460,7 @@ class new {
         if (inStr) then {
             errormessages.syntaxError("a multi-line string must end with a '›'.\n" ++
                 "String opened on line {startLine} and unclosed at end of input.")
-                atRange(startLine, stringStart, util.lines.at(startLine).size)
+                atRange(startLine, stringStart, inputLines.at(startLine).size)
         }
         tokens.push(eofToken)
         tokens

@@ -700,16 +700,19 @@ def noSuchType: outer.Pattern = object {
 // represents the type of an expression as a collection of method types
 type ObjectType = {
     methods → Set⟦MethodType⟧
+    getMethod (name : String) → MethodType | noSuchMethod
     resolve → ObjectType
-    // getMethod (name : String) → MethodType | noSuchMethod
-    isDynamic → Boolean
     isResolved → Boolean
+    isDynamic → Boolean
+    == (other:ObjectType) → Boolean
     isSubtypeOf (other : ObjectType) → Boolean
     isSubtypeHelper (trials : List⟦TypePair⟧, other : ObjectType) → Answer
-    | (other : ObjectType) → ObjectType
-    & (other : ObjectType) → ObjectType
     restriction (other : ObjectType) → ObjectType
     isConsistentSubtypeOf (other : ObjectType) → Boolean
+    getVariantTypes → List⟦ObjectType⟧
+    setVariantTypes(newVariantTypes:List⟦ObjectType⟧) → Done
+    | (other : ObjectType) → ObjectType
+    & (other : ObjectType) → ObjectType
 }
 
 // methods to create an object type from various inputs
@@ -718,12 +721,12 @@ type ObjectTypeFactory = {
     fromMethods (methods' : Set⟦MethodType⟧) → ObjectType
     fromMethods (methods' : Set⟦MethodType⟧) withName (name : String) → ObjectType
     fromDType (dtype) → ObjectType
+    fromIdentifier(ident : Identifier) → ObjectType
     fromBlock (block) → ObjectType
     fromBlockBody (body) → ObjectType
     dynamic → ObjectType
     bottom → ObjectType
-    blockTaking (params : List⟦Parameter⟧)
-            returning (rType : ObjectType) → ObjectType
+    blockTaking (params : List⟦Parameter⟧) returning (rType : ObjectType) → ObjectType
     blockReturning (rType : ObjectType) → ObjectType
     base → ObjectType
     doneType → ObjectType
@@ -744,6 +747,7 @@ type ObjectTypeFactory = {
 
 def anObjectType: ObjectTypeFactory is public = object {
 
+<<<<<<< HEAD
     class placeholder → ObjectType {
         inherit fromMethods(emptySet) withTypes(emptyDictionary)
 
@@ -758,38 +762,36 @@ def anObjectType: ObjectTypeFactory is public = object {
     method fromMethods (methods' : Set⟦MethodType⟧) withTypes (types' : Dictionary⟦String,ObjectType⟧) → ObjectType {
         object {
 =======
+=======
+        isPlaceholder := true
+                isPlaceholder := false
+>>>>>>> Reorder ObjectType's methods
     //Version of ObjectType that allows for lazy-implementation of type checking
     //Holds the AstNode that can be resolved to the real ObjectType
     class definedByNode (node: AstNode) -> ObjectType{
 
-        method methods -> Set⟦MethodType⟧ {
-            resolve.methods
+        method methods -> Set⟦MethodType⟧ { resolve.methods }
+
+        method getMethod (name : String) → MethodType | noSuchMethod {
+            resolve.getMethod(name)
         }
 
         //Process the AstNode to get its ObjectType
-        method resolve -> ObjectType {
-            fromDType(node)
-        }
-
-        def isDynamic : Boolean is public = false
+        method resolve -> ObjectType { fromDType(node) }
 
         //an ObjectType is unexpanded if it still holds an AstNode
         def isResolved : Boolean is public = false
+
+        def isDynamic : Boolean is public = false
+
+        method == (other:ObjectType) → Boolean { resolve == other.resolve}
 
         method isSubtypeOf (other : ObjectType) -> Boolean {
             resolve.isSubtypeOf(other.resolve)
         }
 
-        method isSubtypeHelper (trials : List⟦TypePair⟧, other : ObjectType) -> Answer {
+        method isSubtypeHelper(trials:List⟦TypePair⟧, other:ObjectType) → Answer {
             resolve.isSubtypeHelper(trials, other.resolve)
-        }
-
-        method | (other : ObjectType) → ObjectType {
-            resolve | (other.resolve)
-        }
-
-        method & (other : ObjectType) → ObjectType {
-            resolve & (other.resolve)
         }
 
         method restriction (other : ObjectType) → ObjectType {
@@ -799,6 +801,17 @@ def anObjectType: ObjectTypeFactory is public = object {
         method isConsistentSubtypeOf (other : ObjectType) → Boolean{
             resolve.isConsistentSubtypeOf(other.resolve)
         }
+
+        method getVariantTypes → List⟦ObjectType⟧ { resolve.getVariantTypes }
+
+        method setVariantTypes(newVariantTypes:List⟦ObjectType⟧) → Done {
+            resolve.setVariantTypes(newVariantTypes)
+        }
+
+        method | (other : ObjectType) → ObjectType { resolve | (other.resolve) }
+
+        method & (other : ObjectType) → ObjectType { resolve & (other.resolve) }
+
     }
 
 
@@ -842,6 +855,7 @@ def anObjectType: ObjectTypeFactory is public = object {
 >>>>>>> Removes handling of embedded types
             method resolve -> ObjectType { self }
 
+<<<<<<< HEAD
 >>>>>>> New class of ObjectType
             //TODO: not sure we trust this. May have to refine == in the future
             method == (other:ObjectType) → Boolean {
@@ -852,19 +866,15 @@ def anObjectType: ObjectTypeFactory is public = object {
 =======
             var isPlaceholder : Boolean is public := false
 
+=======
+>>>>>>> Reorder ObjectType's methods
             def isResolved : Boolean is public = true
 
 >>>>>>> Using new unresolved ObjectType
             def isDynamic : Boolean is public = false
 
-            // List of variant types (A | B | ... )
-            var variantTypes: List⟦ObjectType⟧ := list[]
-
-            method getVariantTypes → List⟦ObjectType⟧ { variantTypes }
-
-            method setVariantTypes(newVariantTypes:List⟦ObjectType⟧) → Done {
-              variantTypes := newVariantTypes
-            }
+            //TODO: not sure we trust this. May have to refine == in the future
+            method == (other:ObjectType) → Boolean { self.isMe(other) }
 
             //Check if 'self', which is the ObjectType calling this method, is
             //a subtype of 'other'
@@ -876,22 +886,7 @@ def anObjectType: ObjectTypeFactory is public = object {
                 helperResult.ans
             }
 
-            // Consistent-subtyping:
-            // If self restrict other is a subtype of other restrict self.
-            method isConsistentSubtypeOf(other : ObjectType) → Boolean {
-
-                return self.isSubtypeOf(other.resolve)
-
-                //TODO: Fix restriction() so that it handles variant types
-                //def selfRestType = self.restriction(other)
-                //def otherRestType = other.restriction(self)
-                //io.error.write "self's restricted type is {selfRestType}"
-                //io.error.write "other's restricted type is {otherRestType}"
-
-                //return selfRestType.isSubtypeOf(otherRestType)  //  FIX!!!
-                //true
-            }
-
+            //Make confidential
             //helper method for subtyping a pair of non-variant types
             method isNonvariantSubtypeOf(trials': List⟦TypePair⟧,
                                                   other:ObjectType) → Answer {
@@ -982,6 +977,53 @@ def anObjectType: ObjectTypeFactory is public = object {
                 }
             }
 
+            method restriction(other : ObjectType) → ObjectType {
+                if (other.isDynamic) then { return dynamic}
+                def restrictTypes:Set⟦ObjectType⟧ = emptySet
+                // Restrict matching methods
+                for(methods) doWithContinue { meth, continue →
+                  // Forget restricting if it is a type
+                  if (asString.substringFrom (1) to (7) != "Pattern") then {
+                    for(other.methods) do { meth' →
+                      if(meth.name == meth'.name) then {
+                        restrictTypes.add(meth.restriction(meth'))
+                        continue.apply
+                      }
+                    }
+                  }
+                  restrictTypes.add(meth)
+                }
+                return object {
+                  //Joe - not sure how to handle restrict; probably wants to keep the types
+                  //Maybe check if they share same type name and keep those?
+                  inherit anObjectType.fromMethods(restrictTypes)
+
+                  method asString → String is override {
+                    "{outer}|{other}"
+                  }
+                }
+            }
+
+            // Consistent-subtyping:
+            // If self restrict other is a subtype of other restrict self.
+            method isConsistentSubtypeOf(other : ObjectType) → Boolean {
+                return self.isSubtypeOf(other.resolve)
+
+                //TODO: Fix restriction() so that it handles variant types
+                //def selfRestType = self.restriction(other)
+                //def otherRestType = other.restriction(self)
+                //io.error.write "self's restricted type is {selfRestType}"
+                //io.error.write "other's restricted type is {otherRestType}"
+
+                //return selfRestType.isSubtypeOf(otherRestType)  //  FIX!!!
+                //true
+            }
+
+            method getVariantTypes → List⟦ObjectType⟧ { variantTypes }
+
+            method setVariantTypes(newVariantTypes:List⟦ObjectType⟧) → Done {
+                variantTypes := newVariantTypes
+            }
 
             // Variant
             // Construct a variant type from two object types.
@@ -1028,33 +1070,6 @@ def anObjectType: ObjectTypeFactory is public = object {
                         "{outer} | {other}"
                     }
 
-                }
-            }
-
-            method restriction(other : ObjectType) → ObjectType {
-                if (other.isDynamic) then { return dynamic}
-                def restrictTypes:Set⟦ObjectType⟧ = emptySet
-                // Restrict matching methods
-                for(methods) doWithContinue { meth, continue →
-                  // Forget restricting if it is a type
-                  if (asString.substringFrom (1) to (7) != "Pattern") then {
-                    for(other.methods) do { meth' →
-                      if(meth.name == meth'.name) then {
-                        restrictTypes.add(meth.restriction(meth'))
-                        continue.apply
-                      }
-                    }
-                  }
-                  restrictTypes.add(meth)
-                }
-                return object {
-                  //Joe - not sure how to handle restrict; probably wants to keep the types
-                  //Maybe check if they share same type name and keep those?
-                  inherit anObjectType.fromMethods(restrictTypes) withTypes(other.getTypeList)
-
-                  method asString → String is override {
-                    "{outer}|{other}"
-                  }
                 }
             }
 
@@ -1247,7 +1262,6 @@ def anObjectType: ObjectTypeFactory is public = object {
             }
 
         } case { ident : Identifier →
-            anObjectType.fromIdentifier(generic.value)
             def oType : ObjectType = scope.types.findAtTop(ident.value)
                 butIfMissing{ScopingError.raise("Failed to find {ident.value}")}
 
@@ -1403,19 +1417,6 @@ def anObjectType: ObjectTypeFactory is public = object {
         }
     }
 
-    //Takes a block with only one parameter and returns its parameter's type
-    method getParamTypeFromBlock(block: AstNode) → ObjectType{
-        def bType: ObjectType = typeOf(block)
-
-        if (bType.isDynamic) then { return dynamic }
-
-        //retrieves the MethodType of the apply method from the block
-        def apply: MethodType = bType.getMethod("apply(1)")
-
-        //returns parameter type from MethodType
-        apply.signature.at(1).parameters.at(1).typeAnnotation
-    }
-
     method dynamic → ObjectType {
         object {
             def methods: Set⟦MethodType⟧ is public = sg.emptySet
@@ -1428,7 +1429,7 @@ def anObjectType: ObjectTypeFactory is public = object {
 
             def isDynamic : Boolean is public = true
 
-            var isPlaceholder : Boolean is public := false
+            method ==(other:ObjectType) → Boolean{self.isMe(other)}
 
             method isSubtypeOf(_ : ObjectType) → Boolean { true }
 
@@ -1436,17 +1437,19 @@ def anObjectType: ObjectTypeFactory is public = object {
                 answerConstructor(true , emptyList)
             }
 
-            method |(_ : ObjectType) → dynamic { dynamic }
-
-            method &(_ : ObjectType) → dynamic { dynamic }
-
             method restriction(_ : ObjectType) → dynamic { dynamic }
 
             method isConsistentSubtypeOf(_ : ObjectType) → Boolean { true }
 
-            def asString : String is public, override = "Unknown"
+            method getVariantTypes → List⟦ObjectType⟧ { emptyList }
 
-            method ==(other:ObjectType) → Boolean{self.isMe(other)}
+            method setVariantTypes(newVariantTypes:List⟦ObjectType⟧) → Done { }
+
+            method |(_ : ObjectType) → dynamic { dynamic }
+
+            method &(_ : ObjectType) → dynamic { dynamic }
+
+            def asString : String is public, override = "Unknown"
         }
     }
 

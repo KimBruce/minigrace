@@ -761,6 +761,7 @@ type ObjectTypeFactory = {
 def anObjectType: ObjectTypeFactory is public = object {
 
 <<<<<<< HEAD
+<<<<<<< HEAD
     class placeholder → ObjectType {
         inherit fromMethods(emptySet) withTypes(emptyDictionary)
 
@@ -779,6 +780,8 @@ def anObjectType: ObjectTypeFactory is public = object {
         isPlaceholder := true
                 isPlaceholder := false
 >>>>>>> Reorder ObjectType's methods
+=======
+>>>>>>> Aesthetic changes to gradualTypesND
     //Version of ObjectType that allows for lazy-implementation of type checking
     //Holds the AstNode that can be resolved to the real ObjectType
     class definedByNode (node: AstNode) -> ObjectType{
@@ -865,7 +868,6 @@ def anObjectType: ObjectTypeFactory is public = object {
                         return meth
                     }
                 }
-
                 return noSuchMethod
             }
 
@@ -910,7 +912,6 @@ def anObjectType: ObjectTypeFactory is public = object {
             //Check if 'self', which is the ObjectType calling this method, is
             //a subtype of 'other'
             method isSubtypeOf(other : ObjectType) → Boolean {
-
                 def helperResult : Answer = self.isSubtypeHelper(emptyList, other.resolve)
                 //io.error.write("\n751 The trials from subtyping were: {helperResult.trials}")
 
@@ -1109,7 +1110,7 @@ def anObjectType: ObjectTypeFactory is public = object {
 
                 if(self == other) then { return self }
                 if(other.isDynamic) then {
-                  return dynamic
+                    return dynamic
                 }
 
                 //components from performing &-operator on variant types
@@ -1142,6 +1143,7 @@ def anObjectType: ObjectTypeFactory is public = object {
                 astVisitor.fromObjectTypeList(components)
             }
 
+            //Make confidential
             method andHelper(other: ObjectType) → ObjectType {
                 def combine: Set⟦ObjectType⟧ = emptySet
                 def twice = emptySet
@@ -1187,7 +1189,6 @@ def anObjectType: ObjectTypeFactory is public = object {
                     method asString → String is override {
                         "{selfToPrint} & {other}"
                     }
-
                 }
             }
 
@@ -1870,7 +1871,7 @@ method check(req : Request)
             def aType: ObjectType = typeOf(arg)
             io.error.write ("\n1631 Checking {arg} is subtype of {pType}"++
                 "\nwhile checking {req} against {meth}")
-            if (typeOf (arg).isConsistentSubtypeOf (pType).not) then {
+            if (aType.isConsistentSubtypeOf (pType).not) then {
                 outer.RequestError.raise("the expression " ++
                     "`{stripNewLines(arg.toGrace(0))}` of type '{aType}' does not " ++
                     "satisfy the type of parameter '{param}' in the " ++
@@ -1998,6 +1999,7 @@ def astVisitor: ast.AstVisitor is public= object {
                 // I'm not sure this is right.  Doesn't seem like anything should be added
                 // for literals!
                 match (param)
+<<<<<<< HEAD
                     case { _ : StringLiteral →
                         scope.variables.at(param.value)
                             put(anObjectType.fromDType(param))
@@ -2005,6 +2007,15 @@ def astVisitor: ast.AstVisitor is public= object {
                         scope.variables.at(param.value)
                             put(anObjectType.fromDType(param))
                 } case { _ →
+=======
+                    case { _ : StringLiteral | NumberLiteral→
+                        //scope.variables.at(param.value)
+                        //    put(anObjectType.fromDType(param))
+                    //} case { _ : NumberLiteral →
+                        //scope.variables.at(param.value)
+                        //    put(anObjectType.fromDType(param))
+                    } case { _ →
+>>>>>>> Aesthetic changes to gradualTypesND
                         io.error.write("\n1517: {param.value} has {param.dtype}")
                         scope.variables.at(param.value)
                             put(anObjectType.fromDType(param.dtype))
@@ -2066,24 +2077,19 @@ def astVisitor: ast.AstVisitor is public= object {
 
           //If param is a general case(ie. n:Number), accumulate its type to
           //paramTypesList; ignore if it is a specific case(ie. 47)
-
-          match (block.params.at(1).dtype)
+          def blockParam : Parameter = block.params.at(1)
+          match (blockParam.dtype)
             case{s:StringLiteral → io.error.write"\n Got StringLiteral"}
             case{n:NumberLiteral → io.error.write"\n Got NumberLiteral"}
             //case{true → io.error.write"\n Got BooleanLiteral"}
             //case{false → io.error.write"\n Got BooleaneLiteral"}
-            case{_ →
-                def typeOfParam = anObjectType.getParamTypeFromBlock(block)
+            case{ _ →
+                def typeOfParam = anObjectType.fromDType(blockParam.decType)
 
                 if (paramTypesList.contains(typeOfParam).not) then {
                   paramTypesList.add(typeOfParam)
                 }
           }
-
-          //if (block.params.at(1).dtype.kind == "identifier") then {
-
-
-          //}
 
           //Return type collection
           def blockReturnType : ObjectType = anObjectType.fromBlock(block)
@@ -2543,7 +2549,7 @@ def astVisitor: ast.AstVisitor is public= object {
         //use typeliterals/uniontypes/varianttypes instead?
         def importTypes : Dictionary⟦String, ObjectType⟧ = emptyDictionary
 
-        // Add to scope imported types w/placeholder as values
+        // Add imported types w/placeholder as values to scope
         if (gct.containsKey("types")) then {
             for(gct.at("types")) do { typ →
                 typeNames.push(typ)
@@ -2555,23 +2561,21 @@ def astVisitor: ast.AstVisitor is public= object {
             gct.keys.do { key : String →
                 //example key: 'methodtypes-of:MyType:'
                 if (key.startsWith("methodtypes-of:")) then {
-
                     //parsing line that says methodtypes
-                    var parseMethodTypes: List⟦String⟧ := split(key, ":")
+                    def parseMethodTypes: List⟦String⟧ = split(key, ":")
 
                     //gets the name of the type
-                    var typeName: String := parseMethodTypes.at(2)
+                    def typeName: String = parseMethodTypes.at(2)
                     io.error.write "\n1881: typeName is {typeName}"
 
-                    //Joe - added type signature; might break things
                     //outer.dictionary.empty seems to refer to a
                     //empty ObjectType with name "dictionary"
                     def typeMeths: Set⟦MethodType⟧ = emptySet
 
                     //list to collect & and | types; never used
                     //change these to sets???
-                    var unionTypes: List⟦ObjectType⟧ := list[]
-                    var variantTypes: List ⟦ObjectType⟧ := list[]
+                    def unionTypes: List⟦ObjectType⟧ = list[]
+                    def variantTypes: List ⟦ObjectType⟧ = list[]
 
                     //saving value associated with type
                     for (gct.at(key)) do { methodSignature: String →

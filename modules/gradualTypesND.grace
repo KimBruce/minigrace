@@ -629,8 +629,8 @@ def aMethodType: MethodTypeFactory is public = object {
         }
         ret := mstr.substringFrom (fst) to (mstr.size)
         // io.error.write "ret = {ret}"
-        def rType: ObjectType = anObjectType.fromIdentifier (
-                                    ast.identifierNode.new (ret, false))
+        def rType: ObjectType =
+                anObjectType.definedByNode(ast.identifierNode.new (ret, false))
         // io.error.write "rType = {rType}"
         aMethodType.signature (parts) returnType (rType)
     }
@@ -1590,6 +1590,12 @@ def anObjectType: ObjectTypeFactory is public = object {
     def doneType : ObjectType is public = fromMethods(sg.emptySet) withName("Done")
     base := fromMethods(sg.emptySet) withName("Object")
 
+    //Used for type-checking imports; please update when additional types are added
+    def preludeTypes: Set⟦String⟧ = ["Pattern", "Iterator", "Boolean", "Number",
+                                    "String", "List", "Set", "Sequence",
+                                    "Dictionary", "Point", "Binding",
+                                    "Collection", "Enumerable", "Range"]
+
     def pattern : ObjectType is public = fromMethods(sg.emptySet) withName("Pattern")
     def iterator : ObjectType is public = fromMethods(sg.emptySet) withName("Iterator")
     def boolean : ObjectType is public = fromMethods(sg.emptySet) withName("Boolean")
@@ -2538,25 +2544,23 @@ def astVisitor: ast.AstVisitor is public= object {
     //Move processImport back into visitImport
     method visitImport (imp: AstNode) → Boolean {
         io.error.write "\n1861: visiting import {imp}"
-        def gct: Dictionary⟦String, List⟦String⟧⟧ = xmodule.parseGCT(imp.path)
         // headers of sections of gct form keys
         // Associated values are lines beneath the header
-        def placeholders: List⟦ObjectType⟧ = list[]
-        def typeNames: List⟦ObjectType⟧ = list[]
+        def gct: Dictionary⟦String, List⟦String⟧⟧ = xmodule.parseGCT(imp.path)
+
         io.error.write("\n1953 gct is {gct}")
         io.error.write("\n1954 keys are {gct.keys}\n")
 
-        //use typeliterals/uniontypes/varianttypes instead?
-        def importTypes : Dictionary⟦String, ObjectType⟧ = emptyDictionary
-
-        // Add imported types w/placeholder as values to scope
+        // Define a list of types that we have yet to resolve. All public types
+        // are placed in this list at the start
+        def unresolvedTypes: List⟦ObjectType⟧ = list[]
         if (gct.containsKey("types")) then {
             for(gct.at("types")) do { typ →
-                typeNames.push(typ)
-                placeholders.push(anObjectType.dynamic)
+                unresolvedTypes.push(typ)
             }
         }
 
+<<<<<<< HEAD
         if (typeNames.size > 0) then {
             gct.keys.do { key : String →
                 //example key: 'methodtypes-of:MyType:'
@@ -2600,33 +2604,164 @@ def astVisitor: ast.AstVisitor is public= object {
 
 >>>>>>> Removes handling of embedded types
                 }
+=======
+        // Collect the type definition associated with each type
+        def typeDefs : Dictionary⟦String, List⟦String⟧⟧ = emptyDictionary
+        gct.keys.do { key : String →
+            //example key: 'methodtypes-of:MyType:'
+            if (key.startsWith("methodtypes-of:")) then {
+                //gets the name of the type
+                def typeName: String = split(key, ":").at(2)
+
+                typeDefs.at(typeName) put(gct.at(key))
+>>>>>>> type-check imported & and | types
             }
         }
-        cache.at(imp) put (anObjectType.doneType)
 
-        def importedMethodTypes: List⟦String⟧ = gct.at("publicMethodTypes") ifAbsent {
-            io.error.write "\nnothing imported from {imp.nameString}"
-            list[]
+        // Loops until all imported types are resolved and stored in the types scope
+        while{unresolvedTypes.size > 0} do {
+            //To resolve its given type, importHelper recursively resolves other
+            //unresolved types that its given type's type definition depends on.
+            importHelper(unresolvedTypes.at(1), imp.nameString,
+                                                      unresolvedTypes, typeDefs)
         }
 
+        //retrieves public defs, vars, and methods from imported module
         def importMethods : Set⟦MethodType⟧ = emptySet
 
-        //retrieves public defs vars and methods from imported module
-        for (importedMethodTypes) do {methodSignature →
-            io.error.write "\n1998: methodSignature is {methodSignature}"
+        def importedMethodTypes: List⟦String⟧ = gct.at("publicMethodTypes")
+                                                          ifAbsent { emptyList }
+
+        for (importedMethodTypes) do { methodSignature : String →
             importMethods.add(aMethodType.fromGctLine(methodSignature))
         }
 
+        // Create the ObjectType and MethodType of import
         def impOType: ObjectType = anObjectType.fromMethods(importMethods)
         def sig: List⟦MixPart⟧ = list[aMixPartWithName(imp.nameString)
                                                   parameters (emptyList)]
         def impMType: MethodType = aMethodType.signature(sig) returnType (impOType)
 
+        // Store import in scopes and cache
         scope.variables.at(imp.nameString) put(impOType)
         scope.methods.at(imp.nameString) put(impMType)
+        cache.at(imp) put (impOType)
         io.error.write"\n2421: ObjectType of the import {imp.nameString} is: {impOType}"
         false
     }
+
+
+    //Resolve the imported type,'typeName', and store it in the types scope
+    //
+    //Param typeName - name of the imported type to be resolved
+    //      impName  - nickname of the imported file containing 'typeName'
+    //      unresolvedTypes - list of unresolved types
+    //      typeDefs - maps all imported types from 'impName' to their type
+    //                 definitions
+    method importHelper(typeName : String, impName : String,
+                        unresolvedTypes : List⟦String⟧,
+                        typeDefs : Dictionary⟦String, List⟦String⟧⟧) → Done {
+        io.error.write "\n 2413: looking for {typeName} defined as {typeDefs.at(typeName)}"
+
+        //Holds the types that make up 'typeName'
+        def unionTypes: List⟦ObjectType⟧ = emptyList
+        def variantTypes: List⟦ObjectType⟧ = emptyList
+        def typeLiterals: Dictionary⟦String,ObjectType⟧ = emptyDictionary
+
+        //Holds all methods belonging to 'typeName'
+        def typeMeths: Set⟦MethodType⟧ = emptySet
+
+        //Iterates through each methodSignature to resolve 'typeName'
+        typeDefs.at(typeName).do { methSig: String →
+            io.error.write "\n2404 methSig is: '{methSig}'"
+            def methPrefix : String = methSig.at(1)
+
+            if (methPrefix == "&") then {
+                def operand : String = methSig.substringFrom(3)
+
+                if ((operand.startsWithDigit) &&
+                          {typeLiterals.containsKey(operand).not}) then {
+
+                    typeLiterals.at(operand) put (anObjectType.fromMethods(emptySet))
+
+                    unionTypes.push(typeLiterals.at(operand))
+
+                } else {
+
+                    if {unresolvedTypes.contains(operand)} then {
+                        importHelper(operand, impName, unresolvedTypes, typeDefs)
+                    }
+
+                    if (anObjectType.preludeTypes.contains(operand)) then {
+                        unionTypes.push(scope.types.find("{operand}")
+                                        butIfMissing { anObjectType.dynamic } )
+                    } else {
+                        unionTypes.push(scope.types.find("{impName}.{operand}")
+                                        butIfMissing { anObjectType.dynamic } )
+                    }
+                }
+            } elseif {methPrefix == "|"} then {
+                def operand : String = methSig.substringFrom(3)
+
+                if ((operand.startsWithDigit) &&
+                          {typeLiterals.containsKey(operand).not}) then {
+                    typeLiterals.at(operand) put (anObjectType.fromMethods(emptySet))
+                    variantTypes.push(typeLiterals.at(operand))
+                } else {
+                    if {unresolvedTypes.contains(operand)} then {
+                        importHelper(operand, impName, unresolvedTypes, typeDefs)
+                    }
+                    if (anObjectType.preludeTypes.contains(operand)) then {
+                        variantTypes.push(scope.types.find("{operand}")
+                                        butIfMissing { anObjectType.dynamic } )
+                    } else {
+                        variantTypes.push(scope.types.find("{impName}.{operand}")
+                                        butIfMissing { anObjectType.dynamic } )
+                    }
+                }
+            } else {
+                if (typeLiterals.containsKey(methPrefix).not) then {
+                    typeLiterals.at(methPrefix) put (anObjectType.fromMethods(emptySet))
+                }
+                typeLiterals.at(methPrefix).methods.add(aMethodType.fromGctLine(methSig))
+            }
+        }
+
+        var myType : ObjectType
+        var isUninitialized : Boolean := true
+
+        io.error.write "\nunionTypes is {unionTypes}"
+        io.error.write "\nvariantTypes is {variantTypes}"
+
+        for(unionTypes) do { unionType : ObjectType ->
+            if (isUninitialized) then {
+                myType := unionType
+                isUninitialized := false
+            } else {
+                myType := (myType & unionType)
+            }
+        }
+
+        for(variantTypes) do { variantType: ObjectType ->
+            if (isUninitialized) then {
+                myType := variantType
+                isUninitialized := false
+            } else {
+                myType := (myType | variantType)
+            }
+        }
+
+        if (isUninitialized) then {
+            io.error.write "\n2477 {typeLiterals}"
+            io.error.write "\n2478 {typeLiterals.values}"
+            myType := typeLiterals.values.first
+        }
+
+        io.error.write "\n2483 trying to remove {typeName} from {unresolvedTypes}"
+        unresolvedTypes.remove(typeName)
+        scope.types.at("{impName}.{typeName}") put (myType)
+    }
+
 
     method visitReturn (node: AstNode) → Boolean {
         cache.at(node) put (typeOf(node.value))

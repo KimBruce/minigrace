@@ -441,6 +441,13 @@ var methodtypes := [ ]
 def typeVisitor = object {
     inherit ast.baseVisitor
     var literalCount := 1
+
+    method visitIdentifier(ident) {
+        methodtypes.push("& {ident.value}")
+
+        return false
+    }
+
     method visitTypeLiteral(lit) {
         for (lit.methods) do { meth ->
             var mtstr := "{literalCount} "
@@ -584,7 +591,7 @@ method buildGctFor(module) {
                 meths.push(v.nameString)
                 types.push(v.name.value)
                 methodtypes := [ ]
-                v.accept(typeVisitor)
+                v.value.accept(typeVisitor)
                 var typename := v.name.toGrace(0)
                 if (v.typeParams != false) then {
                     typename := typename ++ v.typeParams

@@ -725,7 +725,7 @@ method checkForAmbiguityOf (node) definedIn (definingScope) asA (kind) {
     // the current scope by inheritance or trait use, rather than directly,
     // and also defined directly in an enclosing scope, then an implicit
     // request of m is ambiguous and is an error.
-    
+
     def currentScope = node.scope
     if (kind.fromParent.not) then { return }
     def name = node.nameString
@@ -735,7 +735,7 @@ method checkForAmbiguityOf (node) definedIn (definingScope) asA (kind) {
     def conflictingKind = conflictingScope.kind(name)
     if (conflictingKind.fromParent) then {
         return    // request is ambiguous only if name is defined
-                  // _directly_ in an enclosing scope.  
+                  // _directly_ in an enclosing scope.
     }
     var more := ""
     if (conflictingScope.elementLines.contains(name)) then {

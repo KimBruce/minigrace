@@ -230,7 +230,7 @@ class aPatternMatchingNode (kind : String) → Pattern {
             } else {
                 false
             }
-          } case { _ → false }
+        } case { _ → false }
     }
 }
 
@@ -562,8 +562,7 @@ def aMethodType: MethodTypeFactory is public = object {
                     var paramName: String := mstr.substringFrom(fst)to(lst - 1)
                     io.error.write "paramName: {paramName}"
                     fst := lst + 1
-                    while {(mstr.at (lst) != ")") && (mstr.at (lst) != ",")
-                                                && (mstr.at(lst) != "⟦")} do {
+                    while {(mstr.at (lst) != ")") && (mstr.at (lst) != ",") && (mstr.at(lst) != "⟦")} do {
                         lst := lst + 1
                     }
                     var paramType: String := mstr.substringFrom(fst)to(lst - 1)
@@ -578,7 +577,7 @@ def aMethodType: MethodTypeFactory is public = object {
                         scope.types.find ("{paramType}") butIfMissing {
                             anObjectType.dynamic
                             //ast.identifierNode.new("{paramType}", anObjectType.dynamic)
-                            }))
+                    }))
                 }
                 par := mstr.indexOf ("(") startingAt (lst)
                 fst := lst + 1
@@ -633,9 +632,9 @@ def aMethodType: MethodTypeFactory is public = object {
                     list[aMixPartWithName (defd.name.value) parameters (list[])]
             def dtype: ObjectType = if (defd.dtype == false) then {
                     anObjectType.dynamic
-                } else {
+            } else {
                     anObjectType.fromDType (defd.dtype)
-                }
+            }
             return signature (signature) returnType (dtype)
         } case { _ →
             Exception.raise "unrecognised method node" with(node)
@@ -729,11 +728,11 @@ def anObjectType: ObjectTypeFactory is public = object {
         }
     }
 
-    method fromMethods (methods' : Set⟦MethodType⟧)
-          withTypes (types' : Dictionary⟦String,ObjectType⟧) → ObjectType { object {
+    method fromMethods (methods' : Set⟦MethodType⟧) withTypes (types' : Dictionary⟦String,ObjectType⟧) → ObjectType {
+        object {
 
             def methods : Set⟦MethodType⟧ is public = (if (base == dynamic)
-                then { emptySet } else { emptySet.addAll(base.methods) }).addAll(methods')
+                    then { emptySet } else { emptySet.addAll(base.methods) }).addAll(methods')
 
             //Joe - we think that base.getTypeList will be empty
             var types : Dictionary⟦String,ObjectType⟧ := types'
@@ -1090,7 +1089,8 @@ def anObjectType: ObjectTypeFactory is public = object {
 
                 return "{out}\}\n"
             }
-    }}
+        }
+    }
 
     method fromMethods(methods' : Set⟦MethodType⟧) withName(name : String)
               withTypes(types' : Dictionary⟦String,ObjectType⟧)→ ObjectType {
@@ -1200,28 +1200,15 @@ def anObjectType: ObjectTypeFactory is public = object {
                     def start : Number = recName.indexOf("‹")+1
                     def end : Number = recName.indexOf("›")-1
                     recName.substringFrom(start) to (end)
-                } else {
+            } else {
                     recName
-                }
+            }
 
             //redirects 'self' to '$elf' because '$elf' is in scope.types
             recName := if (recName == "self") then {"$elf"} else {recName}
 
             io.error.write"\n1176 recName is: {recName}"
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-                recType := scope.types.find(recName)
-                                    butIfMissing { notInTypes := true; dynamic }
-
-                if (notInTypes) then {
-                    recType := scope.methods.find(recName) butIfMissing {
-                        outer.ScopingError.raise ("Cannot locate " ++
-                        "{memb.receiver.value}.{memb.value} in scope")}.returnType
-                }
-=======
-=======
->>>>>>> comments
             //search for recName in both scope.types and scope.methods
             var notInTypes : Boolean := false
             var recType : ObjectType := scope.types.find(recName)
@@ -1230,7 +1217,7 @@ def anObjectType: ObjectTypeFactory is public = object {
             if (notInTypes) then {
                 recType := scope.methods.find(recName) butIfMissing {
                     outer.ScopingError.raise ("Cannot locate " ++
-                    "{memb.receiver.value}.{memb.value} in scope") } .returnType
+                        "{memb.receiver.value}.{memb.value} in scope") } .returnType
             }
 
             //recType now has the objectType of the 1st call
@@ -1250,9 +1237,9 @@ def anObjectType: ObjectTypeFactory is public = object {
                             case { (noSuchMethod) ->
                                 outer.ScopingError.raise ("Cannot locate " ++
                                     "{memb.receiver.value}.{memb.value} in scope")
-                            }
-                    }
->>>>>>> minor changes to comments
+                        }
+                }
+
             }
 
             //get the return type of the entire call
@@ -1714,10 +1701,10 @@ method check(req : Request)
             def which: String = if(aSize > pSize) then { "many" } else { "few" }
             def where: Number = if(aSize > pSize) then {
                     args.at(pSize + 1)
-                } else {
+            } else {
                 // Can we get beyond the final argument?
                     req.value
-                }
+            }
 
             outer.RequestError
                 .raise("too {which} arguments to method part " ++
@@ -1827,9 +1814,9 @@ def astVisitor: ast.AstVisitor is public= object {
                 } else {
                     thenType | elseType
                 }
-            } else {
+        } else {
                 anObjectType.doneType
-            }
+        }
 
         // save type in cache
         cache.at (ifnode) put (ifType)
@@ -1861,14 +1848,14 @@ def astVisitor: ast.AstVisitor is public= object {
                     case { _ : StringLiteral →
                         scope.variables.at(param.value)
                             put(anObjectType.fromDType(param))
-                    } case { _ : NumberLiteral →
+                } case { _ : NumberLiteral →
                         scope.variables.at(param.value)
                             put(anObjectType.fromDType(param))
-                    } case { _ →
+                } case { _ →
                         io.error.write("\n1517: {param.value} has {param.dtype}")
                         scope.variables.at(param.value)
                             put(anObjectType.fromDType(param.dtype))
-                    }
+                }
             }
 
 
@@ -1886,16 +1873,16 @@ def astVisitor: ast.AstVisitor is public= object {
         def parameters = list[]
         for(block.params) do { param: AstNode →
             match (param)
-                case { _:StringLiteral →
+              case { _:StringLiteral →
                         parameters.push(aParam.withName(param.value)
                             ofType(anObjectType.fromDType(param)))
-                } case { _:NumberLiteral →
+            } case { _:NumberLiteral →
                         parameters.push(aParam.withName(param.value)
                             ofType(anObjectType.fromDType(param)))
-                } case { _ →
+            } case { _ →
                         parameters.push(aParam.withName(param.value)
                             ofType(anObjectType.fromDType(param.dtype)))
-                }
+            }
         }
 
         def blockType: ObjectType = anObjectType.blockTaking(parameters)
@@ -1938,7 +1925,7 @@ def astVisitor: ast.AstVisitor is public= object {
                 if (paramTypesList.contains(typeOfParam).not) then {
                   paramTypesList.add(typeOfParam)
                 }
-            }
+          }
 
           //if (block.params.at(1).dtype.kind == "identifier") then {
 
@@ -2160,15 +2147,13 @@ def astVisitor: ast.AstVisitor is public= object {
                                 "`{stripNewLines(rec.toGrace(0))}` of type\n" ++
                                 "    '{rType}' \nin type \n  '{rType.methods}'")
                                     with(req)
-                        }
-                        case{ matchedType : ObjectType →
+                    } case{ matchedType : ObjectType →
                             matchedType
-                        }
-                }
-                case { meth : MethodType →
+                    }
+            } case { meth : MethodType →
                     io.error.write "\nchecking request {req} against {meth}"
                     check(req) against(meth)
-                }
+            }
         }
         io.error.write "\n1701: callType: {callType}"
         cache.at(req) put (callType)
@@ -2206,8 +2191,7 @@ def astVisitor: ast.AstVisitor is public= object {
                     //the variable scope and method scope
                     visitImport(imp)
                     importNodes.add(nd)
-                }
-                case {_:Object → }//do nothing
+            } case {_:Object → }//do nothing
         }
 
         //removes import statements from the body of the module
@@ -2244,11 +2228,10 @@ def astVisitor: ast.AstVisitor is public= object {
         def idType: ObjectType = match(ident.value)
             case { "outer" →
                 outerAt(scope.size)
-            }
-            case { _ →
+        } case { _ →
                 scope.variables.find(ident.value)
                     butIfMissing { anObjectType.dynamic }
-            }
+        }
         cache.at (ident) put (idType)
         true
 
@@ -2438,8 +2421,8 @@ def astVisitor: ast.AstVisitor is public= object {
                     //save embedded types instead of emptyDictionary once gct is working
                     importTypes.at(typeName) put (anObjectType.fromMethods(typeMeths)
                                             withName(typeName) withTypes(emptyDictionary))
-                    }
-              }
+                }
+            }
         }
         cache.at(imp) put (anObjectType.doneType)
 

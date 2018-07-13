@@ -2135,10 +2135,16 @@ def astVisitor: ast.AstVisitor is public= object {
             //on a name can be searched in both method and type lists
             //Just have to assume that the programmer used nonconflicting names- Joe
 
-            def name: String = req.nameString
+            var name: String := req.nameString
+            if (name.contains "$object(") then {
+                req.parts.removeLast
+                name := req.nameString
+            }
             io.error.write "\nrequest on {name}"
+            io.error.write "\nrType is {rType}"
 
-            io.error.write "\n1999: receiver type's getTypeList is: {rType.getTypeList} and request name is {name}"
+            io.error.write ("\n1999: receiver type's getTypeList is: {rType.getTypeList}"
+                  ++" and request name is {name}")
             io.error.write "\n2000: rType.methods is: {rType.methods}"
 
             match(rType.getMethod(name))
@@ -2470,7 +2476,7 @@ def astVisitor: ast.AstVisitor is public= object {
     method visitInherits (node: AstNode) → Boolean {
         io.error.write "\n1999: visit inherits with {node} which has kind {node.kind}"
         io.error.write "\n1999: visit inherits with {node} which has receiver {node.value.receiver}"
-        io.error.write "\n1999: visit inherits with {node} which has parts {node.value.parts.removeLast}"
+        io.error.write "\n1999: visit inherits with {node} which has parts {node.value.parts}"
         cache.at(node) put (typeOf(node.value))
         io.error.write "\n2000 has type {typeOf(node.value)}"
         false

@@ -37,7 +37,7 @@ TEST_DEPENDENCIES = ast lexer stringMap collectionsPrelude parser xmodule errorm
 #   these are modules used in running the full test suite
 NPM_VERSION_PREFIX=1.0
 VERSION := $(NPM_VERSION_PREFIX).$(shell ./tools/git-calculate-generation)
-NPM_STABLE_VERSION=1.0.4171
+NPM_STABLE_VERSION=1.0.4049
 
 VER = $(shell ./tools/calculate-version $(STABLE))
 VERBOSITY =
@@ -94,7 +94,6 @@ clean:
 	rm -f $(SOURCEFILES:%.grace=%)
 	rm -f $(OBJECTDRAW:%.grace=%.*)
 	rm -f $(OBJECTDRAW:%.grace=modules/%.*)
-	rm -rf known-good
 	( cd js && for sf in $(SOURCEFILES:.grace=.js) ; do rm -f $$sf ; done )
 	( cd js && for sf in $(SOURCEFILES) ; do rm -f $$sf ; done )
 	cd js && rm -rf $(ALL_LIBRARY_MODULES:%.grace=%.js) standardInput.* *.gct util.*
@@ -151,8 +150,6 @@ echo:
 	@echo WEBFILES_SIMPLE = $(WEBFILES_SIMPLE)
 	@echo WEB_DIRECTORY = $(WEB_DIRECTORY)
 	@echo WEB_GRAPHICS_MODULES = $(WEB_GRAPHICS_MODULES)
-	@echo MODULE_PATH = $(MODULE_PATH)
-	@echo INCLUDE_PATH = $(INCLUDE_PATH)
 
 $(EXTERNAL_STUBS:%.grace=j2/%.js): j2/%.js: js/%.js
 	cp -p $< $@
@@ -167,6 +164,9 @@ gencheck:
 	X=$$(tools/git-calculate-generation) ; mv .git-generation-cache .git-generation-cache.$$$$ ; Y=$$(tools/git-calculate-generation) ; [ "$$X" = "$$Y" ] || exit 1 ; rm -rf .git-generation-cache ; mv .git-generation-cache.$$$$ .git-generation-cache
 
 gracedoc: tools/gracedoc
+
+grace-debug: js/grace-debug
+	ln -f $< $@
 
 grace-web-editor/index.html: pull-web-editor grace-web-editor/index.in.html
 	./tools/includeJSLibraries $(ALL_LIBRARY_MODULES:%.grace=js/%.js)
@@ -203,7 +203,7 @@ install: minigrace $(COMPILER_MODULES:%.grace=j2/%.js) $(STUBS:%.grace=j2/%.gct)
 	install -p -m 755 js/gracelib.js js/unicodedata.js $(MODULE_PATH)
 	install -p -m 644 j2/mirrors.gct $(MODULE_PATH)
 	install -p -m 644 $(COMPILER_MODULES:%.grace=j2/%.js) $(STUBS:%.grace=j2/%.gct) $(MODULE_PATH)
-	install -p -m 644 $(PRELUDESOURCEFILES:%.grace=j2/%.js) $(LIBRARY_MODULES:%.grace=j2/%.js) js/dom.js $(MODULE_PATH)
+	install -p -m 644 $(LIBRARY_MODULES:%.grace=j2/%.js) js/dom.js $(MODULE_PATH)
 	@./tools/warnAbout PATH $(PREFIX)/bin
 	@./tools/warnAbout GRACE_MODULE_PATH $(MODULE_PATH)
 
@@ -215,10 +215,6 @@ $(JSJSFILES:%.js=j1/%.js): j1/%.js: js/%.js
 j1-minigrace: $(J1-MINIGRACE)
 
 j2/animation.js: j2/timer.gct j2/timer.js
-
-j2/compiler-inspect: j2/compiler-js
-	sed -e "s|#!/usr/bin/env node|#!/usr/bin/env node --inspect|" $< > $@
-	chmod a+x $@
 
 j2/rtobjectdraw.js: j2/requireTypes.js
 
@@ -234,10 +230,10 @@ $(JSJSFILES:%.js=j2/%.js): j2/%.js: js/%.js
 
 $(JS-KG)/compiler-js: js/compiler-js
 	if [ ! -e $(JS-KG) ] ; then mkdir -p $(JS-KG) ; fi
-	cp -p $< $@
+	cp -p js/compiler-js $(JS-KG)
 
-$(JS-KG)/minigrace-js: js/minigrace-js
-	cp -p $< $@
+$(JS-KG)/minigrace-js: $(JS-KG)/compiler-js
+	cp -p js/minigrace-js $(JS-KG)
 
 $(JSONLY:%.grace=js/%.js): js/%.js: modules/%.grace js/dom.gct minigrace js/timer.gct
 	GRACE_MODULE_PATH=js:modules ./minigrace --dir js --make $(VERBOSITY) $<
@@ -251,9 +247,6 @@ $(JSRUNNERS:%=j1/%): j1/%: $(JS-KG)/%
 	cp -p $< $@
 
 $(JSRUNNERS:%=j2/%): j2/%: js/%
-	cp -p $< $@
-
-$(JSRUNNERS): %: js/%
 	cp -p $< $@
 
 js/ace/ace.js:
@@ -305,7 +298,7 @@ $(MGSOURCEFILES:%.grace=j2/%.js): j2/%.js: %.grace $(J1-MINIGRXCE)
 
 minigrace: $(J2-MINIGRACE)
 
-minigrace.env: minigrace $(EXTERNAL_STUBS:%.grace=j2/%.js) $(STUBS:%.grace=j2/%.gct) $(JSRUNNERS)
+minigrace.env: minigrace $(EXTERNAL_STUBS:%.grace=j2/%.js) $(STUBS:%.grace=j2/%.gct)
 
 module.test: minigrace.env $(TYPE_DIALECTS:%=j2/%.js)
 	modules/tests/harness-js-js j2/minigrace-js
@@ -328,10 +321,6 @@ $(JS-KG):
 	npm install
 	mkdir -p $(JS-KG)
 	cp -R node_modules/minigrace/* $(JS-KG)
-
-$(JS-KG)/compiler-inspect: $(JS-KG)/compiler-js
-	sed -e "s|#!/usr/bin/env node|#!/usr/bin/env node --inspect|" $< > $@
-	chmod a+x $@
 
 npm-build-kg: minigrace.env
 	mkdir -p npm-build

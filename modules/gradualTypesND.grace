@@ -119,7 +119,9 @@ def allCache: Dictionary = emptyDictionary
 type StackOfKind⟦V⟧ = {
     stack → List⟦Dictionary⟧
     at (name : String) put (value:V) → Done
+    addToTopAt(name : String) put (value : V) → Done
     find (name : String) butIfMissing (bl: Function0⟦V⟧) → V
+    findAtTop (name : String) butIfMissing (bl: Function0⟦V⟧) → V
 }
 
 class stackOfKind⟦V⟧(kind : String) → StackOfKind⟦V⟧ is confidential {
@@ -1338,9 +1340,15 @@ def anObjectType: ObjectTypeFactory is public = object {
 
             method isConsistentSubtypeOf(_ : ObjectType) → Boolean { true }
 
-            def asString : String is public, override = "Unknown"
+            method getVariantTypes → List⟦ObjectType⟧ { emptyList }
 
-            method ==(other:ObjectType) → Boolean{self.isMe(other)}
+            method setVariantTypes(newVariantTypes:List⟦ObjectType⟧) → Done { }
+
+            method |(_ : ObjectType) → dynamic { dynamic }
+
+            method &(_ : ObjectType) → dynamic { dynamic }
+
+            def asString : String is public, override = "Unknown"
         }
     }
 

@@ -1,5 +1,5 @@
 dialect "gradualTypesND"
- 
+
 method d(aa:Number) → Number {aa}
 
 print(d(5))
@@ -16,8 +16,8 @@ def obj: A = object {
         var sf: Number is public := 12
         method p(m: Number) → Number {m}
         method q → String {"d"}
-    }
-    
+}
+
 obj.sf
 
 obj.p(23)
@@ -52,6 +52,3 @@ def xy: Number = d.sf - 47
 print(xy)
 
 print (1 + c.p(11))
-
-
-

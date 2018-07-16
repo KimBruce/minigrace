@@ -42,7 +42,7 @@ method repeat(n)times(action) {
 
 method for (cs) and (ds) do (action) -> Done {
     def dIter = ds.iterator
-    cs.do { c -> 
+    cs.do { c ->
         if (dIter.hasNext) then {
             action.apply(c, dIter.next)
         } else {
@@ -402,10 +402,10 @@ type Point =  {
 
     prefix- -> Point
     // the negation of self
-    
+
     * (factor:Number) -> Point
     // this point scaled by factor, i.e. (self.x*factor) @ (self.y*factor)
-    
+
     / (factor:Number) -> Point
     // this point scaled by 1/factor, i.e. (self.x/factor) @ (self.y/factor)
 
@@ -536,7 +536,7 @@ type Procedure0 = Function0⟦Done⟧
     // Function with no arguments and no result
 type Procedure1⟦ArgT1⟧ = Function1⟦ArgT1, Done⟧
     // Function with 1 argument of type ArgT1, and no result
-type Procedure2⟦ArgT1, ArgT2⟧ = Function2⟦ArgT1, ArgT2, Done⟧ 
+type Procedure2⟦ArgT1, ArgT2⟧ = Function2⟦ArgT1, ArgT2, Done⟧
     // Function with 2 arguments of types ArgT1 and ArgT2, and no result
 type Procedure3⟦ArgT1, ArgT2, ArgT3⟧ = Function3⟦ArgT1, ArgT2, ArgT3, Done⟧
 

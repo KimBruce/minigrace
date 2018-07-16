@@ -317,8 +317,8 @@ def sequenceTest = object {
             assert(evens.size) shouldBe 4
         }
         method testSingletonSequenceSize {
-            def singletonSeq = sequence.with "a word"
-            assert (singletonSeq.size) shouldBe 1
+            def singleton = sequence.with "a word"
+            assert (singleton.size) shouldBe 1
         }
         method testSequenceEmptyDo {
             empty.do {each -> failBecause "emptySequence.do did with {each}"}
@@ -594,10 +594,10 @@ def listTest = object {
             assert(empty.size) shouldBe 0
             assert(evens.size) shouldBe 4
         }
-        
+
         method testSingletonListeSize {
-            def singletonSeq = list.with "a word"
-            assert (singletonSeq.size) shouldBe 1
+            def singleton = list.with "a word"
+            assert (singleton.size) shouldBe 1
         }
 
         method testListEmptyDo {
@@ -1058,7 +1058,7 @@ def setTest = object {
             evens := set [2, 4, 6, 8]
             empty := set [ ]
         }
-        
+
         method testSetTypeCollection {
             def witness = set⟦Number⟧ [1, 2, 3, 4, 5, 6]
             assert (witness) hasType (Collection⟦Number⟧)
@@ -1082,8 +1082,8 @@ def setTest = object {
             assert(evens.size) shouldBe 4
         }
         method testSingletonSetSize {
-            def singletonSeq = set.with "a word"
-            assert (singletonSeq.size) shouldBe 1
+            def singleton = set.with "a word"
+            assert (singleton.size) shouldBe 1
         }
 
         method testSetEmptyDo {
@@ -1738,4 +1738,3 @@ dictTests.runAndPrintResults
 
 def lazyEnumTests = gU.testSuite.fromTestMethodsIn(lazyEnumTest)
 lazyEnumTests.runAndPrintResults
-

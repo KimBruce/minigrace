@@ -262,7 +262,7 @@ class lazyConcatenation⟦T⟧(left, right) -> Enumerable⟦T⟧{
 }
 
 trait collection⟦T⟧ {
-    
+
     method asString { "a collection trait" }
     method sizeIfUnknown(action) {
         action.apply
@@ -278,7 +278,7 @@ trait collection⟦T⟧ {
     }
     method first {
         def it = self.iterator
-        if (it.hasNext) then { 
+        if (it.hasNext) then {
             it.next
         } else {
             BoundsError.raise "no first element in {self}"
@@ -617,19 +617,19 @@ method isEqual(left) toCollection(right) {
             }
         }
         leftIter.hasNext == rightIter.hasNext
-    } else { 
+    } else {
         false
     }
 }
 
 class list⟦T⟧ {
-    
+
     method asString { "the list class" }
-    
+
     method empty -> List⟦T⟧ {
         withAll(emptySequence)
     }
-    
+
     method with(x:T)  -> List⟦T⟧ {
         def result = empty
         result.add(x)
@@ -935,15 +935,19 @@ class set⟦T⟧ {
 
     method asString { "a set class" }
 
+    method with(x:T)  -> Set⟦T⟧ {
+        def result = empty
+        result.add(x)
+        result
+    }
+
     method withAll(a: Collection⟦T⟧) -> Set⟦T⟧ {
         def cap = max (a.sizeIfUnknown{2} * 3 + 1, 8)
         def result = ofCapacity (cap)
         a.do { x -> result.add(x) }
         result
     }
-    method with(x:T) -> Set⟦T⟧ {
-        empty.add(x)
-    }
+
     method empty -> Set⟦T⟧ {
         ofCapacity 8
     }
@@ -1183,7 +1187,7 @@ class set⟦T⟧ {
                     }
                 }
                 otherSize == self.size
-            } else { 
+            } else {
                 false
             }
         }

@@ -131,6 +131,11 @@ class stackOfKind⟦V⟧(kind : String) → StackOfKind⟦V⟧ is confidential {
         stack.last.at(name) put(value)
     }
 
+    //adds to the first layer of the scope
+    method addToTopAt(name : String) put (value:V) → Done {
+        stack.first.at(name) put(value)
+    }
+
     // Find name in stack of current scopes & return its value
     // If not there perform action in bl
     method find (name : String) butIfMissing (bl: Function0⟦V⟧) → V {
@@ -1349,6 +1354,7 @@ def anObjectType: ObjectTypeFactory is public = object {
             method &(_ : ObjectType) → dynamic { dynamic }
 
             def asString : String is public, override = "Unknown"
+
         }
     }
 
@@ -2493,7 +2499,9 @@ method outerAt(i : Number) → ObjectType is confidential {
         return anObjectType.dynamic
     }
     io.error.write "processing outer"
+
     def vStack: List⟦Dictionary⟧ = scope.variables.stack
+
     def curr: ObjectType = vStack.at(i)
 
     //Joe-how does an ObjectType have an 'at' method

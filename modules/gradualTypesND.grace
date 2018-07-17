@@ -1315,11 +1315,6 @@ def anObjectType: ObjectTypeFactory is public = object {
 
             method isConsistentSubtypeOf(_ : ObjectType) → Boolean { true }
 
-<<<<<<< HEAD
-            def asString : String is public, override = "Unknown"
-
-            method ==(other:ObjectType) → Boolean{self.isMe(other)}
-=======
             method getVariantTypes → List⟦ObjectType⟧ { emptyList }
 
             method setVariantTypes(newVariantTypes:List⟦ObjectType⟧) → Done { }
@@ -1329,7 +1324,7 @@ def anObjectType: ObjectTypeFactory is public = object {
             method &(_ : ObjectType) → dynamic { dynamic }
 
             def asString : String is public, override = "Unknown"
->>>>>>> 5a383cb142785a7d017cfdef9d9fe11e2908e38f
+
         }
     }
 
@@ -2556,11 +2551,9 @@ method outerAt(i : Number) → ObjectType is confidential {
         return anObjectType.dynamic
     }
     io.error.write "processing outer"
-<<<<<<< HEAD
+
     def vStack: List⟦Dictionary⟧ = scope.variables.stack
-=======
-    def vStack: List⟦Dictionary⟧ = scope.variables
->>>>>>> 5a383cb142785a7d017cfdef9d9fe11e2908e38f
+
     def curr: ObjectType = vStack.at(i)
 
     //Joe-how does an ObjectType have an 'at' method

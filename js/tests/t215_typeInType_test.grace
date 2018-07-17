@@ -16,11 +16,7 @@ def x:A.B = 3
 
 testSuite {
     test "type methods" by {
-<<<<<<< HEAD
         assert (A.methodNames) shouldBe (set.withAll ["m(_)", "B"])
-=======
-        assert (A.methodNames) shouldBe (set.with "m(_)")
->>>>>>> Restoring commit lost in git reset
     }
     test "type types" by {
         assert (A.typeNames) shouldBe (set.with "B")

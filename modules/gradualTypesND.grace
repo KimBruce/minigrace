@@ -881,6 +881,10 @@ def anObjectType: ObjectTypeFactory is public = object {
 
                             if (isSpec.ans) then { continue.apply }
                         }
+                        io.error.write "\n885: didn't find {otherMeth} in {self}"
+                        io.error.write "\n other methods: {other.methods}"
+                        io.error.write "\n self methods: {self.methods}"
+
                         //fails to find corresponding method
                         return answerConstructor(false, trials)
                     }
@@ -1323,10 +1327,6 @@ def anObjectType: ObjectTypeFactory is public = object {
             method &(_ : ObjectType) → dynamic { dynamic }
 
             def asString : String is public, override = "Unknown"
-<<<<<<< HEAD
-=======
-
->>>>>>> 2215939798eaf3e053c1155f8ce5acea1e560d3f
         }
     }
 
@@ -1707,7 +1707,7 @@ method check(req : Request)
         for (params) and (args) do { param: Param, arg: AstNode →
             def pType: ObjectType = param.typeAnnotation
             def aType: ObjectType = typeOf(arg)
-            io.error.write ("\n1631 Checking {arg} is subtype of {pType}"++
+            io.error.write ("\n1631 Checking {arg}  of type {aType} is subtype of {pType}"++
                 "\nwhile checking {req} against {meth}")
             if (aType.isConsistentSubtypeOf (pType).not) then {
                 outer.RequestError.raise("the expression " ++
@@ -2064,6 +2064,14 @@ def astVisitor: ast.AstVisitor is public= object {
                             "expression of type '{lastType}'") with (lastNode)
                     }
                 }
+                io.error.write ("\n2048 type of lastNode in method {meth.nameString}" ++ 
+                        " is {lastNode.kind}")
+                if (lastNode.kind == "object") then {
+                    visitObject(lastNode)
+                    def confidType: ObjectType = allCache.at(lastNode)
+                    allCache.at(meth.nameString) put (confidType)
+                    io.error.write "\n2053 confidType is {confidType} for {meth.nameString}"
+                }
             }
         }
 
@@ -2105,13 +2113,18 @@ def astVisitor: ast.AstVisitor is public= object {
         //io.error.write "\n1681: rType is {rType}"
 
         def callType: ObjectType = if (rType.isDynamic) then {
+            io.error.write "rType: {rType} is dynamic}"
             anObjectType.dynamic
         } else {
             //Since we can't have a method or a type with the same name. A call
             //on a name can be searched in both method and type lists
             //Just have to assume that the programmer used nonconflicting names- Joe
 
-            def name: String = req.nameString
+            var name: String := req.nameString
+            if (name.contains "$object(") then {
+                req.parts.removeLast
+                name := req.nameString
+            }
             io.error.write "\nrequest on {name}"
 
             io.error.write "\n2000: rType.methods is: {rType.methods}"
@@ -2604,8 +2617,16 @@ method processBody (body : List⟦AstNode⟧, superclass: AstNode | false)
 //            }
 //        })
         io.error.write "\nGT1981: checking types of inheriting = {inheriting}\n"
-        def inheritedType: ObjectType = typeOf(inheriting)
+        var name: String := inheriting.value.nameString
+        if (name.contains "$object(") then {
+            inheriting.value.parts.removeLast
+            name := inheriting.value.nameString
+        }
+        io.error.write "\nGT2513: name is {name} for {inheriting.value}"
+ 
+        def inheritedType: ObjectType = allCache.at(name)
         inheritedMethods := inheritedType.methods
+        // TODO: Also take care of public inherited methods!
         io.error.write "\n1984: inherited methods: {inheritedMethods}"
         inheritedType
     } else {
@@ -2634,7 +2655,7 @@ method processBody (body : List⟦AstNode⟧, superclass: AstNode | false)
         def isMeMeth: MethodType = aMethodType.signature(list[part]) returnType(anObjectType.boolean)
 
         def publicMethods: Set⟦MethodType⟧ = emptySet
-        def allMethods: Set⟦MethodType⟧ = emptySet
+        def allMethods: Set⟦MethodType⟧ = superType.methods.copy
         allMethods.add(isMeMeth)
 
         // collect embedded types in these dictionaries

@@ -1323,6 +1323,10 @@ def anObjectType: ObjectTypeFactory is public = object {
             method &(_ : ObjectType) → dynamic { dynamic }
 
             def asString : String is public, override = "Unknown"
+<<<<<<< HEAD
+=======
+
+>>>>>>> 2215939798eaf3e053c1155f8ce5acea1e560d3f
         }
     }
 
@@ -2549,7 +2553,9 @@ method outerAt(i : Number) → ObjectType is confidential {
         return anObjectType.dynamic
     }
     io.error.write "processing outer"
-    def vStack: List⟦Dictionary⟧ = scope.variables
+
+    def vStack: List⟦Dictionary⟧ = scope.variables.stack
+
     def curr: ObjectType = vStack.at(i)
 
     //Joe-how does an ObjectType have an 'at' method

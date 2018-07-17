@@ -576,16 +576,6 @@ method buildGctFor(module) {
     module.parentsDo { p ->
         meths.addAll(p.providedNames)       // add inherited and used methods
     }
-
-    //Set of prelude types; used when writing the type definition of imported
-    //types
-    // def preludeTypes: Set⟦String⟧ = emptySet
-
-
-    //preludeTypes.addAll( ["Pattern", "Iterator", "Boolean", "Number", "String",
-    //                      "List", "Set", "Sequence", "Dictionary", "Point",
-    //                      "Binding", "Collection", "Enumerable", "Range"])
-
     for (module.value) do { v->
         // TODO: replace this scan of the whole module by traversal of the
         // module symbol table

@@ -119,6 +119,7 @@ def allCache: Dictionary = emptyDictionary
 type StackOfKind⟦V⟧ = {
     stack → List⟦Dictionary⟧
     at (name : String) put (value:V) → Done
+
     addToTopAt(name : String) put (value : V) → Done
     find (name : String) butIfMissing (bl: Function0⟦V⟧) → V
     findAtTop (name : String) butIfMissing (bl: Function0⟦V⟧) → V
@@ -235,7 +236,6 @@ method checkTypes (node: AstNode) → Done {
         io.error.write "\n235: {node.nameString} not in cache"
         node.accept (astVisitor)
     }
-    
 }
 
 // check type of node, put in cache & then return type
@@ -423,7 +423,7 @@ type MethodTypeFactory = {
     signature (signature' : List⟦MixPart⟧)
             returnType (rType : ObjectType)→ MethodType
     member (name : String) ofType (rType : ObjectType) → MethodType
-    fromGctLine (line : String) → MethodType
+    fromGctLine (line : String, importName: String) → MethodType
     fromNode (node: AstNode) → MethodType
 }
 
@@ -563,25 +563,35 @@ def aMethodType: MethodTypeFactory is public = object {
     //  1 methname(param : ParamType)part(param : ParamType) → ReturnType
     // The number at the beginning is ignored here, since it is handled
     // down in the Imports rule.
-    method fromGctLine (line : String) → MethodType {
+    method fromGctLine (line : String, importName : String) → MethodType {
         //TODO: Generics are currently skipped over and ignored entirely.
         // string specifying method being imported
         var mstr: String
         var fst: Number
         var lst: Number
         def parts: List⟦MixPart⟧ = list[]
-        var ret
+        var ret: String
+
+        //Declare an identifier node that will be used when saving the type
+        //of method parameter and method return, so we only retrieve the actual
+        //type defintion of the param or ret type when we need to type check.
+        var ident : Identifier
+
+        //Check if line starts with a number. ie: 2 methName -> ReturnType
         mstr := if (line.at(1).startsWithLetter) then {
             line
         } else {
             line.substringFrom (line.indexOf (" ") + 1) to (line.size)
         }
 
+        //Retrieves the parts of the method
         fst := 1
         var par: Number := mstr.indexOf ("(") startingAt (fst)
         lst := par - 1
 
+        //Collect the part definition if our method is not a member
         if (par > 0) then {
+            //Iterates through each part
             while {par > 0} do {
                 //Collect the signature part name
                 var partName: String := mstr.substringFrom (fst) to (lst)
@@ -591,18 +601,33 @@ def aMethodType: MethodTypeFactory is public = object {
                 fst := lst + 2
                 lst := fst
                 var multiple: Boolean := true
+
+                //Iterates through all the parameters in this part
                 while {multiple} do {
                     while {mstr.at (lst) != ":"} do {
                         lst := lst + 1
                     }
 
+                    //Collect parameter name
                     var paramName: String := mstr.substringFrom(fst)to(lst - 1)
                     io.error.write "paramName: {paramName}"
                     fst := lst + 1
                     while {(mstr.at (lst) != ")") && (mstr.at (lst) != ",") && (mstr.at(lst) != "⟦")} do {
                         lst := lst + 1
                     }
+
+                    //Collect parameter declared type.
                     var paramType: String := mstr.substringFrom(fst)to(lst - 1)
+
+                    //Since any imported type that is not a prelude type will be
+                    //saved as 'importName.typeName' in the types scope, we need
+                    //to prepend 'importName' to places in a method signature
+                    //that reference these types
+                    if(anObjectType.preludeTypes.contains(paramType).not) then {
+                        paramType := "{importName}.{paramType}"
+                    }
+
+                    //Checke if there are additional method parts
                     io.error.write "paramType = {paramType}"
                     if (mstr.at (lst) == ",") then {
                         fst := lst + 2
@@ -610,19 +635,22 @@ def aMethodType: MethodTypeFactory is public = object {
                     } else {
                         multiple := false
                     }
-                    partParams.push (aParam.withName (paramName) ofType (
-                        scope.types.find ("{paramType}") butIfMissing {
-                            anObjectType.dynamic
-                            //ast.identifierNode.new("{paramType}", false)
-                    }))
+
+                    //Add this parameter to the parameter list, dtype of ident
+                    //can be set to false because it is never used
+                    ident := ast.identifierNode.new("{paramType}", false)
+                    partParams.push(aParam.withName(paramName)
+                                      ofType(anObjectType.definedByNode(ident)))
                 }
+                //Return from while-loop with the full part definition
                 par := mstr.indexOf ("(") startingAt (lst)
                 fst := lst + 1
                 lst := par - 1
                 parts.add (aMixPartWithName (partName) parameters (partParams))
             }
-        } else {
-            var partName: String := mstr.substringFrom (fst) to (mstr.indexOf(" →") - 1)
+        } else { //This method is a member, the partName is the method's name
+            var partName : String := mstr.substringFrom (fst)
+                                                    to (mstr.indexOf(" →") - 1)
             // io.error.write "partName = {partName}"
             parts.add (aMixPartWithName (partName) parameters (list[]))
         }
@@ -631,14 +659,25 @@ def aMethodType: MethodTypeFactory is public = object {
         if (fst < 1) then {
             io.error.write "no arrow in method type {mstr}"
         }
+
+        //Collect the declared type that this method returns
         ret := mstr.substringFrom (fst) to (mstr.size)
+
+        //Since any imported type that is not a prelude type will be saved as
+        //'importName.typeName' in the types scope, we need to prepend
+        //'importName'to places in a method signature that reference these types
+        if(anObjectType.preludeTypes.contains(ret).not) then {
+            ret := "{importName}.{ret}"
+        }
         // io.error.write "ret = {ret}"
-        def rType: ObjectType =
-                anObjectType.definedByNode(ast.identifierNode.new (ret, false))
+
+        //Construct the ObjectType of the return type, dtype of ident can be
+        //set to false because it is never used
+        ident := ast.identifierNode.new (ret, false)
+        def rType: ObjectType = anObjectType.definedByNode(ident)
         // io.error.write "rType = {rType}"
         aMethodType.signature (parts) returnType (rType)
     }
-
     // if node is a method, class, method signature,
     // def, or var, create appropriate method type
     method fromNode (node: AstNode) → MethodType {
@@ -1331,6 +1370,7 @@ def anObjectType: ObjectTypeFactory is public = object {
             method &(_ : ObjectType) → dynamic { dynamic }
 
             def asString : String is public, override = "Unknown"
+
         }
     }
 
@@ -1612,7 +1652,7 @@ def anObjectType: ObjectTypeFactory is public = object {
     extend(binding) with(base)
     addTo(binding) name("key") returns(dynamic)
     addTo(binding) name("value") returns(dynamic)
-    
+
     addTo (prelude) name("print") param(base) returns(doneType)
 
     scope.types.at("Unknown") put(dynamic)
@@ -1715,7 +1755,7 @@ method check(req : Request)
         for (params) and (args) do { param: Param, arg: AstNode →
             def pType: ObjectType = param.typeAnnotation
             def aType: ObjectType = typeOf(arg)
-            io.error.write ("\n1631 Checking {arg}  of type {aType} is subtype of {pType}"++
+            io.error.write ("\n1631 Checking {arg} of type {aType} is subtype of {pType}"++
                 "\nwhile checking {req} against {meth}")
             if (aType.isConsistentSubtypeOf (pType).not) then {
                 outer.RequestError.raise("the expression " ++
@@ -2072,8 +2112,8 @@ def astVisitor: ast.AstVisitor is public= object {
                             "expression of type '{lastType}'") with (lastNode)
                     }
                 }
-                io.error.write ("\n2048 type of lastNode in method {meth.nameString}" ++ 
-                        " is {lastNode.kind}")
+                io.error.write ("\n2048 type of lastNode in method {meth.nameString}" ++
+                                                    " is {lastNode.kind}")
                 if (lastNode.kind == "object") then {
                     visitObject(lastNode)
                     def confidType: ObjectType = allCache.at(lastNode)
@@ -2133,14 +2173,17 @@ def astVisitor: ast.AstVisitor is public= object {
                 req.parts.removeLast
                 name := req.nameString
             }
+            def completeCall : String = "{req.receiver.nameString}.{req.nameString}"
+            io.error.write "\n2154: {completeCall}"
+            io.error.write "\n2155: {req.nameString}"
             io.error.write "\nrequest on {name}"
 
             io.error.write "\n2000: rType.methods is: {rType.methods}"
-
             match(rType.getMethod(name))
               case { (noSuchMethod) →
                 io.error.write "\n2001: got to case noSuchMethod"
-                scope.types.findAtTop(name) butIfMissing {
+                io.error.write "\n2002: scope here is {scope.types}"
+                scope.types.findAtTop(completeCall) butIfMissing {
                     //Joe - possibly come back and change error msg maybe
                     //less informative, but less confusing msg
 
@@ -2157,7 +2200,6 @@ def astVisitor: ast.AstVisitor is public= object {
         io.error.write "\n1701: callType: {callType}"
         cache.at(req) put (callType)
         true  // request to continue on arguments
-
     }
 
     // returns false so don't recurse into object
@@ -2258,9 +2300,18 @@ def astVisitor: ast.AstVisitor is public= object {
         true
     }
 
-    // ops handled same as calls
+    // If the op is & or |, evaluate it
+    // Otherwise treat it as a call
     method visitOp (node: AstNode) → Boolean {
-        visitCall (node)
+        io.error.write"\n2283 type checking op"
+        if(node.value == "&") then {
+            cache.at(node) put (typeOf(node.left) & typeOf(node.right))
+        } elseif {node.value == "|"} then {
+            cache.at(node) put (typeOf(node.left) | typeOf(node.right))
+        } else {
+            visitCall(node)
+        }
+        false
     }
 
     method visitBind (bind: AstNode) → Boolean {
@@ -2376,7 +2427,7 @@ def astVisitor: ast.AstVisitor is public= object {
 
         // Define a list of types that we have yet to resolve. All public types
         // are placed in this list at the start
-        def unresolvedTypes: List⟦ObjectType⟧ = list[]
+        def unresolvedTypes: List⟦String⟧ = list[]
         if (gct.containsKey("types")) then {
             for(gct.at("types")) do { typ →
                 unresolvedTypes.push(typ)
@@ -2410,7 +2461,7 @@ def astVisitor: ast.AstVisitor is public= object {
                                                           ifAbsent { emptyList }
 
         for (importedMethodTypes) do { methodSignature : String →
-            importMethods.add(aMethodType.fromGctLine(methodSignature))
+            importMethods.add(aMethodType.fromGctLine(methodSignature, imp.nameString))
         }
 
         // Create the ObjectType and MethodType of import
@@ -2427,7 +2478,6 @@ def astVisitor: ast.AstVisitor is public= object {
         false
     }
 
-
     //Resolve the imported type,'typeName', and store it in the types scope
     //
     //Param typeName - name of the imported type to be resolved
@@ -2441,104 +2491,89 @@ def astVisitor: ast.AstVisitor is public= object {
         io.error.write "\n 2413: looking for {typeName} defined as {typeDefs.at(typeName)}"
 
         //Holds the types that make up 'typeName'
-        def unionTypes: List⟦ObjectType⟧ = emptyList
-        def variantTypes: List⟦ObjectType⟧ = emptyList
         def typeLiterals: Dictionary⟦String,ObjectType⟧ = emptyDictionary
 
         //Holds all methods belonging to 'typeName'
         def typeMeths: Set⟦MethodType⟧ = emptySet
 
-        //Iterates through each methodSignature to resolve 'typeName'
-        typeDefs.at(typeName).do { methSig: String →
-            io.error.write "\n2404 methSig is: '{methSig}'"
-            def methPrefix : String = methSig.at(1)
+        def methSigs : List⟦String⟧ = typeDefs.at(typeName)
 
-            if (methPrefix == "&") then {
-                def operand : String = methSig.substringFrom(3)
+        //populates typeLiterals with all the type literals declared in the type
+        while {(methSigs.size > 0) && {methSigs.at(1).startsWithDigit}} do {
+            def methPrefix : String = split(methSigs.at(1), " ").at(1)
 
-                if ((operand.startsWithDigit) &&
-                          {typeLiterals.containsKey(operand).not}) then {
-
-                    typeLiterals.at(operand) put (anObjectType.fromMethods(emptySet))
-
-                    unionTypes.push(typeLiterals.at(operand))
-
-                } else {
-
-                    if {unresolvedTypes.contains(operand)} then {
-                        importHelper(operand, impName, unresolvedTypes, typeDefs)
-                    }
-
-                    if (anObjectType.preludeTypes.contains(operand)) then {
-                        unionTypes.push(scope.types.find("{operand}")
-                                        butIfMissing { anObjectType.dynamic } )
-                    } else {
-                        unionTypes.push(scope.types.find("{impName}.{operand}")
-                                        butIfMissing { anObjectType.dynamic } )
-                    }
-                }
-            } elseif {methPrefix == "|"} then {
-                def operand : String = methSig.substringFrom(3)
-
-                if ((operand.startsWithDigit) &&
-                          {typeLiterals.containsKey(operand).not}) then {
-                    typeLiterals.at(operand) put (anObjectType.fromMethods(emptySet))
-                    variantTypes.push(typeLiterals.at(operand))
-                } else {
-                    if {unresolvedTypes.contains(operand)} then {
-                        importHelper(operand, impName, unresolvedTypes, typeDefs)
-                    }
-                    if (anObjectType.preludeTypes.contains(operand)) then {
-                        variantTypes.push(scope.types.find("{operand}")
-                                        butIfMissing { anObjectType.dynamic } )
-                    } else {
-                        variantTypes.push(scope.types.find("{impName}.{operand}")
-                                        butIfMissing { anObjectType.dynamic } )
-                    }
-                }
-            } else {
-                if (typeLiterals.containsKey(methPrefix).not) then {
-                    typeLiterals.at(methPrefix) put (anObjectType.fromMethods(emptySet))
-                }
-                typeLiterals.at(methPrefix).methods.add(aMethodType.fromGctLine(methSig))
+            if (typeLiterals.containsKey(methPrefix).not) then {
+                typeLiterals.at(methPrefix) put (anObjectType.fromMethods(emptySet))
             }
+            typeLiterals.at(methPrefix).methods.add(
+                                aMethodType.fromGctLine(methSigs.removeFirst, impName))
         }
 
+        //This will hold the resulting ObjectType of the type being evaluated
         var myType : ObjectType
-        var isUninitialized : Boolean := true
 
-        io.error.write "\nunionTypes is {unionTypes}"
-        io.error.write "\nvariantTypes is {variantTypes}"
+        //At this point in the method, methSigs only contains the lines that
+        //                               come after the type literal definitions
 
-        for(unionTypes) do { unionType : ObjectType ->
-            if (isUninitialized) then {
-                myType := unionType
-                isUninitialized := false
-            } else {
-                myType := (myType & unionType)
+        //if needed, call importOpHelper to evaluate types defined using operations
+        if (methSigs.size > 0) then { //checks if the type was just a type literal
+            if ((methSigs.at(1).at(1) == "&") || {methSigs.at(1).at(1) == "|"}) then {
+                myType := importOpHelper(methSigs, typeLiterals, typeName, impName, unresolvedTypes, typeDefs)
+            }  else { //This could only be reached if the GCT was written wrong
+                ProgrammingError.raise ("This error should never be raised")
             }
-        }
-
-        for(variantTypes) do { variantType: ObjectType ->
-            if (isUninitialized) then {
-                myType := variantType
-                isUninitialized := false
-            } else {
-                myType := (myType | variantType)
-            }
-        }
-
-        if (isUninitialized) then {
-            io.error.write "\n2477 {typeLiterals}"
-            io.error.write "\n2478 {typeLiterals.values}"
+        } else {
             myType := typeLiterals.values.first
         }
+
+        io.error.write ("\nThe type {impName}.{typeName} was put in the scope as" ++
+                                      "{impName}.{typeName}::{myType}")
 
         io.error.write "\n2483 trying to remove {typeName} from {unresolvedTypes}"
         unresolvedTypes.remove(typeName)
         scope.types.at("{impName}.{typeName}") put (myType)
     }
 
+    //recursively parse pre-ordered type definitions from GCT file
+    //
+    //Param list - the list of strings from the GCT file that represents the pre-order
+    //                traversal of the AstNode tree
+    //Param typeLits - Holds all the pre-processed type literals from the type definition
+    //                    mapped to digits as temporary type names
+    //The other parameters are just so this method can recursively call importHelper
+    method importOpHelper (list : List⟦String⟧, typeLits : Dictionary⟦String,ObjectType⟧,
+                typeName : String, impName : String, unresolvedTypes : List⟦String⟧,
+                      typeDefs : Dictionary⟦String, List⟦String⟧⟧) → ObjectType {
+        def elt : String = list.removeFirst
+        if (elt == "&") then { //elt is an op, and what comes after it is its left
+                                                        //side and right side
+            def leftSide  : ObjectType = importOpHelper(list, typeLits, elt,
+                                            impName, unresolvedTypes, typeDefs)
+            def rightSide : ObjectType = importOpHelper(list, typeLits, elt,
+                                            impName, unresolvedTypes, typeDefs)
+            leftSide & rightSide
+        } elseif {elt == "|"} then {
+            def leftSide  : ObjectType = importOpHelper(list, typeLits, elt,
+                                            impName, unresolvedTypes, typeDefs)
+            def rightSide : ObjectType = importOpHelper(list, typeLits, elt,
+                                            impName, unresolvedTypes, typeDefs)
+            leftSide | rightSide
+        //elt refers to an already-processed type literal
+        } elseif {elt.startsWithDigit} then {
+            typeLits.at(elt)
+        //elt is an identifier, which must be resolved then found in the scope
+        } else {
+            if (unresolvedTypes.contains(elt)) then {
+                importHelper (elt, impName, unresolvedTypes, typeDefs)
+            }
+            io.error.write "\n2470 scope before search in import is" ++
+                                                          "{scope.types.stack}"
+            scope.types.findAtTop("{impName}.{elt}") butIfMissing {
+                                  ScopingError.raise("Could not " ++
+                                  "find type {elt} from import in scope")
+            }
+        }
+    }
 
     method visitReturn (node: AstNode) → Boolean {
         cache.at(node) put (typeOf(node.value))
@@ -2631,7 +2666,7 @@ method processBody (body : List⟦AstNode⟧, superclass: AstNode | false)
             name := inheriting.value.nameString
         }
         io.error.write "\nGT2513: name is {name} for {inheriting.value}"
- 
+
         def inheritedType: ObjectType = allCache.at(name)
         inheritedMethods := inheritedType.methods
         // TODO: Also take care of public inherited methods!
@@ -2679,7 +2714,7 @@ method processBody (body : List⟦AstNode⟧, superclass: AstNode | false)
                 if(isPublic(meth)) then {
                     publicMethods.add(mType)
                 }
- 
+
                 scope.methods.at(meth.nameString) put(mType)
 
                 //A method that is a Member has no parameter and is identical to

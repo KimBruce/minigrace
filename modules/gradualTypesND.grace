@@ -230,8 +230,12 @@ def scope: Scope is public = object {
 
 // check the type of node and insert into cache only
 method checkTypes (node: AstNode) → Done {
-    io.error.write "\n182: checking types of {node}"
-    node.accept (astVisitor)
+    io.error.write "\n233: checking types of {node.nameString}"
+    cache.at (node) ifAbsent {
+        io.error.write "\n235: {node.nameString} not in cache"
+        node.accept (astVisitor)
+    }
+    
 }
 
 // check type of node, put in cache & then return type
@@ -1494,6 +1498,22 @@ def anObjectType: ObjectTypeFactory is public = object {
     def enumerable : ObjectType is public = fromMethods(sg.emptySet) withName("Enumerable") withTypes(emptyDictionary)
     def rangeTp : ObjectType is public = fromMethods(sg.emptySet) withName("Range") withTypes(emptyDictionary)
 
+    def pattern : ObjectType is public = fromMethods(sg.emptySet) withName("Pattern")
+    def iterator : ObjectType is public = fromMethods(sg.emptySet) withName("Iterator")
+    def boolean : ObjectType is public = fromMethods(sg.emptySet) withName("Boolean")
+    def number : ObjectType is public = fromMethods(sg.emptySet) withName("Number")
+    def string : ObjectType is public = fromMethods(sg.emptySet) withName("String")
+    def listTp : ObjectType is public = fromMethods(sg.emptySet) withName("List")
+    def set : ObjectType is public = fromMethods(sg.emptySet) withName("Set")
+    def sequence : ObjectType is public = fromMethods(sg.emptySet) withName("Sequence")
+    def dictionary : ObjectType is public = fromMethods(sg.emptySet) withName("Dictionary")
+    def point : ObjectType is public = fromMethods(sg.emptySet) withName("Point")
+    def binding : ObjectType is public = fromMethods(sg.emptySet) withName("Binding")
+    def collection : ObjectType is public = fromMethods(sg.emptySet) withName("Collection")
+    def enumerable : ObjectType is public = fromMethods(sg.emptySet) withName("Enumerable")
+    def rangeTp : ObjectType is public = fromMethods(sg.emptySet) withName("Range")
+    def prelude: ObjectType is public = fromMethods(sg.emptySet) withName("Prelude")
+
     addTo (base) name ("==") param(base) returns(boolean)
     addTo (base) name ("≠") param(base) returns(boolean)
     addTo (base) name ("hash") returns(number)
@@ -1658,6 +1678,8 @@ def anObjectType: ObjectTypeFactory is public = object {
     extend(binding) with(base)
     addTo(binding) name("key") returns(dynamic)
     addTo(binding) name("value") returns(dynamic)
+    
+    addTo (prelude) name("print") param(base) returns(doneType)
 
     scope.types.at("Unknown") put(dynamic)
     scope.types.at("Done") put(doneType)
@@ -1693,6 +1715,7 @@ def anObjectType: ObjectTypeFactory is public = object {
     addVar("done") ofType(self.doneType)
     addVar("true") ofType(boolean)
     addVar("false") ofType(boolean)
+    addVar("prelude") ofType (prelude)
 }
 
 // Adds name to variables and as parameterless method (really def, not var!)
@@ -2155,8 +2178,8 @@ def astVisitor: ast.AstVisitor is public= object {
         // receiver type
         def rType: ObjectType = if(rec.isIdentifier &&
             {(rec.nameString == "self") || (rec.nameString =="module()object")}) then {
-            io.error.write "1675: looking for type of self"
-            scope.types.find("$elf") butIfMissing {
+            io.error.write "\n1675: looking for type of self"
+            scope.variables.find("$elf") butIfMissing {
                 Exception.raise "type of self missing" with(rec)
             }
         } else {
@@ -2327,7 +2350,7 @@ def astVisitor: ast.AstVisitor is public= object {
 
             // Type of receiver
             def rType: ObjectType = if(Identifier.match(rec) && {rec.value == "self"}) then {
-                scope.types.find("$elf") butIfMissing {
+                scope.variables.find("$elf") butIfMissing {
                     Exception.raise "type of self missing" with(rec)
                 }
             } else {
@@ -2617,7 +2640,7 @@ method processBody (body : List⟦AstNode⟧, superclass: AstNode | false)
 
     // Type including only public features
     def publicType: ObjectType = if(superType.isDynamic) then {
-        scope.types.at("$elf") put(superType)
+        scope.variables.at("$elf") put(superType)
         superType
     } else {
         // Collect the method types to add the two self types.
@@ -2644,8 +2667,8 @@ method processBody (body : List⟦AstNode⟧, superclass: AstNode | false)
                 if(isPublic(meth)) then {
                     publicMethods.add(mType)
                 }
-
-                scope.methods.at(mType.name) put(mType)
+ 
+                scope.methods.at(meth.nameString) put(mType)
 
                 //A method that is a Member has no parameter and is identical to
                 //a variable, so we also store it inside the variables scope
@@ -2707,8 +2730,8 @@ method processBody (body : List⟦AstNode⟧, superclass: AstNode | false)
         //io.error.write"\n2410 allTypes is: {allTypes}"
         //io.error.write"\n2411 publicTypes is: {publicTypes}"
 
-        internalType := anObjectType.fromMethods(allMethods) withTypes(allTypes)
-        scope.types.at("$elf") put (internalType)
+        internalType := anObjectType.fromMethods(allMethods)
+        scope.variables.at("$elf") put (internalType)
 
         if (hasInherits) then {
             // Need to worry about overriding with different signature!! TODO

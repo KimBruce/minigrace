@@ -52,4 +52,3 @@ def xy: Number = d.sf - 47
 print(xy)
 
 print (1 + c.p(11))
-

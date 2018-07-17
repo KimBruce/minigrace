@@ -1,2017 +1,950 @@
-Beginning test run at Wed Jun 27 11:35:49 PDT 2018
-    in /home/tnguyen/Documents/GitHub/minigrace/modules/gradualTypesNDTest
-minigrace[.]: t309_typeInsideType_test: 0.21 (+0.21): starting compilation
-minigrace[.]: t309_typeInsideType_test: 0.26 (+0.05): lexing.
-minigrace[.]: t309_typeInsideType_test: 0.27 (+0.01): parsing.
-minigrace[.]: t309_typeInsideType_test: 0.32 (+0.05): checking dialect gradualTypesND used by module t309_typeInsideType_test
-minigrace[.]: t309_typeInsideType_test: 0.57 (+0.25): loading dialect "gradualTypesND" for checkers.
-minigrace[.]: t309_typeInsideType_test: 0.78 (+0.21): rewriting tree.
-minigrace[.]: t309_typeInsideType_test: 0.82 (+0.04): symbol tables built.
+Beginning test run at Tue Jul 17 16:41:34 PDT 2018
+    in /home/jbrennan/Documents/GitHub/minigrace/modules/gradualTypesNDTest
+minigrace[.]: Init_test: 0.22 (+0.22): starting compilation
+minigrace[.]: Init_test: 0.27 (+0.05): lexing.
+minigrace[.]: Init_test: 0.31 (+0.04): parsing.
+minigrace[.]: Init_test: 0.4 (+0.09): checking dialect gradualTypesND used by module Init_test
+minigrace[.]: Init_test: 0.66 (+0.26): loading dialect "gradualTypesND" for checkers.
+minigrace[.]: Init_test: 0.9 (+0.24): rewriting tree.
+minigrace[.]: Init_test: 0.96 (+0.06): symbol tables built.
 
+1698: visiting module module Init_test
+2186 Types scope before collecing types is 
+dict⟬
+  Done::Done
+  Point::Point
+  String::String
+  Set::Set
+  Range::Range
+  Object::Object
+  Sequence::Sequence
+  Unknown::Unknown
+  List::List
+  Pattern::Pattern
+  Number::Number
+  Boolean::Boolean
+  Binding::Binding
+  Dictionary::Dictionary
+⟭
+matched as typeDec
+matched as typeDec
+2186 Types scope after collecing types is 
+dict⟬
+  A::UnresolvedTypeLiteral
+  Done::Done
+  Point::Point
+  String::String
+  Set::Set
+  Range::Range
+  Object::UnresolvedTypeLiteral
+  Sequence::Sequence
+  Unknown::Unknown
+  List::List
+  Pattern::Pattern
+  Number::Number
+  Boolean::Boolean
+  Binding::Binding
+  Dictionary::Dictionary
+⟭
 1958: superclass: false
 
-matched as typeDec
-didn't match as typeDec
-didn't match as typeDec
-1141: typesScope in fromIdentifier of ident: identifier‹Number› is: [dict⟬Done::Done, Point::Point, String::String, Set::Set, Range::Range, Object::Object, Sequence::Sequence, Unknown::Unknown, List::List, Pattern::Pattern, Number::Number, Boolean::Boolean, Binding::Binding, Dictionary::Dictionary⟭, dict⟬T::{ 
-  ≠(_ : Object) -> Boolean; 
-  hash -> Number; 
-  asDebugString -> String; 
-  :: -> Binding; 
-  basicAsString -> String; 
-  debugIterator -> Iterator; 
-  match -> Unknown; 
-  list(_ : Collection) -> List; 
-  debugValue -> String; }
-⟭]
-ident.value is: Number
-2518 The type name is: T and it has embedded types of: dict⟬InternalType::Number⟭
-2518.5 The type itself is: ‹anon›{ InternalType -> Pattern;  }
 1965: hasInherits is false
 
 1989: superType is Object
 
-2009: processing typedec T
-1141: typesScope in fromIdentifier of ident: identifier‹Number› is: [dict⟬Done::Done, Point::Point, String::String, Set::Set, Range::Range, Object::Object, Sequence::Sequence, Unknown::Unknown, List::List, Pattern::Pattern, Number::Number, Boolean::Boolean, Binding::Binding, Dictionary::Dictionary⟭, dict⟬T::{ 
-  ≠(_ : Object) -> Boolean; 
-  hash -> Number; 
-  asDebugString -> String; 
-  :: -> Binding; 
-  basicAsString -> String; 
-  debugIterator -> Iterator; 
-  match -> Unknown; 
-  list(_ : Collection) -> List; 
-  InternalType -> Pattern; 
-  debugValue -> String; }
-⟭]
-ident.value is: Number
-2493 mType is: T -> Pattern
-2009: processing defdec testDec
-2022: in def or var case
-574: defd: defdec testDec
-575: defd.dtype T.InternalType
-1172 is member T.InternalType
-1173 finding T.InternalType
-1174 memb.receiver is: identifier‹T›
-Scope types in member search is: [dict⟬Done::Done, Point::Point, String::String, Set::Set, Range::Range, Object::Object, Sequence::Sequence, Unknown::Unknown, List::List, Pattern::Pattern, Number::Number, Boolean::Boolean, Binding::Binding, Dictionary::Dictionary⟭, dict⟬T::‹anon›{ InternalType -> Pattern;  }⟭]
-Scope methods in member search is: [dict⟬Done::Done -> Pattern, Boolean::Boolean -> Pattern, Set::Set -> Pattern, Number::Number -> Pattern, Object::Object -> Pattern, List::List -> Pattern, Pattern::Pattern -> Pattern, Dynamic::Dynamic -> Pattern, Binding::Binding -> Pattern, done::done -> Done, true::true -> Boolean, Point::Point -> Pattern, String::String -> Pattern, Dictionary::Dictionary -> Pattern, Range::Range -> Pattern, Sequence::Sequence -> Pattern, Unknown::Unknown -> Pattern, false::false -> Boolean⟭, dict⟬⟭]
-1183 recType is: ‹anon›{ InternalType -> Pattern;  }
-1185 recType's type list is: dict⟬InternalType::Number⟭
-1184 member retType is: Number
-2024: add testDec -> Number to allMethods
+2009: processing vardec s
+574: defd: vardec s
+575: defd.dtype identifier‹String›
+2009: processing typedec Object
+2009: processing typedec A
+2009: processing defdec aa
+574: defd: defdec aa
+575: defd.dtype identifier‹Object›
+2009: processing defdec b
+574: defd: defdec b
+575: defd.dtype identifier‹Object›
+2009: processing method new(1)
+573: node matched as method: method new(1)
+2009: processing defdec a
+574: defd: defdec a
+575: defd.dtype identifier‹A›
 2009: processing call print "test succeeded"
-2410 allTypes is: dict⟬T::‹anon›{ InternalType -> Pattern;  }⟭
-2411 publicTypes is: dict⟬T::‹anon›{ InternalType -> Pattern;  }⟭
-2045: internalType is { 
-  ≠(_ : Object) -> Boolean; 
-  testDec -> Number; 
-  hash -> Number; 
-  asDebugString -> String; 
-  :: -> Binding; 
-  basicAsString -> String; 
-  isMe(other : Object) -> Boolean; 
-  debugIterator -> Iterator; 
-  match -> Unknown; 
-  list(_ : Collection) -> List; 
-  debugValue -> String; 
-  T -> Pattern; }
-
-
-2046: internalType's types is dict⟬T::‹anon›{ InternalType -> Pattern;  }⟭
-
-2058: publicType is { 
-  ≠(_ : Object) -> Boolean; 
-  hash -> Number; 
-  asDebugString -> String; 
-  :: -> Binding; 
-  basicAsString -> String; 
-  debugIterator -> Iterator; 
-  match -> Unknown; 
-  list(_ : Collection) -> List; 
-  debugValue -> String; 
-  T -> Pattern; }
-
-
+2617 ignored call print "test succeeded"
 2070: checking index 1 at line 3
-182: checking types of typedec T
+233: checking types of s
+235: s not in cache
+1820: defType is String
+233: checking types of ?
+235: ? not in cache
+2072: finished index 1
+
+2070: checking index 2 at line 5
+233: checking types of Object
+235: Object not in cache
+2072: finished index 2
+
+2070: checking index 3 at line 7
+233: checking types of A
+235: A not in cache
+2072: finished index 3
+
+2070: checking index 4 at line 11
+233: checking types of aa
+235: aa not in cache
+1820: defType is Object
+233: checking types of aa
+235: aa not in cache
+1958: superclass: false
+
+1965: hasInherits is false
+
+1989: superType is Object
+
+2009: processing method new
+573: node matched as method: method new
+2070: checking index 1 at line 12
+233: checking types of new
+235: new not in cache
+1567: Visiting method method new
+
+573: node matched as method: method new
+1585: Entering scope for method new
+
+1595: collected types for [num 4]
+
+233: checking types of ?
+235: ? not in cache
+233: checking types of ?
+2048 type of lastNode in method new is num
+2072: finished index 1
+
+ 2674 types scope is: 
+dict⟬
+  A::UnresolvedTypeLiteral
+  Done::Done
+  Point::Point
+  String::String
+  Set::Set
+  Range::Range
+  Object::Object
+  Sequence::Sequence
+  Unknown::Unknown
+  List::List
+  Pattern::Pattern
+  Number::Number
+  Boolean::Boolean
+  Binding::Binding
+  Dictionary::Dictionary
+⟭
+dict⟬
+⟭
+dict⟬
+⟭
+ 2675 methods scope is: 
+dict⟬
+  Done::Done → Pattern
+  Boolean::Boolean → Pattern
+  Set::Set → Pattern
+  Number::Number → Pattern
+  prelude::prelude → Prelude
+  Object::Object → Pattern
+  List::List → Pattern
+  Pattern::Pattern → Pattern
+  Dynamic::Dynamic → Pattern
+  Binding::Binding → Pattern
+  done::done → Done
+  true::true → Boolean
+  Point::Point → Pattern
+  String::String → Pattern
+  Dictionary::Dictionary → Pattern
+  Range::Range → Pattern
+  Sequence::Sequence → Pattern
+  Unknown::Unknown → Pattern
+  false::false → Boolean
+⟭
+dict⟬
+  new(1)::new(arg : String) → Object
+  a::a → A
+  b::b → Object
+  s::s → String
+  aa::aa → Object
+⟭
+dict⟬
+  new::new → Number
+⟭
+1971: *** Visited object object aaconfidential type is { 
+    new → Number; 
+    isMe(other : Object) → Boolean; 
+  }
+public type is { 
+    new → Number; 
+  }
+2153: Scope at end is: 
+dict⟬
+  A::UnresolvedTypeLiteral
+  Done::Done
+  Point::Point
+  String::String
+  Set::Set
+  Range::Range
+  Object::Object
+  Sequence::Sequence
+  Unknown::Unknown
+  List::List
+  Pattern::Pattern
+  Number::Number
+  Boolean::Boolean
+  Binding::Binding
+  Dictionary::Dictionary
+⟭
+dict⟬
+⟭
+2072: finished index 4
+
+2070: checking index 5 at line 15
+233: checking types of b
+235: b not in cache
+1820: defType is Object
+233: checking types of b
+235: b not in cache
+1958: superclass: false
+
+1965: hasInherits is false
+
+1989: superType is Object
+
+2009: processing bind op ++(1)
+2617 ignored bind op ++(1)
+2070: checking index 1 at line 16NoSuchMethod on line 2301 of ast: no method ++(_) on opNode.new(_,_,_) op ++(1).  Did you mean ≠(_), ::(_) or ==(_)?
+  requested from bindNode.new(_,_).nameString at line 2301 of ast
+  requested from checkTypes(_) at line 234 of gradualTypesND
+  requested from block.apply(_) at line 2778 of gradualTypesND
+  requested from block.apply at line 1728 of collectionsPrelude
+  requested from while(_)do(_) at line 1727 of collectionsPrelude
+  requested from range.uncheckedFrom(_)to(_).do(_) at line 1727 of collectionsPrelude
+  requested from for(_)do(_) at line 2776 of gradualTypesND
+  requested from processBody(_,_) at line 2776 of gradualTypesND
+  requested from block.apply at line 2208 of gradualTypesND
+  requested from scope.enter(_) at line 218 of gradualTypesND
+  requested from astVisitor.visitObject(_) at line 2207 of gradualTypesND
+  requested from astVisitor.visitObject(_)up(_) at line 3190 of ast
+  requested from objectNode.new(_,_).accept(_)from(_) at line 1606 of ast
+  requested from objectNode.new(_,_).accept(_) at line 273 of ast
+  requested from block.apply at line 237 of gradualTypesND
+  requested from dictionary.empty.at(_)ifAbsent(_) at line 1315 of collectionsPrelude
+  requested from checkTypes(_) at line 235 of gradualTypesND
+  requested from typeOf(_) at line 243 of gradualTypesND
+  requested from astVisitor.visitDefDec(_) at line 2383 of gradualTypesND
+  requested from astVisitor.visitDefDec(_)up(_) at line 3200 of ast
+  requested from defDecNode.new(_,_,_).accept(_)from(_) at line 2381 of ast
+  requested from defDecNode.new(_,_,_).accept(_) at line 273 of ast
+  requested from block.apply at line 237 of gradualTypesND
+  requested from dictionary.empty.at(_)ifAbsent(_) at line 1315 of collectionsPrelude
+  requested from checkTypes(_) at line 235 of gradualTypesND
+  requested from block.apply(_) at line 2778 of gradualTypesND
+  requested from block.apply at line 1728 of collectionsPrelude
+  requested from while(_)do(_) at line 1727 of collectionsPrelude
+  requested from range.uncheckedFrom(_)to(_).do(_) at line 1727 of collectionsPrelude
+  requested from for(_)do(_) at line 2776 of gradualTypesND
+  requested from processBody(_,_) at line 2776 of gradualTypesND
+  requested from block.apply at line 2208 of gradualTypesND
+  requested from scope.enter(_) at line 218 of gradualTypesND
+  requested from astVisitor.visitObject(_) at line 2207 of gradualTypesND
+  requested from astVisitor.visitModule(_) at line 2249 of gradualTypesND
+  requested from astVisitor.visitModule(_)up(_) at line 3191 of ast
+  requested from moduleNode.body(_).accept(_)from(_) at line 1461 of ast
+  requested from moduleNode.body(_).accept(_) at line 273 of ast
+  requested from thisDialect.astChecker(_) at line 2883 of gradualTypesND
+[.]Init_test.grace[0]: Unexpected exception raised by AST checker for dialect 'gradualTypesND'.
+NoSuchMethod: no method ++(_) on opNode.new(_,_,_) op ++(1).  Did you mean ≠(_), ::(_) or ==(_)?
+!FAIL Init_test.grace: compile error
+minigrace[.]: doWhileDef_test: 0.2 (+0.2): starting compilation
+minigrace[.]: doWhileDef_test: 0.25 (+0.05): lexing.
+minigrace[.]: doWhileDef_test: 0.28 (+0.03): parsing.
+minigrace[.]: doWhileDef_test: 0.36 (+0.08): checking dialect gradualTypesND used by module doWhileDef_test
+minigrace[.]: doWhileDef_test: 0.6 (+0.24): loading dialect "gradualTypesND" for checkers.
+minigrace[.]: doWhileDef_test: 0.85 (+0.25): rewriting tree.
+minigrace[.]: doWhileDef_test: 0.91 (+0.06): symbol tables built.
+
+1698: visiting module module doWhileDef_test
+2186 Types scope before collecing types is 
+dict⟬
+  Done::Done
+  Point::Point
+  String::String
+  Set::Set
+  Range::Range
+  Object::Object
+  Sequence::Sequence
+  Unknown::Unknown
+  List::List
+  Pattern::Pattern
+  Number::Number
+  Boolean::Boolean
+  Binding::Binding
+  Dictionary::Dictionary
+⟭
+matched as typeDec
+matched as typeDec
+2186 Types scope after collecing types is 
+dict⟬
+  Done::Done
+  BoolBlock::UnresolvedTypeLiteral
+  Proc0::UnresolvedTypeLiteral
+  Point::Point
+  String::String
+  Set::Set
+  Range::Range
+  Object::Object
+  Sequence::Sequence
+  Unknown::Unknown
+  List::List
+  Pattern::Pattern
+  Number::Number
+  Boolean::Boolean
+  Binding::Binding
+  Dictionary::Dictionary
+⟭
+1958: superclass: false
+
+1965: hasInherits is false
+
+1989: superType is Object
+
+2009: processing typedec BoolBlock
+2009: processing typedec Proc0
+2009: processing method do(1)while(1)
+573: node matched as method: method do(1)while(1)
+2009: processing vardec i
+574: defd: vardec i
+575: defd.dtype identifier‹Number›
+2009: processing call do {
+    print(i)
+    i := i + 1
+} while {
+    i < 10
+}
+2617 ignored call do {
+    print(i)
+    i := i + 1
+} while {
+    i < 10
+}
+2070: checking index 1 at line 3
+233: checking types of BoolBlock
+235: BoolBlock not in cache
 2072: finished index 1
 
 2070: checking index 2 at line 7
-182: checking types of defdec testDec
-1172 is member T.InternalType
-1173 finding T.InternalType
-1174 memb.receiver is: identifier‹T›
-Scope types in member search is: [dict⟬Done::Done, Point::Point, String::String, Set::Set, Range::Range, Object::Object, Sequence::Sequence, Unknown::Unknown, List::List, Pattern::Pattern, Number::Number, Boolean::Boolean, Binding::Binding, Dictionary::Dictionary⟭, dict⟬$elf::{ 
-  ≠(_ : Object) -> Boolean; 
-  testDec -> Number; 
-  hash -> Number; 
-  asDebugString -> String; 
-  :: -> Binding; 
-  basicAsString -> String; 
-  isMe(other : Object) -> Boolean; 
-  debugIterator -> Iterator; 
-  match -> Unknown; 
-  list(_ : Collection) -> List; 
-  debugValue -> String; 
-  T -> Pattern; }
-, T::‹anon›{ InternalType -> Pattern;  }⟭]
-Scope methods in member search is: [dict⟬Done::Done -> Pattern, Boolean::Boolean -> Pattern, Set::Set -> Pattern, Number::Number -> Pattern, Object::Object -> Pattern, List::List -> Pattern, Pattern::Pattern -> Pattern, Dynamic::Dynamic -> Pattern, Binding::Binding -> Pattern, done::done -> Done, true::true -> Boolean, Point::Point -> Pattern, String::String -> Pattern, Dictionary::Dictionary -> Pattern, Range::Range -> Pattern, Sequence::Sequence -> Pattern, Unknown::Unknown -> Pattern, false::false -> Boolean⟭, dict⟬testDec::testDec -> Number⟭]
-1183 recType is: ‹anon›{ InternalType -> Pattern;  }
-1185 recType's type list is: dict⟬InternalType::Number⟭
-1184 member retType is: Number
+233: checking types of Proc0
+235: Proc0 not in cache
+2072: finished index 2
+
+2070: checking index 3 at line 11
+233: checking types of do(1)while(1)
+235: do(1)while(1) not in cache
+1567: Visiting method method do(1)while(1)
+
+573: node matched as method: method do(1)while(1)
+1585: Entering scope for method do(1)while(1)
+
+573: node matched as method: methodtype apply
+573: node matched as method: methodtype apply
+1595: collected types for [block.apply, call while(cond) do(block)]
+
+233: checking types of apply
+235: apply not in cache
+1673: visitCall's call is: block.apply
+2085 rec.kind = identifier
+233: checking types of block
+235: block not in cache
+2154: block.apply
+2155: apply
+request on apply
+2000: rType.methods is: set{≠(_ : Object) → Boolean, hash → Number, apply → Done, asString → String, asDebugString → String, :: → Binding, basicAsString → String, debugIterator → Iterator, match → Unknown, list(_ : Collection) → List, ==(_ : Object) → Object, debugValue → String}
+checking request block.apply against apply → Done
+1701: callType: Done
+233: checking types of while(1)do(1)
+235: while(1)do(1) not in cache
+1673: visitCall's call is: prelude.while(1)do(1)
+2085 rec.kind = identifier
+233: checking types of prelude
+235: prelude not in cache
+2154: prelude.while(1)do(1)
+2155: while(1)do(1)
+request on while(1)do(1)
+2000: rType.methods is: set{print(_ : Object) → Done}
+2001: got to case noSuchMethod
+2002: scope here is 
+dict⟬
+  Done::Done
+  BoolBlock::{ 
+    apply → Boolean; 
+  }
+  Proc0::{ 
+    apply → Done; 
+  }
+  Point::Point
+  String::String
+  Set::Set
+  Range::Range
+  Object::Object
+  Sequence::Sequence
+  Unknown::Unknown
+  List::List
+  Pattern::Pattern
+  Number::Number
+  Boolean::Boolean
+  Binding::Binding
+  Dictionary::Dictionary
+⟭
+dict⟬
+⟭
+dict⟬
+⟭RequestError on line 2190 of gradualTypesND: no such method or type'while(1)do(1)' in `prelude` of type
+    'Prelude' 
+in type 
+  'set{print(_ : Object) → Done}'
+  requested from Exception.raise(_)with(_) at line 2190 of gradualTypesND
+  requested from block.apply at line 2190 of gradualTypesND
+  requested from stackOfKind(_).findAtTop(_)butIfMissing(_) at line 168 of gradualTypesND
+  requested from astVisitor.visitCall(_) at line 2186 of gradualTypesND
+  requested from astVisitor.visitCall(_)up(_) at line 3189 of ast
+  requested from callNode.new(_,_).accept(_)from(_) at line 1329 of ast
+  requested from callNode.new(_,_).accept(_) at line 273 of ast
+  requested from block.apply at line 237 of gradualTypesND
+  requested from dictionary.empty.at(_)ifAbsent(_) at line 1315 of collectionsPrelude
+  requested from checkTypes(_) at line 235 of gradualTypesND
+  requested from block.apply(_) at line 2081 of gradualTypesND
+  requested from extendedLineup.do(_) at line 2080 of gradualTypesND
+  requested from for(_)do(_) at line 2080 of gradualTypesND
+  requested from block.apply at line 2080 of gradualTypesND
+  requested from scope.enter(_) at line 218 of gradualTypesND
+  requested from astVisitor.visitMethod(_) at line 2069 of gradualTypesND
+  requested from astVisitor.visitMethod(_)up(_) at line 3188 of ast
+  requested from methodNode.new(_,_,_).accept(_)from(_) at line 1105 of ast
+  requested from methodNode.new(_,_,_).accept(_) at line 273 of ast
+  requested from block.apply at line 237 of gradualTypesND
+  requested from dictionary.empty.at(_)ifAbsent(_) at line 1315 of collectionsPrelude
+  requested from checkTypes(_) at line 235 of gradualTypesND
+  requested from block.apply(_) at line 2778 of gradualTypesND
+  requested from block.apply at line 1728 of collectionsPrelude
+  requested from while(_)do(_) at line 1727 of collectionsPrelude
+  requested from range.uncheckedFrom(_)to(_).do(_) at line 1727 of collectionsPrelude
+  requested from for(_)do(_) at line 2776 of gradualTypesND
+  requested from processBody(_,_) at line 2776 of gradualTypesND
+  requested from block.apply at line 2208 of gradualTypesND
+  requested from scope.enter(_) at line 218 of gradualTypesND
+  requested from astVisitor.visitObject(_) at line 2207 of gradualTypesND
+  requested from astVisitor.visitModule(_) at line 2249 of gradualTypesND
+  requested from astVisitor.visitModule(_)up(_) at line 3191 of ast
+  requested from moduleNode.body(_).accept(_)from(_) at line 1461 of ast
+  requested from moduleNode.body(_).accept(_) at line 273 of ast
+  requested from thisDialect.astChecker(_) at line 2883 of gradualTypesND
+[.]doWhileDef_test.grace[0]: Unexpected exception raised by AST checker for dialect 'gradualTypesND'.
+RequestError: no such method or type'while(1)do(1)' in `prelude` of type
+    'Prelude' 
+in type 
+  'set{print(_ : Object) → Done}'
+!FAIL doWhileDef_test.grace: compile error
+minigrace[.]: t300_visitMatchCase_test: 0.21 (+0.21): starting compilation
+minigrace[.]: t300_visitMatchCase_test: 0.28 (+0.07): lexing.
+minigrace[.]: t300_visitMatchCase_test: 0.44 (+0.16): parsing.
+minigrace[.]: t300_visitMatchCase_test: 0.64 (+0.2): checking dialect minitest used by module t300_visitMatchCase_test
+minigrace[.]: t300_visitMatchCase_test: 0.73 (+0.09): no need to load dialect "minitest": it does not define `thisDialect`
+minigrace[.]: t300_visitMatchCase_test: 0.73 (+0): rewriting tree.
+minigrace[.]: t300_visitMatchCase_test: 1.03 (+0.3): symbol tables built.
+minigrace[.]: t300_visitMatchCase_test: 1.1 (+0.07): generating JavaScript code.
+AST nodes compiled:
+    identifier	96
+    string	96
+    member	57
+    call	44
+    block	27
+    defdec	16
+    op	10
+    method	7
+    import	7
+    array	1
+    dialect	1
+    num	1
+minigrace[.]: t300_visitMatchCase_test: 1.27 (+0.17): done.
+NoSuchMethod on line 96 of t300_visitMatchCase_test: no method lexinput(_) on a new.
+  raised at module initialization at line 96 of t300_visitMatchCase_test
+  95: //Turns input into an abstract syntax tree (ast)
+  96: def tokens = lexer.new.lexinput(input)
+  97: def module = parser.parse(tokens)
+
+!FAIL t300_visitMatchCase_test.grace: wrong output
+Errors:
+NoSuchMethod on line 96 of t300_visitMatchCase_test: no method lexinput(_) on a new.
+  raised at module initialization at line 96 of t300_visitMatchCase_test
+  95: //Turns input into an abstract syntax tree (ast)
+  96: def tokens = lexer.new.lexinput(input)
+  97: def module = parser.parse(tokens)
+
+Got output:
+Expected output:
+visitMatchCase tests: 7 run, 0 failed, 0 errors
+minigrace[.]: t301_isSubtypeOfNonVariants_test: 0.21 (+0.21): starting compilation
+minigrace[.]: t301_isSubtypeOfNonVariants_test: 0.27 (+0.06): lexing.
+minigrace[.]: t301_isSubtypeOfNonVariants_test: 0.36 (+0.09): parsing.
+minigrace[.]: t301_isSubtypeOfNonVariants_test: 0.52 (+0.16): checking dialect minitest used by module t301_isSubtypeOfNonVariants_test
+minigrace[.]: t301_isSubtypeOfNonVariants_test: 0.6 (+0.08): no need to load dialect "minitest": it does not define `thisDialect`
+minigrace[.]: t301_isSubtypeOfNonVariants_test: 0.61 (+0.01): rewriting tree.
+minigrace[.]: t301_isSubtypeOfNonVariants_test: 0.89 (+0.28): symbol tables built.
+minigrace[.]: t301_isSubtypeOfNonVariants_test: 0.93 (+0.04): generating JavaScript code.
+AST nodes compiled:
+    identifier	71
+    call	36
+    string	29
+    member	18
+    defdec	15
+    method	7
+    import	7
+    block	5
+    num	5
+    array	1
+    dialect	1
+minigrace[.]: t301_isSubtypeOfNonVariants_test: 1.01 (+0.08): done.
+NoSuchMethod on line 33 of t301_isSubtypeOfNonVariants_test: no method lexinput(_) on a new.
+  raised at module initialization at line 33 of t301_isSubtypeOfNonVariants_test
+  32: //Turns input into an abstract syntax tree (ast)
+  33: def tokens = lexer.new.lexinput(input)
+  34: def module = parser.parse(tokens)
+
+!FAIL t301_isSubtypeOfNonVariants_test.grace: wrong output
+Errors:
+NoSuchMethod on line 33 of t301_isSubtypeOfNonVariants_test: no method lexinput(_) on a new.
+  raised at module initialization at line 33 of t301_isSubtypeOfNonVariants_test
+  32: //Turns input into an abstract syntax tree (ast)
+  33: def tokens = lexer.new.lexinput(input)
+  34: def module = parser.parse(tokens)
+
+Got output:
+Expected output:
+isSubtypeOf non-variant tests: 4 run, 0 failed, 0 errors
+minigrace[.]: t302_isSubtypeOfVariants_test: 0.22 (+0.22): starting compilation
+minigrace[.]: t302_isSubtypeOfVariants_test: 0.28 (+0.06): lexing.
+minigrace[.]: t302_isSubtypeOfVariants_test: 0.38 (+0.1): parsing.
+minigrace[.]: t302_isSubtypeOfVariants_test: 0.55 (+0.17): checking dialect minitest used by module t302_isSubtypeOfVariants_test
+minigrace[.]: t302_isSubtypeOfVariants_test: 0.63 (+0.08): no need to load dialect "minitest": it does not define `thisDialect`
+minigrace[.]: t302_isSubtypeOfVariants_test: 0.63 (+0): rewriting tree.
+minigrace[.]: t302_isSubtypeOfVariants_test: 0.92 (+0.29): symbol tables built.
+minigrace[.]: t302_isSubtypeOfVariants_test: 0.95 (+0.03): generating JavaScript code.
+AST nodes compiled:
+    identifier	83
+    call	29
+    member	23
+    defdec	21
+    string	21
+    op	8
+    method	7
+    import	7
+    num	4
+    block	4
+    dialect	1
+    array	1
+minigrace[.]: t302_isSubtypeOfVariants_test: 1.04 (+0.09): done.
+NoSuchMethod on line 28 of t302_isSubtypeOfVariants_test: no method lexinput(_) on a new.
+  raised at module initialization at line 28 of t302_isSubtypeOfVariants_test
+  27: //Turns input into an abstract syntax tree (ast)
+  28: def tokens = lexer.new.lexinput(input)
+  29: def module = parser.parse(tokens)
+
+!FAIL t302_isSubtypeOfVariants_test.grace: wrong output
+Errors:
+NoSuchMethod on line 28 of t302_isSubtypeOfVariants_test: no method lexinput(_) on a new.
+  raised at module initialization at line 28 of t302_isSubtypeOfVariants_test
+  27: //Turns input into an abstract syntax tree (ast)
+  28: def tokens = lexer.new.lexinput(input)
+  29: def module = parser.parse(tokens)
+
+Got output:
+Expected output:
+isSubtypeOf variant tests: 3 run, 0 failed, 0 errors
+minigrace[.]: t304_SelfReferentialSubtypeError_test: 0.2 (+0.2): starting compilation
+minigrace[.]: t304_SelfReferentialSubtypeError_test: 0.25 (+0.05): lexing.
+minigrace[.]: t304_SelfReferentialSubtypeError_test: 0.29 (+0.04): parsing.
+minigrace[.]: t304_SelfReferentialSubtypeError_test: 0.38 (+0.09): checking dialect minitest used by module t304_SelfReferentialSubtypeError_test
+minigrace[.]: t304_SelfReferentialSubtypeError_test: 0.49 (+0.11): no need to load dialect "minitest": it does not define `thisDialect`
+minigrace[.]: t304_SelfReferentialSubtypeError_test: 0.49 (+0): rewriting tree.
+minigrace[.]: t304_SelfReferentialSubtypeError_test: 0.81 (+0.32): symbol tables built.
+minigrace[.]: t304_SelfReferentialSubtypeError_test: 0.84 (+0.03): generating JavaScript code.
+AST nodes compiled:
+    identifier	22
+    string	14
+    call	9
+    import	7
+    method	7
+    defdec	4
+    member	4
+    block	3
+    dialect	1
+    array	1
+minigrace[.]: t304_SelfReferentialSubtypeError_test: 0.91 (+0.07): done.
+NoSuchMethod on line 29 of t304_SelfReferentialSubtypeError_test: no method lexinput(_) on a new.
+  raised at module initialization at line 29 of t304_SelfReferentialSubtypeError_test
+  28: //Turns input into an abstract syntax tree (ast)
+  29: def tokens = lexer.new.lexinput(input)
+  30: def module = parser.parse(tokens)
+
+!FAIL t304_SelfReferentialSubtypeError_test.grace: wrong output
+Errors:
+NoSuchMethod on line 29 of t304_SelfReferentialSubtypeError_test: no method lexinput(_) on a new.
+  raised at module initialization at line 29 of t304_SelfReferentialSubtypeError_test
+  28: //Turns input into an abstract syntax tree (ast)
+  29: def tokens = lexer.new.lexinput(input)
+  30: def module = parser.parse(tokens)
+
+Got output:
+Expected output:
+self-referential subtype test: 1 run, 0 failed, 0 errors
+minigrace[.]: t305_ampersand_test: 0.2 (+0.2): starting compilation
+minigrace[.]: t305_ampersand_test: 0.27 (+0.07): lexing.
+minigrace[.]: t305_ampersand_test: 0.39 (+0.12): parsing.
+minigrace[.]: t305_ampersand_test: 0.61 (+0.22): checking dialect minitest used by module t305_ampersand_test
+minigrace[.]: t305_ampersand_test: 0.68 (+0.07): no need to load dialect "minitest": it does not define `thisDialect`
+minigrace[.]: t305_ampersand_test: 0.68 (+0): rewriting tree.
+minigrace[.]: t305_ampersand_test: 0.98 (+0.3): symbol tables built.
+minigrace[.]: t305_ampersand_test: 1.04 (+0.06): generating JavaScript code.
+AST nodes compiled:
+    identifier	123
+    call	42
+    op	32
+    member	27
+    string	24
+    defdec	21
+    block	9
+    method	7
+    import	7
+    num	7
+    dialect	1
+    array	1
+minigrace[.]: t305_ampersand_test: 1.16 (+0.12): done.
+NoSuchMethod on line 29 of t305_ampersand_test: no method lexinput(_) on a new.
+  raised at module initialization at line 29 of t305_ampersand_test
+  28: //Turns input into an abstract syntax tree (ast)
+  29: def tokens = lexer.new.lexinput(input)
+  30: def module = parser.parse(tokens)
+
+!FAIL t305_ampersand_test.grace: wrong output
+Errors:
+NoSuchMethod on line 29 of t305_ampersand_test: no method lexinput(_) on a new.
+  raised at module initialization at line 29 of t305_ampersand_test
+  28: //Turns input into an abstract syntax tree (ast)
+  29: def tokens = lexer.new.lexinput(input)
+  30: def module = parser.parse(tokens)
+
+Got output:
+Expected output:
+ampersand with variant types: 6 run, 0 failed, 0 errors
+minigrace[.]: t306_ampersandIncompatibility_test: 0.2 (+0.2): starting compilation
+minigrace[.]: t306_ampersandIncompatibility_test: 0.25 (+0.05): lexing.
+minigrace[.]: t306_ampersandIncompatibility_test: 0.34 (+0.09): parsing.
+minigrace[.]: t306_ampersandIncompatibility_test: 0.51 (+0.17): checking dialect minitest used by module t306_ampersandIncompatibility_test
+minigrace[.]: t306_ampersandIncompatibility_test: 0.6 (+0.09): no need to load dialect "minitest": it does not define `thisDialect`
+minigrace[.]: t306_ampersandIncompatibility_test: 0.6 (+0): rewriting tree.
+minigrace[.]: t306_ampersandIncompatibility_test: 0.89 (+0.29): symbol tables built.
+minigrace[.]: t306_ampersandIncompatibility_test: 0.92 (+0.03): generating JavaScript code.
+AST nodes compiled:
+    identifier	64
+    call	24
+    member	22
+    defdec	16
+    string	12
+    block	8
+    method	7
+    import	7
+    num	5
+    op	4
+    dialect	1
+    array	1
+minigrace[.]: t306_ampersandIncompatibility_test: 1.01 (+0.09): done.
+NoSuchMethod on line 24 of t306_ampersandIncompatibility_test: no method lexinput(_) on a new.
+  raised at module initialization at line 24 of t306_ampersandIncompatibility_test
+  23: //Turns input into an abstract syntax tree (ast)
+  24: def tokens = lexer.new.lexinput(input)
+  25: def module = parser.parse(tokens)
+
+!FAIL t306_ampersandIncompatibility_test.grace: wrong output
+Errors:
+NoSuchMethod on line 24 of t306_ampersandIncompatibility_test: no method lexinput(_) on a new.
+  raised at module initialization at line 24 of t306_ampersandIncompatibility_test
+  23: //Turns input into an abstract syntax tree (ast)
+  24: def tokens = lexer.new.lexinput(input)
+  25: def module = parser.parse(tokens)
+
+Got output:
+Expected output:
+ampersand incompatibility: 4 run, 0 failed, 0 errors
+minigrace[.]: test3_test: 0.2 (+0.2): starting compilation
+minigrace[.]: test3_test: 0.26 (+0.06): lexing.
+[.]test3_test.grace[19:1-5]: Syntax error: on closing a block, the indentation must return to the same level as when the block was opened
+currentLineIndent = 4; indentStack.last = 0; braceChange = -1
+  18:         method q → String {"d"}
+  19:     }
+------^^^^^
+!FAIL test3_test.grace: compile error
+minigrace[.]: testid_test: 0.2 (+0.2): starting compilation
+minigrace[.]: testid_test: 0.25 (+0.05): lexing.
+minigrace[.]: testid_test: 0.3 (+0.05): parsing.
+minigrace[.]: testid_test: 0.37 (+0.07): 0: (13.39)rbrace } closes if opened by (13.21)identifier if
+minigrace[.]: testid_test: 0.37 (+0): 1: (13.49)rbrace } closes if opened by (13.21)identifier if
+minigrace[.]: testid_test: 0.43 (+0.06): 0: (35.40)rbrace } closes if opened by (35.1)identifier if
+minigrace[.]: testid_test: 0.43 (+0): checking dialect gradualTypesND used by module testid_test
+minigrace[.]: testid_test: 0.69 (+0.26): loading dialect "gradualTypesND" for checkers.
+minigrace[.]: testid_test: 0.92 (+0.23): rewriting tree.
+minigrace[.]: testid_test: 0.98 (+0.06): symbol tables built.
+
+1698: visiting module module testid_test
+2186 Types scope before collecing types is 
+dict⟬
+  Done::Done
+  Point::Point
+  String::String
+  Set::Set
+  Range::Range
+  Object::Object
+  Sequence::Sequence
+  Unknown::Unknown
+  List::List
+  Pattern::Pattern
+  Number::Number
+  Boolean::Boolean
+  Binding::Binding
+  Dictionary::Dictionary
+⟭
+matched as typeDec
+2186 Types scope after collecing types is 
+dict⟬
+  A::UnresolvedTypeLiteral
+  Done::Done
+  Point::Point
+  String::String
+  Set::Set
+  Range::Range
+  Object::Object
+  Sequence::Sequence
+  Unknown::Unknown
+  List::List
+  Pattern::Pattern
+  Number::Number
+  Boolean::Boolean
+  Binding::Binding
+  Dictionary::Dictionary
+⟭
+1958: superclass: false
+
+1965: hasInherits is false
+
+1989: superType is Object
+
+2009: processing defdec n
+574: defd: defdec n
+575: defd.dtype identifier‹Number›
+2009: processing vardec m
+574: defd: vardec m
+575: defd.dtype identifier‹String›
+2009: processing bind string "def"
+2617 ignored bind string "def"
+2009: processing method q(1)
+573: node matched as method: method q(1)
+2009: processing call q 4
+2617 ignored call q 4
+2009: processing defdec ifval
+574: defd: defdec ifval
+575: defd.dtype identifier‹Number›
+2009: processing call print(ifval)
+2617 ignored call print(ifval)
+2009: processing typedec A
+2009: processing defdec z
+574: defd: defdec z
+575: defd.dtype identifier‹A›
+2009: processing call print("z.p(3) is " ++ z.p 3 ++ "")
+2617 ignored call print("z.p(3) is " ++ z.p 3 ++ "")
+2009: processing call print(z.const)
+2617 ignored call print(z.const)
+2009: processing call print(z.r)
+2617 ignored call print(z.r)
+2009: processing call z.r:= "aaa"
+2617 ignored call z.r:= "aaa"
+2009: processing call print(z.r)
+2617 ignored call print(z.r)
+2009: processing if ?
+2617 ignored if ?
+2070: checking index 1 at line 3
+233: checking types of n
+235: n not in cache
 1820: defType is Number
-182: checking types of num 47
+233: checking types of ?
+235: ? not in cache
+2072: finished index 1
+
+2070: checking index 2 at line 5
+233: checking types of m
+235: m not in cache
+1820: defType is String
+233: checking types of ?
+235: ? not in cache
 2072: finished index 2
 
-2070: checking index 3 at line 9
-182: checking types of call print "test succeeded"
-1672: receiver is identifier‹prelude›
-1673: reciever name is: prelude
-182: checking types of identifier‹prelude›
-182: checking types of identifier‹prelude›
-1680: type of receiver identifier‹prelude› is Unknown
-1681: rType is Unknown
-1701: callType: Unknown
-2072: finished index 3
+2070: checking index 3 at line 7NoSuchMethod on line 2301 of ast: no method ++(_) on stringNode.new(_) string "def".  Did you mean ≠(_), ::(_) or ==(_)?
+  requested from bindNode.new(_,_).nameString at line 2301 of ast
+  requested from checkTypes(_) at line 234 of gradualTypesND
+  requested from block.apply(_) at line 2778 of gradualTypesND
+  requested from block.apply at line 1728 of collectionsPrelude
+  requested from while(_)do(_) at line 1727 of collectionsPrelude
+  requested from range.uncheckedFrom(_)to(_).do(_) at line 1727 of collectionsPrelude
+  requested from for(_)do(_) at line 2776 of gradualTypesND
+  requested from processBody(_,_) at line 2776 of gradualTypesND
+  requested from block.apply at line 2208 of gradualTypesND
+  requested from scope.enter(_) at line 218 of gradualTypesND
+  requested from astVisitor.visitObject(_) at line 2207 of gradualTypesND
+  requested from astVisitor.visitModule(_) at line 2249 of gradualTypesND
+  requested from astVisitor.visitModule(_)up(_) at line 3191 of ast
+  requested from moduleNode.body(_).accept(_)from(_) at line 1461 of ast
+  requested from moduleNode.body(_).accept(_) at line 273 of ast
+  requested from thisDialect.astChecker(_) at line 2883 of gradualTypesND
+[.]testid_test.grace[0]: Unexpected exception raised by AST checker for dialect 'gradualTypesND'.
+NoSuchMethod: no method ++(_) on stringNode.new(_) string "def".  Did you mean ≠(_), ::(_) or ==(_)?
+!FAIL testid_test.grace: compile error
+minigrace[.]: whileTest_test: 0.22 (+0.22): starting compilation
+minigrace[.]: whileTest_test: 0.27 (+0.05): lexing.
+minigrace[.]: whileTest_test: 0.29 (+0.02): parsing.
+minigrace[.]: whileTest_test: 0.34 (+0.05): checking dialect gradualTypesND used by module whileTest_test
+minigrace[.]: whileTest_test: 0.59 (+0.25): loading dialect "gradualTypesND" for checkers.
+minigrace[.]: whileTest_test: 0.84 (+0.25): rewriting tree.
+minigrace[.]: whileTest_test: 0.87 (+0.03): symbol tables built.
 
-2602 types scope is: [dict⟬Done::Done, Point::Point, String::String, Set::Set, Range::Range, Object::Object, Sequence::Sequence, Unknown::Unknown, List::List, Pattern::Pattern, Number::Number, Boolean::Boolean, Binding::Binding, Dictionary::Dictionary⟭, dict⟬$elf::{ 
-  ≠(_ : Object) -> Boolean; 
-  testDec -> Number; 
-  hash -> Number; 
-  asDebugString -> String; 
-  :: -> Binding; 
-  basicAsString -> String; 
-  isMe(other : Object) -> Boolean; 
-  debugIterator -> Iterator; 
-  match -> Unknown; 
-  list(_ : Collection) -> List; 
-  debugValue -> String; 
-  T -> Pattern; }
-, T::‹anon›{ InternalType -> Pattern;  }⟭]
-1971: *** Visited object module t309_typeInsideType_testconfidential type is { 
-  ≠(_ : Object) -> Boolean; 
-  testDec -> Number; 
-  hash -> Number; 
-  asDebugString -> String; 
-  :: -> Binding; 
-  basicAsString -> String; 
-  isMe(other : Object) -> Boolean; 
-  debugIterator -> Iterator; 
-  match -> Unknown; 
-  list(_ : Collection) -> List; 
-  debugValue -> String; 
-  T -> Pattern; }
-
-public type is { 
-  ≠(_ : Object) -> Boolean; 
-  hash -> Number; 
-  asDebugString -> String; 
-  :: -> Binding; 
-  basicAsString -> String; 
-  debugIterator -> Iterator; 
-  match -> Unknown; 
-  list(_ : Collection) -> List; 
-  debugValue -> String; 
-  T -> Pattern; }
-minigrace[.]: t309_typeInsideType_test: 0.88 (+0.06): generating JavaScript code.
-AST nodes compiled:
-    identifier	2
-    dialect	1
-    typedec	1
-    typeliteral	1
-    method	1
-    defdec	1
-    num	1
-    member	1
-    call	1
-    string	1
-minigrace[.]: t309_typeInsideType_test: 0.92 (+0.04): done.
-NoSuchMethod on line 7 of t309_typeInsideType_test: no method InternalType on Type type T.
-  raised at module initialization at line 7 of t309_typeInsideType_test
-  requested on line 0 of .   6:    7: def testDec : T.InternalType = 47   8: !FAIL t309_typeInsideType_test.grace: wrong output
-Errors:
-NoSuchMethod on line 7 of t309_typeInsideType_test: no method InternalType on Type type T.
-  raised at module initialization at line 7 of t309_typeInsideType_test
-  requested on line 0 of .   6:    7: def testDec : T.InternalType = 47   8: Got output:
-Expected output:
-test succeeded
-minigrace[.]: t311_typeInAmpersand_test: 0.22 (+0.22): starting compilation
-minigrace[.]: t311_typeInAmpersand_test: 0.26 (+0.04): lexing.
-minigrace[.]: t311_typeInAmpersand_test: 0.28 (+0.02): parsing.
-minigrace[.]: t311_typeInAmpersand_test: 0.33 (+0.05): checking dialect gradualTypesND used by module t311_typeInAmpersand_test
-minigrace[.]: t311_typeInAmpersand_test: 0.57 (+0.24): loading dialect "gradualTypesND" for checkers.
-minigrace[.]: t311_typeInAmpersand_test: 0.78 (+0.21): rewriting tree.
-minigrace[.]: t311_typeInAmpersand_test: 0.82 (+0.04): symbol tables built.
-
+1698: visiting module module whileTest_test
+2186 Types scope before collecing types is 
+dict⟬
+  Done::Done
+  Point::Point
+  String::String
+  Set::Set
+  Range::Range
+  Object::Object
+  Sequence::Sequence
+  Unknown::Unknown
+  List::List
+  Pattern::Pattern
+  Number::Number
+  Boolean::Boolean
+  Binding::Binding
+  Dictionary::Dictionary
+⟭
+2186 Types scope after collecing types is 
+dict⟬
+  Done::Done
+  Point::Point
+  String::String
+  Set::Set
+  Range::Range
+  Object::Object
+  Sequence::Sequence
+  Unknown::Unknown
+  List::List
+  Pattern::Pattern
+  Number::Number
+  Boolean::Boolean
+  Binding::Binding
+  Dictionary::Dictionary
+⟭
 1958: superclass: false
 
-matched as typeDec
-matched as typeDec
-didn't match as typeDec
-didn't match as typeDec
-1141: typesScope in fromIdentifier of ident: identifier‹Number› is: [dict⟬Done::Done, Point::Point, String::String, Set::Set, Range::Range, Object::Object, Sequence::Sequence, Unknown::Unknown, List::List, Pattern::Pattern, Number::Number, Boolean::Boolean, Binding::Binding, Dictionary::Dictionary⟭, dict⟬T::{ 
-  ≠(_ : Object) -> Boolean; 
-  hash -> Number; 
-  asDebugString -> String; 
-  :: -> Binding; 
-  basicAsString -> String; 
-  debugIterator -> Iterator; 
-  match -> Unknown; 
-  list(_ : Collection) -> List; 
-  debugValue -> String; }
-, U::{ 
-  ≠(_ : Object) -> Boolean; 
-  hash -> Number; 
-  asDebugString -> String; 
-  :: -> Binding; 
-  basicAsString -> String; 
-  debugIterator -> Iterator; 
-  match -> Unknown; 
-  list(_ : Collection) -> List; 
-  debugValue -> String; }
-⟭]
-ident.value is: Number
-2518 The type name is: T and it has embedded types of: dict⟬InternalType::Number⟭
-2518.5 The type itself is: ‹anon›{ InternalType -> Pattern;  }
-1141: typesScope in fromIdentifier of ident: identifier‹Number› is: [dict⟬Done::Done, Point::Point, String::String, Set::Set, Range::Range, Object::Object, Sequence::Sequence, Unknown::Unknown, List::List, Pattern::Pattern, Number::Number, Boolean::Boolean, Binding::Binding, Dictionary::Dictionary⟭, dict⟬T::{ 
-  ≠(_ : Object) -> Boolean; 
-  hash -> Number; 
-  asDebugString -> String; 
-  :: -> Binding; 
-  basicAsString -> String; 
-  debugIterator -> Iterator; 
-  match -> Unknown; 
-  list(_ : Collection) -> List; 
-  InternalType -> Pattern; 
-  debugValue -> String; }
-, U::{ 
-  ≠(_ : Object) -> Boolean; 
-  hash -> Number; 
-  asDebugString -> String; 
-  :: -> Binding; 
-  basicAsString -> String; 
-  debugIterator -> Iterator; 
-  match -> Unknown; 
-  list(_ : Collection) -> List; 
-  debugValue -> String; }
-⟭]
-ident.value is: Number
-2518 The type name is: U and it has embedded types of: dict⟬InternalType::Number⟭
-2518.5 The type itself is: ‹anon›{ InternalType -> Pattern;  }
 1965: hasInherits is false
 
 1989: superType is Object
 
-2009: processing typedec T
-1141: typesScope in fromIdentifier of ident: identifier‹Number› is: [dict⟬Done::Done, Point::Point, String::String, Set::Set, Range::Range, Object::Object, Sequence::Sequence, Unknown::Unknown, List::List, Pattern::Pattern, Number::Number, Boolean::Boolean, Binding::Binding, Dictionary::Dictionary⟭, dict⟬T::{ 
-  ≠(_ : Object) -> Boolean; 
-  hash -> Number; 
-  asDebugString -> String; 
-  :: -> Binding; 
-  basicAsString -> String; 
-  debugIterator -> Iterator; 
-  match -> Unknown; 
-  list(_ : Collection) -> List; 
-  InternalType -> Pattern; 
-  debugValue -> String; }
-, U::{ 
-  ≠(_ : Object) -> Boolean; 
-  hash -> Number; 
-  asDebugString -> String; 
-  :: -> Binding; 
-  basicAsString -> String; 
-  debugIterator -> Iterator; 
-  match -> Unknown; 
-  list(_ : Collection) -> List; 
-  InternalType -> Pattern; 
-  debugValue -> String; }
-⟭]
-ident.value is: Number
-2493 mType is: T -> Pattern
-2009: processing typedec U
-1141: typesScope in fromIdentifier of ident: identifier‹Number› is: [dict⟬Done::Done, Point::Point, String::String, Set::Set, Range::Range, Object::Object, Sequence::Sequence, Unknown::Unknown, List::List, Pattern::Pattern, Number::Number, Boolean::Boolean, Binding::Binding, Dictionary::Dictionary⟭, dict⟬T::‹anon›{ InternalType -> Pattern;  }, U::{ 
-  ≠(_ : Object) -> Boolean; 
-  hash -> Number; 
-  asDebugString -> String; 
-  :: -> Binding; 
-  basicAsString -> String; 
-  debugIterator -> Iterator; 
-  match -> Unknown; 
-  list(_ : Collection) -> List; 
-  InternalType -> Pattern; 
-  debugValue -> String; }
-⟭]
-ident.value is: Number
-2493 mType is: U -> Pattern
-2009: processing defdec testDec
-2022: in def or var case
-574: defd: defdec testDec
-575: defd.dtype T & U.InternalType
-1172 is member T & U.InternalType
-1173 finding &.InternalType
-1174 memb.receiver is: op &(1)
-Scope types in member search is: [dict⟬Done::Done, Point::Point, String::String, Set::Set, Range::Range, Object::Object, Sequence::Sequence, Unknown::Unknown, List::List, Pattern::Pattern, Number::Number, Boolean::Boolean, Binding::Binding, Dictionary::Dictionary⟭, dict⟬T::‹anon›{ InternalType -> Pattern;  }, U::‹anon›{ InternalType -> Pattern;  }⟭]
-Scope methods in member search is: [dict⟬Done::Done -> Pattern, Boolean::Boolean -> Pattern, Set::Set -> Pattern, Number::Number -> Pattern, Object::Object -> Pattern, List::List -> Pattern, Pattern::Pattern -> Pattern, Dynamic::Dynamic -> Pattern, Binding::Binding -> Pattern, done::done -> Done, true::true -> Boolean, Point::Point -> Pattern, String::String -> Pattern, Dictionary::Dictionary -> Pattern, Range::Range -> Pattern, Sequence::Sequence -> Pattern, Unknown::Unknown -> Pattern, false::false -> Boolean⟭, dict⟬⟭]
-1141: typesScope in fromIdentifier of ident: identifier‹T› is: [dict⟬Done::Done, Point::Point, String::String, Set::Set, Range::Range, Object::Object, Sequence::Sequence, Unknown::Unknown, List::List, Pattern::Pattern, Number::Number, Boolean::Boolean, Binding::Binding, Dictionary::Dictionary⟭, dict⟬T::‹anon›{ InternalType -> Pattern;  }, U::‹anon›{ InternalType -> Pattern;  }⟭]
-ident.value is: T
-1141: typesScope in fromIdentifier of ident: identifier‹U› is: [dict⟬Done::Done, Point::Point, String::String, Set::Set, Range::Range, Object::Object, Sequence::Sequence, Unknown::Unknown, List::List, Pattern::Pattern, Number::Number, Boolean::Boolean, Binding::Binding, Dictionary::Dictionary⟭, dict⟬T::‹anon›{ InternalType -> Pattern;  }, U::‹anon›{ InternalType -> Pattern;  }⟭]
-ident.value is: U
-966: ampersand called
-967: &Self is: ‹anon›{ InternalType -> Pattern;  }
-968: &other is: ‹anon›{ InternalType -> Pattern;  }
-1183 recType is: {set{≠(_ : Object) -> Boolean, hash -> Number, asString -> String, asDebugString -> String, :: -> Binding, basicAsString -> String, debugIterator -> Iterator, match -> Unknown, list(_ : Collection) -> List, InternalType -> Pattern, ==(_ : Object) -> Boolean, debugValue -> String}} & ‹anon›{ InternalType -> Pattern;  }
-1185 recType's type list is: dict⟬⟭
-1184 member retType is: a noSuchType
-2024: add testDec -> Unknown to allMethods
-2009: processing call print "test succeeded"
-2410 allTypes is: dict⟬T::‹anon›{ InternalType -> Pattern;  }, U::‹anon›{ InternalType -> Pattern;  }⟭
-2411 publicTypes is: dict⟬T::‹anon›{ InternalType -> Pattern;  }, U::‹anon›{ InternalType -> Pattern;  }⟭
-2045: internalType is { 
-  ≠(_ : Object) -> Boolean; 
-  testDec -> Unknown; 
-  U -> Pattern; 
-  hash -> Number; 
-  asDebugString -> String; 
-  :: -> Binding; 
-  basicAsString -> String; 
-  isMe(other : Object) -> Boolean; 
-  debugIterator -> Iterator; 
-  match -> Unknown; 
-  list(_ : Collection) -> List; 
-  debugValue -> String; 
-  T -> Pattern; }
-
-
-2046: internalType's types is dict⟬T::‹anon›{ InternalType -> Pattern;  }, U::‹anon›{ InternalType -> Pattern;  }⟭
-
-2058: publicType is { 
-  ≠(_ : Object) -> Boolean; 
-  U -> Pattern; 
-  hash -> Number; 
-  asDebugString -> String; 
-  :: -> Binding; 
-  basicAsString -> String; 
-  debugIterator -> Iterator; 
-  match -> Unknown; 
-  list(_ : Collection) -> List; 
-  debugValue -> String; 
-  T -> Pattern; }
-
-
+2009: processing vardec x
+574: defd: vardec x
+575: defd.dtype identifier‹Number›
+2009: processing call while {
+    x < 3
+} do {
+    print(x)
+    x := x + 1
+}
+2617 ignored call while {
+    x < 3
+} do {
+    print(x)
+    x := x + 1
+}
 2070: checking index 1 at line 3
-182: checking types of typedec T
-2072: finished index 1
-
-2070: checking index 2 at line 7
-182: checking types of typedec U
-2072: finished index 2
-
-2070: checking index 3 at line 11
-182: checking types of defdec testDec
-1172 is member T & U.InternalType
-1173 finding &.InternalType
-1174 memb.receiver is: op &(1)
-Scope types in member search is: [dict⟬Done::Done, Point::Point, String::String, Set::Set, Range::Range, Object::Object, Sequence::Sequence, Unknown::Unknown, List::List, Pattern::Pattern, Number::Number, Boolean::Boolean, Binding::Binding, Dictionary::Dictionary⟭, dict⟬$elf::{ 
-  ≠(_ : Object) -> Boolean; 
-  testDec -> Unknown; 
-  U -> Pattern; 
-  hash -> Number; 
-  asDebugString -> String; 
-  :: -> Binding; 
-  basicAsString -> String; 
-  isMe(other : Object) -> Boolean; 
-  debugIterator -> Iterator; 
-  match -> Unknown; 
-  list(_ : Collection) -> List; 
-  debugValue -> String; 
-  T -> Pattern; }
-, T::‹anon›{ InternalType -> Pattern;  }, U::‹anon›{ InternalType -> Pattern;  }⟭]
-Scope methods in member search is: [dict⟬Done::Done -> Pattern, Boolean::Boolean -> Pattern, Set::Set -> Pattern, Number::Number -> Pattern, Object::Object -> Pattern, List::List -> Pattern, Pattern::Pattern -> Pattern, Dynamic::Dynamic -> Pattern, Binding::Binding -> Pattern, done::done -> Done, true::true -> Boolean, Point::Point -> Pattern, String::String -> Pattern, Dictionary::Dictionary -> Pattern, Range::Range -> Pattern, Sequence::Sequence -> Pattern, Unknown::Unknown -> Pattern, false::false -> Boolean⟭, dict⟬testDec::testDec -> Unknown⟭]
-1141: typesScope in fromIdentifier of ident: identifier‹T› is: [dict⟬Done::Done, Point::Point, String::String, Set::Set, Range::Range, Object::Object, Sequence::Sequence, Unknown::Unknown, List::List, Pattern::Pattern, Number::Number, Boolean::Boolean, Binding::Binding, Dictionary::Dictionary⟭, dict⟬$elf::{ 
-  ≠(_ : Object) -> Boolean; 
-  testDec -> Unknown; 
-  U -> Pattern; 
-  hash -> Number; 
-  asDebugString -> String; 
-  :: -> Binding; 
-  basicAsString -> String; 
-  isMe(other : Object) -> Boolean; 
-  debugIterator -> Iterator; 
-  match -> Unknown; 
-  list(_ : Collection) -> List; 
-  debugValue -> String; 
-  T -> Pattern; }
-, T::‹anon›{ InternalType -> Pattern;  }, U::‹anon›{ InternalType -> Pattern;  }⟭]
-ident.value is: T
-1141: typesScope in fromIdentifier of ident: identifier‹U› is: [dict⟬Done::Done, Point::Point, String::String, Set::Set, Range::Range, Object::Object, Sequence::Sequence, Unknown::Unknown, List::List, Pattern::Pattern, Number::Number, Boolean::Boolean, Binding::Binding, Dictionary::Dictionary⟭, dict⟬$elf::{ 
-  ≠(_ : Object) -> Boolean; 
-  testDec -> Unknown; 
-  U -> Pattern; 
-  hash -> Number; 
-  asDebugString -> String; 
-  :: -> Binding; 
-  basicAsString -> String; 
-  isMe(other : Object) -> Boolean; 
-  debugIterator -> Iterator; 
-  match -> Unknown; 
-  list(_ : Collection) -> List; 
-  debugValue -> String; 
-  T -> Pattern; }
-, T::‹anon›{ InternalType -> Pattern;  }, U::‹anon›{ InternalType -> Pattern;  }⟭]
-ident.value is: U
-966: ampersand called
-967: &Self is: ‹anon›{ InternalType -> Pattern;  }
-968: &other is: ‹anon›{ InternalType -> Pattern;  }
-1183 recType is: {set{≠(_ : Object) -> Boolean, hash -> Number, asString -> String, asDebugString -> String, :: -> Binding, basicAsString -> String, debugIterator -> Iterator, match -> Unknown, list(_ : Collection) -> List, InternalType -> Pattern, ==(_ : Object) -> Boolean, debugValue -> String}} & ‹anon›{ InternalType -> Pattern;  }
-1185 recType's type list is: dict⟬⟭
-1184 member retType is: a noSuchType
-1820: defType is Unknown
-182: checking types of num 47
-2072: finished index 3
-
-2070: checking index 4 at line 13
-182: checking types of call print "test succeeded"
-1672: receiver is identifier‹prelude›
-1673: reciever name is: prelude
-182: checking types of identifier‹prelude›
-182: checking types of identifier‹prelude›
-1680: type of receiver identifier‹prelude› is Unknown
-1681: rType is Unknown
-1701: callType: Unknown
-2072: finished index 4
-
-2602 types scope is: [dict⟬Done::Done, Point::Point, String::String, Set::Set, Range::Range, Object::Object, Sequence::Sequence, Unknown::Unknown, List::List, Pattern::Pattern, Number::Number, Boolean::Boolean, Binding::Binding, Dictionary::Dictionary⟭, dict⟬$elf::{ 
-  ≠(_ : Object) -> Boolean; 
-  testDec -> Unknown; 
-  U -> Pattern; 
-  hash -> Number; 
-  asDebugString -> String; 
-  :: -> Binding; 
-  basicAsString -> String; 
-  isMe(other : Object) -> Boolean; 
-  debugIterator -> Iterator; 
-  match -> Unknown; 
-  list(_ : Collection) -> List; 
-  debugValue -> String; 
-  T -> Pattern; }
-, T::‹anon›{ InternalType -> Pattern;  }, U::‹anon›{ InternalType -> Pattern;  }⟭]
-1971: *** Visited object module t311_typeInAmpersand_testconfidential type is { 
-  ≠(_ : Object) -> Boolean; 
-  testDec -> Unknown; 
-  U -> Pattern; 
-  hash -> Number; 
-  asDebugString -> String; 
-  :: -> Binding; 
-  basicAsString -> String; 
-  isMe(other : Object) -> Boolean; 
-  debugIterator -> Iterator; 
-  match -> Unknown; 
-  list(_ : Collection) -> List; 
-  debugValue -> String; 
-  T -> Pattern; }
-
-public type is { 
-  ≠(_ : Object) -> Boolean; 
-  U -> Pattern; 
-  hash -> Number; 
-  asDebugString -> String; 
-  :: -> Binding; 
-  basicAsString -> String; 
-  debugIterator -> Iterator; 
-  match -> Unknown; 
-  list(_ : Collection) -> List; 
-  debugValue -> String; 
-  T -> Pattern; }
-minigrace[.]: t311_typeInAmpersand_test: 0.91 (+0.09): generating JavaScript code.
-AST nodes compiled:
-    identifier	4
-    typeliteral	2
-    method	2
-    typedec	2
-    defdec	1
-    dialect	1
-    num	1
-    member	1
-    op	1
-    call	1
-    string	1
-minigrace[.]: t311_typeInAmpersand_test: 0.96 (+0.05): done.
-NoSuchMethod on line 11 of t311_typeInAmpersand_test: no method InternalType on TypeIntersection.new(_,_) (type T & type U).
-  raised at module initialization at line 11 of t311_typeInAmpersand_test
-  requested on line 0 of .  10:   11: def testDec : (T&U).InternalType = 47  12: !FAIL t311_typeInAmpersand_test.grace: wrong output
-Errors:
-NoSuchMethod on line 11 of t311_typeInAmpersand_test: no method InternalType on TypeIntersection.new(_,_) (type T & type U).
-  raised at module initialization at line 11 of t311_typeInAmpersand_test
-  requested on line 0 of .  10:   11: def testDec : (T&U).InternalType = 47  12: Got output:
-Expected output:
-test succeeded
-minigrace[.]: t313_diffTypeInAmpersand_test: 0.22 (+0.22): starting compilation
-minigrace[.]: t313_diffTypeInAmpersand_test: 0.26 (+0.04): lexing.
-minigrace[.]: t313_diffTypeInAmpersand_test: 0.28 (+0.02): parsing.
-minigrace[.]: t313_diffTypeInAmpersand_test: 0.33 (+0.05): checking dialect gradualTypesND used by module t313_diffTypeInAmpersand_test
-minigrace[.]: t313_diffTypeInAmpersand_test: 0.57 (+0.24): loading dialect "gradualTypesND" for checkers.
-minigrace[.]: t313_diffTypeInAmpersand_test: 0.81 (+0.24): rewriting tree.
-minigrace[.]: t313_diffTypeInAmpersand_test: 0.84 (+0.03): symbol tables built.
-
-1958: superclass: false
-
-matched as typeDec
-matched as typeDec
-didn't match as typeDec
-didn't match as typeDec
-didn't match as typeDec
-1141: typesScope in fromIdentifier of ident: identifier‹Number› is: [dict⟬Done::Done, Point::Point, String::String, Set::Set, Range::Range, Object::Object, Sequence::Sequence, Unknown::Unknown, List::List, Pattern::Pattern, Number::Number, Boolean::Boolean, Binding::Binding, Dictionary::Dictionary⟭, dict⟬T::{ 
-  ≠(_ : Object) -> Boolean; 
-  hash -> Number; 
-  asDebugString -> String; 
-  :: -> Binding; 
-  basicAsString -> String; 
-  debugIterator -> Iterator; 
-  match -> Unknown; 
-  list(_ : Collection) -> List; 
-  debugValue -> String; }
-, U::{ 
-  ≠(_ : Object) -> Boolean; 
-  hash -> Number; 
-  asDebugString -> String; 
-  :: -> Binding; 
-  basicAsString -> String; 
-  debugIterator -> Iterator; 
-  match -> Unknown; 
-  list(_ : Collection) -> List; 
-  debugValue -> String; }
-⟭]
-ident.value is: Number
-2518 The type name is: T and it has embedded types of: dict⟬InternalType1::Number⟭
-2518.5 The type itself is: ‹anon›{ InternalType1 -> Pattern;  }
-1141: typesScope in fromIdentifier of ident: identifier‹String› is: [dict⟬Done::Done, Point::Point, String::String, Set::Set, Range::Range, Object::Object, Sequence::Sequence, Unknown::Unknown, List::List, Pattern::Pattern, Number::Number, Boolean::Boolean, Binding::Binding, Dictionary::Dictionary⟭, dict⟬T::{ 
-  ≠(_ : Object) -> Boolean; 
-  InternalType1 -> Pattern; 
-  hash -> Number; 
-  asDebugString -> String; 
-  :: -> Binding; 
-  basicAsString -> String; 
-  debugIterator -> Iterator; 
-  match -> Unknown; 
-  list(_ : Collection) -> List; 
-  debugValue -> String; }
-, U::{ 
-  ≠(_ : Object) -> Boolean; 
-  hash -> Number; 
-  asDebugString -> String; 
-  :: -> Binding; 
-  basicAsString -> String; 
-  debugIterator -> Iterator; 
-  match -> Unknown; 
-  list(_ : Collection) -> List; 
-  debugValue -> String; }
-⟭]
-ident.value is: String
-2518 The type name is: U and it has embedded types of: dict⟬InternalType2::String⟭
-2518.5 The type itself is: ‹anon›{ InternalType2 -> Pattern;  }
-1965: hasInherits is false
-
-1989: superType is Object
-
-2009: processing typedec T
-1141: typesScope in fromIdentifier of ident: identifier‹Number› is: [dict⟬Done::Done, Point::Point, String::String, Set::Set, Range::Range, Object::Object, Sequence::Sequence, Unknown::Unknown, List::List, Pattern::Pattern, Number::Number, Boolean::Boolean, Binding::Binding, Dictionary::Dictionary⟭, dict⟬T::{ 
-  ≠(_ : Object) -> Boolean; 
-  InternalType1 -> Pattern; 
-  hash -> Number; 
-  asDebugString -> String; 
-  :: -> Binding; 
-  basicAsString -> String; 
-  debugIterator -> Iterator; 
-  match -> Unknown; 
-  list(_ : Collection) -> List; 
-  debugValue -> String; }
-, U::{ 
-  ≠(_ : Object) -> Boolean; 
-  InternalType2 -> Pattern; 
-  hash -> Number; 
-  asDebugString -> String; 
-  :: -> Binding; 
-  basicAsString -> String; 
-  debugIterator -> Iterator; 
-  match -> Unknown; 
-  list(_ : Collection) -> List; 
-  debugValue -> String; }
-⟭]
-ident.value is: Number
-2493 mType is: T -> Pattern
-2009: processing typedec U
-1141: typesScope in fromIdentifier of ident: identifier‹String› is: [dict⟬Done::Done, Point::Point, String::String, Set::Set, Range::Range, Object::Object, Sequence::Sequence, Unknown::Unknown, List::List, Pattern::Pattern, Number::Number, Boolean::Boolean, Binding::Binding, Dictionary::Dictionary⟭, dict⟬T::‹anon›{ InternalType1 -> Pattern;  }, U::{ 
-  ≠(_ : Object) -> Boolean; 
-  InternalType2 -> Pattern; 
-  hash -> Number; 
-  asDebugString -> String; 
-  :: -> Binding; 
-  basicAsString -> String; 
-  debugIterator -> Iterator; 
-  match -> Unknown; 
-  list(_ : Collection) -> List; 
-  debugValue -> String; }
-⟭]
-ident.value is: String
-2493 mType is: U -> Pattern
-2009: processing defdec testDec1
-2022: in def or var case
-574: defd: defdec testDec1
-575: defd.dtype T & U.InternalType1
-1172 is member T & U.InternalType1
-1173 finding &.InternalType1
-1174 memb.receiver is: op &(1)
-Scope types in member search is: [dict⟬Done::Done, Point::Point, String::String, Set::Set, Range::Range, Object::Object, Sequence::Sequence, Unknown::Unknown, List::List, Pattern::Pattern, Number::Number, Boolean::Boolean, Binding::Binding, Dictionary::Dictionary⟭, dict⟬T::‹anon›{ InternalType1 -> Pattern;  }, U::‹anon›{ InternalType2 -> Pattern;  }⟭]
-Scope methods in member search is: [dict⟬Done::Done -> Pattern, Boolean::Boolean -> Pattern, Set::Set -> Pattern, Number::Number -> Pattern, Object::Object -> Pattern, List::List -> Pattern, Pattern::Pattern -> Pattern, Dynamic::Dynamic -> Pattern, Binding::Binding -> Pattern, done::done -> Done, true::true -> Boolean, Point::Point -> Pattern, String::String -> Pattern, Dictionary::Dictionary -> Pattern, Range::Range -> Pattern, Sequence::Sequence -> Pattern, Unknown::Unknown -> Pattern, false::false -> Boolean⟭, dict⟬⟭]
-1141: typesScope in fromIdentifier of ident: identifier‹T› is: [dict⟬Done::Done, Point::Point, String::String, Set::Set, Range::Range, Object::Object, Sequence::Sequence, Unknown::Unknown, List::List, Pattern::Pattern, Number::Number, Boolean::Boolean, Binding::Binding, Dictionary::Dictionary⟭, dict⟬T::‹anon›{ InternalType1 -> Pattern;  }, U::‹anon›{ InternalType2 -> Pattern;  }⟭]
-ident.value is: T
-1141: typesScope in fromIdentifier of ident: identifier‹U› is: [dict⟬Done::Done, Point::Point, String::String, Set::Set, Range::Range, Object::Object, Sequence::Sequence, Unknown::Unknown, List::List, Pattern::Pattern, Number::Number, Boolean::Boolean, Binding::Binding, Dictionary::Dictionary⟭, dict⟬T::‹anon›{ InternalType1 -> Pattern;  }, U::‹anon›{ InternalType2 -> Pattern;  }⟭]
-ident.value is: U
-966: ampersand called
-967: &Self is: ‹anon›{ InternalType1 -> Pattern;  }
-968: &other is: ‹anon›{ InternalType2 -> Pattern;  }
-1183 recType is: {set{≠(_ : Object) -> Boolean, InternalType1 -> Pattern, hash -> Number, asString -> String, asDebugString -> String, :: -> Binding, basicAsString -> String, debugIterator -> Iterator, match -> Unknown, list(_ : Collection) -> List, ==(_ : Object) -> Boolean, debugValue -> String}} & ‹anon›{ InternalType2 -> Pattern;  }
-1185 recType's type list is: dict⟬⟭
-1184 member retType is: a noSuchType
-2024: add testDec1 -> Unknown to allMethods
-2009: processing defdec testDec2
-2022: in def or var case
-574: defd: defdec testDec2
-575: defd.dtype T & U.InternalType2
-1172 is member T & U.InternalType2
-1173 finding &.InternalType2
-1174 memb.receiver is: op &(1)
-Scope types in member search is: [dict⟬Done::Done, Point::Point, String::String, Set::Set, Range::Range, Object::Object, Sequence::Sequence, Unknown::Unknown, List::List, Pattern::Pattern, Number::Number, Boolean::Boolean, Binding::Binding, Dictionary::Dictionary⟭, dict⟬T::‹anon›{ InternalType1 -> Pattern;  }, U::‹anon›{ InternalType2 -> Pattern;  }⟭]
-Scope methods in member search is: [dict⟬Done::Done -> Pattern, Boolean::Boolean -> Pattern, Set::Set -> Pattern, Number::Number -> Pattern, Object::Object -> Pattern, List::List -> Pattern, Pattern::Pattern -> Pattern, Dynamic::Dynamic -> Pattern, Binding::Binding -> Pattern, done::done -> Done, true::true -> Boolean, Point::Point -> Pattern, String::String -> Pattern, Dictionary::Dictionary -> Pattern, Range::Range -> Pattern, Sequence::Sequence -> Pattern, Unknown::Unknown -> Pattern, false::false -> Boolean⟭, dict⟬testDec1::testDec1 -> Unknown⟭]
-1141: typesScope in fromIdentifier of ident: identifier‹T› is: [dict⟬Done::Done, Point::Point, String::String, Set::Set, Range::Range, Object::Object, Sequence::Sequence, Unknown::Unknown, List::List, Pattern::Pattern, Number::Number, Boolean::Boolean, Binding::Binding, Dictionary::Dictionary⟭, dict⟬T::‹anon›{ InternalType1 -> Pattern;  }, U::‹anon›{ InternalType2 -> Pattern;  }⟭]
-ident.value is: T
-1141: typesScope in fromIdentifier of ident: identifier‹U› is: [dict⟬Done::Done, Point::Point, String::String, Set::Set, Range::Range, Object::Object, Sequence::Sequence, Unknown::Unknown, List::List, Pattern::Pattern, Number::Number, Boolean::Boolean, Binding::Binding, Dictionary::Dictionary⟭, dict⟬T::‹anon›{ InternalType1 -> Pattern;  }, U::‹anon›{ InternalType2 -> Pattern;  }⟭]
-ident.value is: U
-966: ampersand called
-967: &Self is: ‹anon›{ InternalType1 -> Pattern;  }
-968: &other is: ‹anon›{ InternalType2 -> Pattern;  }
-1183 recType is: {set{≠(_ : Object) -> Boolean, InternalType1 -> Pattern, hash -> Number, asString -> String, asDebugString -> String, :: -> Binding, basicAsString -> String, debugIterator -> Iterator, match -> Unknown, list(_ : Collection) -> List, ==(_ : Object) -> Boolean, debugValue -> String}} & ‹anon›{ InternalType2 -> Pattern;  }
-1185 recType's type list is: dict⟬⟭
-1184 member retType is: a noSuchType
-2024: add testDec2 -> Unknown to allMethods
-2009: processing call print "test succeeded"
-2410 allTypes is: dict⟬T::‹anon›{ InternalType1 -> Pattern;  }, U::‹anon›{ InternalType2 -> Pattern;  }⟭
-2411 publicTypes is: dict⟬T::‹anon›{ InternalType1 -> Pattern;  }, U::‹anon›{ InternalType2 -> Pattern;  }⟭
-2045: internalType is { 
-  ≠(_ : Object) -> Boolean; 
-  U -> Pattern; 
-  hash -> Number; 
-  testDec2 -> Unknown; 
-  asDebugString -> String; 
-  testDec1 -> Unknown; 
-  :: -> Binding; 
-  basicAsString -> String; 
-  isMe(other : Object) -> Boolean; 
-  debugIterator -> Iterator; 
-  match -> Unknown; 
-  list(_ : Collection) -> List; 
-  debugValue -> String; 
-  T -> Pattern; }
-
-
-2046: internalType's types is dict⟬T::‹anon›{ InternalType1 -> Pattern;  }, U::‹anon›{ InternalType2 -> Pattern;  }⟭
-
-2058: publicType is { 
-  ≠(_ : Object) -> Boolean; 
-  U -> Pattern; 
-  hash -> Number; 
-  asDebugString -> String; 
-  :: -> Binding; 
-  basicAsString -> String; 
-  debugIterator -> Iterator; 
-  match -> Unknown; 
-  list(_ : Collection) -> List; 
-  debugValue -> String; 
-  T -> Pattern; }
-
-
-2070: checking index 1 at line 3
-182: checking types of typedec T
-2072: finished index 1
-
-2070: checking index 2 at line 7
-182: checking types of typedec U
-2072: finished index 2
-
-2070: checking index 3 at line 11
-182: checking types of defdec testDec1
-1172 is member T & U.InternalType1
-1173 finding &.InternalType1
-1174 memb.receiver is: op &(1)
-Scope types in member search is: [dict⟬Done::Done, Point::Point, String::String, Set::Set, Range::Range, Object::Object, Sequence::Sequence, Unknown::Unknown, List::List, Pattern::Pattern, Number::Number, Boolean::Boolean, Binding::Binding, Dictionary::Dictionary⟭, dict⟬$elf::{ 
-  ≠(_ : Object) -> Boolean; 
-  U -> Pattern; 
-  hash -> Number; 
-  testDec2 -> Unknown; 
-  asDebugString -> String; 
-  testDec1 -> Unknown; 
-  :: -> Binding; 
-  basicAsString -> String; 
-  isMe(other : Object) -> Boolean; 
-  debugIterator -> Iterator; 
-  match -> Unknown; 
-  list(_ : Collection) -> List; 
-  debugValue -> String; 
-  T -> Pattern; }
-, T::‹anon›{ InternalType1 -> Pattern;  }, U::‹anon›{ InternalType2 -> Pattern;  }⟭]
-Scope methods in member search is: [dict⟬Done::Done -> Pattern, Boolean::Boolean -> Pattern, Set::Set -> Pattern, Number::Number -> Pattern, Object::Object -> Pattern, List::List -> Pattern, Pattern::Pattern -> Pattern, Dynamic::Dynamic -> Pattern, Binding::Binding -> Pattern, done::done -> Done, true::true -> Boolean, Point::Point -> Pattern, String::String -> Pattern, Dictionary::Dictionary -> Pattern, Range::Range -> Pattern, Sequence::Sequence -> Pattern, Unknown::Unknown -> Pattern, false::false -> Boolean⟭, dict⟬testDec2::testDec2 -> Unknown, testDec1::testDec1 -> Unknown⟭]
-1141: typesScope in fromIdentifier of ident: identifier‹T› is: [dict⟬Done::Done, Point::Point, String::String, Set::Set, Range::Range, Object::Object, Sequence::Sequence, Unknown::Unknown, List::List, Pattern::Pattern, Number::Number, Boolean::Boolean, Binding::Binding, Dictionary::Dictionary⟭, dict⟬$elf::{ 
-  ≠(_ : Object) -> Boolean; 
-  U -> Pattern; 
-  hash -> Number; 
-  testDec2 -> Unknown; 
-  asDebugString -> String; 
-  testDec1 -> Unknown; 
-  :: -> Binding; 
-  basicAsString -> String; 
-  isMe(other : Object) -> Boolean; 
-  debugIterator -> Iterator; 
-  match -> Unknown; 
-  list(_ : Collection) -> List; 
-  debugValue -> String; 
-  T -> Pattern; }
-, T::‹anon›{ InternalType1 -> Pattern;  }, U::‹anon›{ InternalType2 -> Pattern;  }⟭]
-ident.value is: T
-1141: typesScope in fromIdentifier of ident: identifier‹U› is: [dict⟬Done::Done, Point::Point, String::String, Set::Set, Range::Range, Object::Object, Sequence::Sequence, Unknown::Unknown, List::List, Pattern::Pattern, Number::Number, Boolean::Boolean, Binding::Binding, Dictionary::Dictionary⟭, dict⟬$elf::{ 
-  ≠(_ : Object) -> Boolean; 
-  U -> Pattern; 
-  hash -> Number; 
-  testDec2 -> Unknown; 
-  asDebugString -> String; 
-  testDec1 -> Unknown; 
-  :: -> Binding; 
-  basicAsString -> String; 
-  isMe(other : Object) -> Boolean; 
-  debugIterator -> Iterator; 
-  match -> Unknown; 
-  list(_ : Collection) -> List; 
-  debugValue -> String; 
-  T -> Pattern; }
-, T::‹anon›{ InternalType1 -> Pattern;  }, U::‹anon›{ InternalType2 -> Pattern;  }⟭]
-ident.value is: U
-966: ampersand called
-967: &Self is: ‹anon›{ InternalType1 -> Pattern;  }
-968: &other is: ‹anon›{ InternalType2 -> Pattern;  }
-1183 recType is: {set{≠(_ : Object) -> Boolean, InternalType1 -> Pattern, hash -> Number, asString -> String, asDebugString -> String, :: -> Binding, basicAsString -> String, debugIterator -> Iterator, match -> Unknown, list(_ : Collection) -> List, ==(_ : Object) -> Boolean, debugValue -> String}} & ‹anon›{ InternalType2 -> Pattern;  }
-1185 recType's type list is: dict⟬⟭
-1184 member retType is: a noSuchType
-1820: defType is Unknown
-182: checking types of num 47
-2072: finished index 3
-
-2070: checking index 4 at line 12
-182: checking types of defdec testDec2
-1172 is member T & U.InternalType2
-1173 finding &.InternalType2
-1174 memb.receiver is: op &(1)
-Scope types in member search is: [dict⟬Done::Done, Point::Point, String::String, Set::Set, Range::Range, Object::Object, Sequence::Sequence, Unknown::Unknown, List::List, Pattern::Pattern, Number::Number, Boolean::Boolean, Binding::Binding, Dictionary::Dictionary⟭, dict⟬$elf::{ 
-  ≠(_ : Object) -> Boolean; 
-  U -> Pattern; 
-  hash -> Number; 
-  testDec2 -> Unknown; 
-  asDebugString -> String; 
-  testDec1 -> Unknown; 
-  :: -> Binding; 
-  basicAsString -> String; 
-  isMe(other : Object) -> Boolean; 
-  debugIterator -> Iterator; 
-  match -> Unknown; 
-  list(_ : Collection) -> List; 
-  debugValue -> String; 
-  T -> Pattern; }
-, T::‹anon›{ InternalType1 -> Pattern;  }, U::‹anon›{ InternalType2 -> Pattern;  }⟭]
-Scope methods in member search is: [dict⟬Done::Done -> Pattern, Boolean::Boolean -> Pattern, Set::Set -> Pattern, Number::Number -> Pattern, Object::Object -> Pattern, List::List -> Pattern, Pattern::Pattern -> Pattern, Dynamic::Dynamic -> Pattern, Binding::Binding -> Pattern, done::done -> Done, true::true -> Boolean, Point::Point -> Pattern, String::String -> Pattern, Dictionary::Dictionary -> Pattern, Range::Range -> Pattern, Sequence::Sequence -> Pattern, Unknown::Unknown -> Pattern, false::false -> Boolean⟭, dict⟬testDec2::testDec2 -> Unknown, testDec1::testDec1 -> Unknown⟭]
-1141: typesScope in fromIdentifier of ident: identifier‹T› is: [dict⟬Done::Done, Point::Point, String::String, Set::Set, Range::Range, Object::Object, Sequence::Sequence, Unknown::Unknown, List::List, Pattern::Pattern, Number::Number, Boolean::Boolean, Binding::Binding, Dictionary::Dictionary⟭, dict⟬$elf::{ 
-  ≠(_ : Object) -> Boolean; 
-  U -> Pattern; 
-  hash -> Number; 
-  testDec2 -> Unknown; 
-  asDebugString -> String; 
-  testDec1 -> Unknown; 
-  :: -> Binding; 
-  basicAsString -> String; 
-  isMe(other : Object) -> Boolean; 
-  debugIterator -> Iterator; 
-  match -> Unknown; 
-  list(_ : Collection) -> List; 
-  debugValue -> String; 
-  T -> Pattern; }
-, T::‹anon›{ InternalType1 -> Pattern;  }, U::‹anon›{ InternalType2 -> Pattern;  }⟭]
-ident.value is: T
-1141: typesScope in fromIdentifier of ident: identifier‹U› is: [dict⟬Done::Done, Point::Point, String::String, Set::Set, Range::Range, Object::Object, Sequence::Sequence, Unknown::Unknown, List::List, Pattern::Pattern, Number::Number, Boolean::Boolean, Binding::Binding, Dictionary::Dictionary⟭, dict⟬$elf::{ 
-  ≠(_ : Object) -> Boolean; 
-  U -> Pattern; 
-  hash -> Number; 
-  testDec2 -> Unknown; 
-  asDebugString -> String; 
-  testDec1 -> Unknown; 
-  :: -> Binding; 
-  basicAsString -> String; 
-  isMe(other : Object) -> Boolean; 
-  debugIterator -> Iterator; 
-  match -> Unknown; 
-  list(_ : Collection) -> List; 
-  debugValue -> String; 
-  T -> Pattern; }
-, T::‹anon›{ InternalType1 -> Pattern;  }, U::‹anon›{ InternalType2 -> Pattern;  }⟭]
-ident.value is: U
-966: ampersand called
-967: &Self is: ‹anon›{ InternalType1 -> Pattern;  }
-968: &other is: ‹anon›{ InternalType2 -> Pattern;  }
-1183 recType is: {set{≠(_ : Object) -> Boolean, InternalType1 -> Pattern, hash -> Number, asString -> String, asDebugString -> String, :: -> Binding, basicAsString -> String, debugIterator -> Iterator, match -> Unknown, list(_ : Collection) -> List, ==(_ : Object) -> Boolean, debugValue -> String}} & ‹anon›{ InternalType2 -> Pattern;  }
-1185 recType's type list is: dict⟬⟭
-1184 member retType is: a noSuchType
-1820: defType is Unknown
-182: checking types of string "Grace"
-2072: finished index 4
-
-2070: checking index 5 at line 14
-182: checking types of call print "test succeeded"
-1672: receiver is identifier‹prelude›
-1673: reciever name is: prelude
-182: checking types of identifier‹prelude›
-182: checking types of identifier‹prelude›
-1680: type of receiver identifier‹prelude› is Unknown
-1681: rType is Unknown
-1701: callType: Unknown
-2072: finished index 5
-
-2602 types scope is: [dict⟬Done::Done, Point::Point, String::String, Set::Set, Range::Range, Object::Object, Sequence::Sequence, Unknown::Unknown, List::List, Pattern::Pattern, Number::Number, Boolean::Boolean, Binding::Binding, Dictionary::Dictionary⟭, dict⟬$elf::{ 
-  ≠(_ : Object) -> Boolean; 
-  U -> Pattern; 
-  hash -> Number; 
-  testDec2 -> Unknown; 
-  asDebugString -> String; 
-  testDec1 -> Unknown; 
-  :: -> Binding; 
-  basicAsString -> String; 
-  isMe(other : Object) -> Boolean; 
-  debugIterator -> Iterator; 
-  match -> Unknown; 
-  list(_ : Collection) -> List; 
-  debugValue -> String; 
-  T -> Pattern; }
-, T::‹anon›{ InternalType1 -> Pattern;  }, U::‹anon›{ InternalType2 -> Pattern;  }⟭]
-1971: *** Visited object module t313_diffTypeInAmpersand_testconfidential type is { 
-  ≠(_ : Object) -> Boolean; 
-  U -> Pattern; 
-  hash -> Number; 
-  testDec2 -> Unknown; 
-  asDebugString -> String; 
-  testDec1 -> Unknown; 
-  :: -> Binding; 
-  basicAsString -> String; 
-  isMe(other : Object) -> Boolean; 
-  debugIterator -> Iterator; 
-  match -> Unknown; 
-  list(_ : Collection) -> List; 
-  debugValue -> String; 
-  T -> Pattern; }
-
-public type is { 
-  ≠(_ : Object) -> Boolean; 
-  U -> Pattern; 
-  hash -> Number; 
-  asDebugString -> String; 
-  :: -> Binding; 
-  basicAsString -> String; 
-  debugIterator -> Iterator; 
-  match -> Unknown; 
-  list(_ : Collection) -> List; 
-  debugValue -> String; 
-  T -> Pattern; }
-minigrace[.]: t313_diffTypeInAmpersand_test: 0.95 (+0.11): generating JavaScript code.
-AST nodes compiled:
-    identifier	6
-    defdec	2
-    typeliteral	2
-    method	2
-    typedec	2
-    member	2
-    op	2
-    string	2
-    num	1
-    dialect	1
-    call	1
-minigrace[.]: t313_diffTypeInAmpersand_test: 1 (+0.05): done.
-NoSuchMethod on line 11 of t313_diffTypeInAmpersand_test: no method InternalType1 on TypeIntersection.new(_,_) (type T & type U).
-  raised at module initialization at line 11 of t313_diffTypeInAmpersand_test
-  requested on line 0 of .  10:   11: def testDec1 : (T&U).InternalType1 = 47  12: def testDec2 : (T&U).InternalType2 = "Grace"!FAIL t313_diffTypeInAmpersand_test.grace: wrong output
-Errors:
-NoSuchMethod on line 11 of t313_diffTypeInAmpersand_test: no method InternalType1 on TypeIntersection.new(_,_) (type T & type U).
-  raised at module initialization at line 11 of t313_diffTypeInAmpersand_test
-  requested on line 0 of .  10:   11: def testDec1 : (T&U).InternalType1 = 47  12: def testDec2 : (T&U).InternalType2 = "Grace"Got output:
-Expected output:
-test succeeded
-minigrace[.]: t314_typeInVariants_test: 0.2 (+0.2): starting compilation
-minigrace[.]: t314_typeInVariants_test: 0.25 (+0.05): lexing.
-minigrace[.]: t314_typeInVariants_test: 0.27 (+0.02): parsing.
-minigrace[.]: t314_typeInVariants_test: 0.32 (+0.05): checking dialect gradualTypesND used by module t314_typeInVariants_test
-minigrace[.]: t314_typeInVariants_test: 0.57 (+0.25): loading dialect "gradualTypesND" for checkers.
-minigrace[.]: t314_typeInVariants_test: 0.78 (+0.21): rewriting tree.
-minigrace[.]: t314_typeInVariants_test: 0.82 (+0.04): symbol tables built.
-
-1958: superclass: false
-
-matched as typeDec
-matched as typeDec
-didn't match as typeDec
-didn't match as typeDec
-1141: typesScope in fromIdentifier of ident: identifier‹Number› is: [dict⟬Done::Done, Point::Point, String::String, Set::Set, Range::Range, Object::Object, Sequence::Sequence, Unknown::Unknown, List::List, Pattern::Pattern, Number::Number, Boolean::Boolean, Binding::Binding, Dictionary::Dictionary⟭, dict⟬T::{ 
-  ≠(_ : Object) -> Boolean; 
-  hash -> Number; 
-  asDebugString -> String; 
-  :: -> Binding; 
-  basicAsString -> String; 
-  debugIterator -> Iterator; 
-  match -> Unknown; 
-  list(_ : Collection) -> List; 
-  debugValue -> String; }
-, U::{ 
-  ≠(_ : Object) -> Boolean; 
-  hash -> Number; 
-  asDebugString -> String; 
-  :: -> Binding; 
-  basicAsString -> String; 
-  debugIterator -> Iterator; 
-  match -> Unknown; 
-  list(_ : Collection) -> List; 
-  debugValue -> String; }
-⟭]
-ident.value is: Number
-2518 The type name is: T and it has embedded types of: dict⟬InternalType::Number⟭
-2518.5 The type itself is: ‹anon›{ InternalType -> Pattern;  }
-1141: typesScope in fromIdentifier of ident: identifier‹Number› is: [dict⟬Done::Done, Point::Point, String::String, Set::Set, Range::Range, Object::Object, Sequence::Sequence, Unknown::Unknown, List::List, Pattern::Pattern, Number::Number, Boolean::Boolean, Binding::Binding, Dictionary::Dictionary⟭, dict⟬T::{ 
-  ≠(_ : Object) -> Boolean; 
-  hash -> Number; 
-  asDebugString -> String; 
-  :: -> Binding; 
-  basicAsString -> String; 
-  debugIterator -> Iterator; 
-  match -> Unknown; 
-  list(_ : Collection) -> List; 
-  InternalType -> Pattern; 
-  debugValue -> String; }
-, U::{ 
-  ≠(_ : Object) -> Boolean; 
-  hash -> Number; 
-  asDebugString -> String; 
-  :: -> Binding; 
-  basicAsString -> String; 
-  debugIterator -> Iterator; 
-  match -> Unknown; 
-  list(_ : Collection) -> List; 
-  debugValue -> String; }
-⟭]
-ident.value is: Number
-2518 The type name is: U and it has embedded types of: dict⟬InternalType::Number⟭
-2518.5 The type itself is: ‹anon›{ InternalType -> Pattern;  }
-1965: hasInherits is false
-
-1989: superType is Object
-
-2009: processing typedec T
-1141: typesScope in fromIdentifier of ident: identifier‹Number› is: [dict⟬Done::Done, Point::Point, String::String, Set::Set, Range::Range, Object::Object, Sequence::Sequence, Unknown::Unknown, List::List, Pattern::Pattern, Number::Number, Boolean::Boolean, Binding::Binding, Dictionary::Dictionary⟭, dict⟬T::{ 
-  ≠(_ : Object) -> Boolean; 
-  hash -> Number; 
-  asDebugString -> String; 
-  :: -> Binding; 
-  basicAsString -> String; 
-  debugIterator -> Iterator; 
-  match -> Unknown; 
-  list(_ : Collection) -> List; 
-  InternalType -> Pattern; 
-  debugValue -> String; }
-, U::{ 
-  ≠(_ : Object) -> Boolean; 
-  hash -> Number; 
-  asDebugString -> String; 
-  :: -> Binding; 
-  basicAsString -> String; 
-  debugIterator -> Iterator; 
-  match -> Unknown; 
-  list(_ : Collection) -> List; 
-  InternalType -> Pattern; 
-  debugValue -> String; }
-⟭]
-ident.value is: Number
-2493 mType is: T -> Pattern
-2009: processing typedec U
-1141: typesScope in fromIdentifier of ident: identifier‹Number› is: [dict⟬Done::Done, Point::Point, String::String, Set::Set, Range::Range, Object::Object, Sequence::Sequence, Unknown::Unknown, List::List, Pattern::Pattern, Number::Number, Boolean::Boolean, Binding::Binding, Dictionary::Dictionary⟭, dict⟬T::‹anon›{ InternalType -> Pattern;  }, U::{ 
-  ≠(_ : Object) -> Boolean; 
-  hash -> Number; 
-  asDebugString -> String; 
-  :: -> Binding; 
-  basicAsString -> String; 
-  debugIterator -> Iterator; 
-  match -> Unknown; 
-  list(_ : Collection) -> List; 
-  InternalType -> Pattern; 
-  debugValue -> String; }
-⟭]
-ident.value is: Number
-2493 mType is: U -> Pattern
-2009: processing defdec testDec
-2022: in def or var case
-574: defd: defdec testDec
-575: defd.dtype T | U.InternalType
-1172 is member T | U.InternalType
-1173 finding |.InternalType
-1174 memb.receiver is: op |(1)
-Scope types in member search is: [dict⟬Done::Done, Point::Point, String::String, Set::Set, Range::Range, Object::Object, Sequence::Sequence, Unknown::Unknown, List::List, Pattern::Pattern, Number::Number, Boolean::Boolean, Binding::Binding, Dictionary::Dictionary⟭, dict⟬T::‹anon›{ InternalType -> Pattern;  }, U::‹anon›{ InternalType -> Pattern;  }⟭]
-Scope methods in member search is: [dict⟬Done::Done -> Pattern, Boolean::Boolean -> Pattern, Set::Set -> Pattern, Number::Number -> Pattern, Object::Object -> Pattern, List::List -> Pattern, Pattern::Pattern -> Pattern, Dynamic::Dynamic -> Pattern, Binding::Binding -> Pattern, done::done -> Done, true::true -> Boolean, Point::Point -> Pattern, String::String -> Pattern, Dictionary::Dictionary -> Pattern, Range::Range -> Pattern, Sequence::Sequence -> Pattern, Unknown::Unknown -> Pattern, false::false -> Boolean⟭, dict⟬⟭]
-1141: typesScope in fromIdentifier of ident: identifier‹T› is: [dict⟬Done::Done, Point::Point, String::String, Set::Set, Range::Range, Object::Object, Sequence::Sequence, Unknown::Unknown, List::List, Pattern::Pattern, Number::Number, Boolean::Boolean, Binding::Binding, Dictionary::Dictionary⟭, dict⟬T::‹anon›{ InternalType -> Pattern;  }, U::‹anon›{ InternalType -> Pattern;  }⟭]
-ident.value is: T
-1141: typesScope in fromIdentifier of ident: identifier‹U› is: [dict⟬Done::Done, Point::Point, String::String, Set::Set, Range::Range, Object::Object, Sequence::Sequence, Unknown::Unknown, List::List, Pattern::Pattern, Number::Number, Boolean::Boolean, Binding::Binding, Dictionary::Dictionary⟭, dict⟬T::‹anon›{ InternalType -> Pattern;  }, U::‹anon›{ InternalType -> Pattern;  }⟭]
-ident.value is: U
-1183 recType is: ‹anon›{ InternalType -> Pattern;  } | ‹anon›{ InternalType -> Pattern;  }
-1185 recType's type list is: dict⟬⟭
-1184 member retType is: a noSuchType
-2024: add testDec -> Unknown to allMethods
-2009: processing call print "test succeeded"
-2410 allTypes is: dict⟬T::‹anon›{ InternalType -> Pattern;  }, U::‹anon›{ InternalType -> Pattern;  }⟭
-2411 publicTypes is: dict⟬T::‹anon›{ InternalType -> Pattern;  }, U::‹anon›{ InternalType -> Pattern;  }⟭
-2045: internalType is { 
-  ≠(_ : Object) -> Boolean; 
-  testDec -> Unknown; 
-  U -> Pattern; 
-  hash -> Number; 
-  asDebugString -> String; 
-  :: -> Binding; 
-  basicAsString -> String; 
-  isMe(other : Object) -> Boolean; 
-  debugIterator -> Iterator; 
-  match -> Unknown; 
-  list(_ : Collection) -> List; 
-  debugValue -> String; 
-  T -> Pattern; }
-
-
-2046: internalType's types is dict⟬T::‹anon›{ InternalType -> Pattern;  }, U::‹anon›{ InternalType -> Pattern;  }⟭
-
-2058: publicType is { 
-  ≠(_ : Object) -> Boolean; 
-  U -> Pattern; 
-  hash -> Number; 
-  asDebugString -> String; 
-  :: -> Binding; 
-  basicAsString -> String; 
-  debugIterator -> Iterator; 
-  match -> Unknown; 
-  list(_ : Collection) -> List; 
-  debugValue -> String; 
-  T -> Pattern; }
-
-
-2070: checking index 1 at line 3
-182: checking types of typedec T
-2072: finished index 1
-
-2070: checking index 2 at line 7
-182: checking types of typedec U
-2072: finished index 2
-
-2070: checking index 3 at line 11
-182: checking types of defdec testDec
-1172 is member T | U.InternalType
-1173 finding |.InternalType
-1174 memb.receiver is: op |(1)
-Scope types in member search is: [dict⟬Done::Done, Point::Point, String::String, Set::Set, Range::Range, Object::Object, Sequence::Sequence, Unknown::Unknown, List::List, Pattern::Pattern, Number::Number, Boolean::Boolean, Binding::Binding, Dictionary::Dictionary⟭, dict⟬$elf::{ 
-  ≠(_ : Object) -> Boolean; 
-  testDec -> Unknown; 
-  U -> Pattern; 
-  hash -> Number; 
-  asDebugString -> String; 
-  :: -> Binding; 
-  basicAsString -> String; 
-  isMe(other : Object) -> Boolean; 
-  debugIterator -> Iterator; 
-  match -> Unknown; 
-  list(_ : Collection) -> List; 
-  debugValue -> String; 
-  T -> Pattern; }
-, T::‹anon›{ InternalType -> Pattern;  }, U::‹anon›{ InternalType -> Pattern;  }⟭]
-Scope methods in member search is: [dict⟬Done::Done -> Pattern, Boolean::Boolean -> Pattern, Set::Set -> Pattern, Number::Number -> Pattern, Object::Object -> Pattern, List::List -> Pattern, Pattern::Pattern -> Pattern, Dynamic::Dynamic -> Pattern, Binding::Binding -> Pattern, done::done -> Done, true::true -> Boolean, Point::Point -> Pattern, String::String -> Pattern, Dictionary::Dictionary -> Pattern, Range::Range -> Pattern, Sequence::Sequence -> Pattern, Unknown::Unknown -> Pattern, false::false -> Boolean⟭, dict⟬testDec::testDec -> Unknown⟭]
-1141: typesScope in fromIdentifier of ident: identifier‹T› is: [dict⟬Done::Done, Point::Point, String::String, Set::Set, Range::Range, Object::Object, Sequence::Sequence, Unknown::Unknown, List::List, Pattern::Pattern, Number::Number, Boolean::Boolean, Binding::Binding, Dictionary::Dictionary⟭, dict⟬$elf::{ 
-  ≠(_ : Object) -> Boolean; 
-  testDec -> Unknown; 
-  U -> Pattern; 
-  hash -> Number; 
-  asDebugString -> String; 
-  :: -> Binding; 
-  basicAsString -> String; 
-  isMe(other : Object) -> Boolean; 
-  debugIterator -> Iterator; 
-  match -> Unknown; 
-  list(_ : Collection) -> List; 
-  debugValue -> String; 
-  T -> Pattern; }
-, T::‹anon›{ InternalType -> Pattern;  }, U::‹anon›{ InternalType -> Pattern;  }⟭]
-ident.value is: T
-1141: typesScope in fromIdentifier of ident: identifier‹U› is: [dict⟬Done::Done, Point::Point, String::String, Set::Set, Range::Range, Object::Object, Sequence::Sequence, Unknown::Unknown, List::List, Pattern::Pattern, Number::Number, Boolean::Boolean, Binding::Binding, Dictionary::Dictionary⟭, dict⟬$elf::{ 
-  ≠(_ : Object) -> Boolean; 
-  testDec -> Unknown; 
-  U -> Pattern; 
-  hash -> Number; 
-  asDebugString -> String; 
-  :: -> Binding; 
-  basicAsString -> String; 
-  isMe(other : Object) -> Boolean; 
-  debugIterator -> Iterator; 
-  match -> Unknown; 
-  list(_ : Collection) -> List; 
-  debugValue -> String; 
-  T -> Pattern; }
-, T::‹anon›{ InternalType -> Pattern;  }, U::‹anon›{ InternalType -> Pattern;  }⟭]
-ident.value is: U
-1183 recType is: ‹anon›{ InternalType -> Pattern;  } | ‹anon›{ InternalType -> Pattern;  }
-1185 recType's type list is: dict⟬⟭
-1184 member retType is: a noSuchType
-1820: defType is Unknown
-182: checking types of num 47
-2072: finished index 3
-
-2070: checking index 4 at line 13
-182: checking types of call print "test succeeded"
-1672: receiver is identifier‹prelude›
-1673: reciever name is: prelude
-182: checking types of identifier‹prelude›
-182: checking types of identifier‹prelude›
-1680: type of receiver identifier‹prelude› is Unknown
-1681: rType is Unknown
-1701: callType: Unknown
-2072: finished index 4
-
-2602 types scope is: [dict⟬Done::Done, Point::Point, String::String, Set::Set, Range::Range, Object::Object, Sequence::Sequence, Unknown::Unknown, List::List, Pattern::Pattern, Number::Number, Boolean::Boolean, Binding::Binding, Dictionary::Dictionary⟭, dict⟬$elf::{ 
-  ≠(_ : Object) -> Boolean; 
-  testDec -> Unknown; 
-  U -> Pattern; 
-  hash -> Number; 
-  asDebugString -> String; 
-  :: -> Binding; 
-  basicAsString -> String; 
-  isMe(other : Object) -> Boolean; 
-  debugIterator -> Iterator; 
-  match -> Unknown; 
-  list(_ : Collection) -> List; 
-  debugValue -> String; 
-  T -> Pattern; }
-, T::‹anon›{ InternalType -> Pattern;  }, U::‹anon›{ InternalType -> Pattern;  }⟭]
-1971: *** Visited object module t314_typeInVariants_testconfidential type is { 
-  ≠(_ : Object) -> Boolean; 
-  testDec -> Unknown; 
-  U -> Pattern; 
-  hash -> Number; 
-  asDebugString -> String; 
-  :: -> Binding; 
-  basicAsString -> String; 
-  isMe(other : Object) -> Boolean; 
-  debugIterator -> Iterator; 
-  match -> Unknown; 
-  list(_ : Collection) -> List; 
-  debugValue -> String; 
-  T -> Pattern; }
-
-public type is { 
-  ≠(_ : Object) -> Boolean; 
-  U -> Pattern; 
-  hash -> Number; 
-  asDebugString -> String; 
-  :: -> Binding; 
-  basicAsString -> String; 
-  debugIterator -> Iterator; 
-  match -> Unknown; 
-  list(_ : Collection) -> List; 
-  debugValue -> String; 
-  T -> Pattern; }
-minigrace[.]: t314_typeInVariants_test: 0.9 (+0.08): generating JavaScript code.
-AST nodes compiled:
-    identifier	4
-    typeliteral	2
-    method	2
-    typedec	2
-    defdec	1
-    dialect	1
-    num	1
-    member	1
-    op	1
-    call	1
-    string	1
-minigrace[.]: t314_typeInVariants_test: 0.95 (+0.05): done.
-NoSuchMethod on line 11 of t314_typeInVariants_test: no method InternalType on TypeVariant.new(_,_) (type T | type U).
-  raised at module initialization at line 11 of t314_typeInVariants_test
-  requested on line 0 of .  10:   11: def testDec : (T|U).InternalType = 47  12: !FAIL t314_typeInVariants_test.grace: wrong output
-Errors:
-NoSuchMethod on line 11 of t314_typeInVariants_test: no method InternalType on TypeVariant.new(_,_) (type T | type U).
-  raised at module initialization at line 11 of t314_typeInVariants_test
-  requested on line 0 of .  10:   11: def testDec : (T|U).InternalType = 47  12: Got output:
-Expected output:
-test succeeded
-minigrace[.]: t317_typeInNestedTypes_test: 0.21 (+0.21): starting compilation
-minigrace[.]: t317_typeInNestedTypes_test: 0.26 (+0.05): lexing.
-minigrace[.]: t317_typeInNestedTypes_test: 0.28 (+0.02): parsing.
-minigrace[.]: t317_typeInNestedTypes_test: 0.33 (+0.05): checking dialect gradualTypesND used by module t317_typeInNestedTypes_test
-minigrace[.]: t317_typeInNestedTypes_test: 0.57 (+0.24): loading dialect "gradualTypesND" for checkers.
-minigrace[.]: t317_typeInNestedTypes_test: 0.78 (+0.21): rewriting tree.
-minigrace[.]: t317_typeInNestedTypes_test: 0.83 (+0.05): symbol tables built.
-
-1958: superclass: false
-
-matched as typeDec
-didn't match as typeDec
-didn't match as typeDec
-didn't match as typeDec
-1141: typesScope in fromIdentifier of ident: identifier‹Number› is: [dict⟬Done::Done, Point::Point, String::String, Set::Set, Range::Range, Object::Object, Sequence::Sequence, Unknown::Unknown, List::List, Pattern::Pattern, Number::Number, Boolean::Boolean, Binding::Binding, Dictionary::Dictionary⟭, dict⟬U::{ 
-  ≠(_ : Object) -> Boolean; 
-  hash -> Number; 
-  asDebugString -> String; 
-  :: -> Binding; 
-  basicAsString -> String; 
-  debugIterator -> Iterator; 
-  match -> Unknown; 
-  list(_ : Collection) -> List; 
-  debugValue -> String; }
-⟭]
-ident.value is: Number
-2518 The type name is: U and it has embedded types of: dict⟬V::‹anon›{ T -> Pattern;  }⟭
-2518.5 The type itself is: ‹anon›{ V -> Pattern;  }
-1965: hasInherits is false
-
-1989: superType is Object
-
-2009: processing typedec U
-1141: typesScope in fromIdentifier of ident: identifier‹Number› is: [dict⟬Done::Done, Point::Point, String::String, Set::Set, Range::Range, Object::Object, Sequence::Sequence, Unknown::Unknown, List::List, Pattern::Pattern, Number::Number, Boolean::Boolean, Binding::Binding, Dictionary::Dictionary⟭, dict⟬U::{ 
-  ≠(_ : Object) -> Boolean; 
-  V -> Pattern; 
-  hash -> Number; 
-  asDebugString -> String; 
-  :: -> Binding; 
-  basicAsString -> String; 
-  debugIterator -> Iterator; 
-  match -> Unknown; 
-  list(_ : Collection) -> List; 
-  debugValue -> String; }
-⟭]
-ident.value is: Number
-2493 mType is: U -> Pattern
-2009: processing defdec o
-2022: in def or var case
-574: defd: defdec o
-575: defd.dtype identifier‹U›
-1141: typesScope in fromIdentifier of ident: identifier‹U› is: [dict⟬Done::Done, Point::Point, String::String, Set::Set, Range::Range, Object::Object, Sequence::Sequence, Unknown::Unknown, List::List, Pattern::Pattern, Number::Number, Boolean::Boolean, Binding::Binding, Dictionary::Dictionary⟭, dict⟬U::‹anon›{ V -> Pattern;  }⟭]
-ident.value is: U
-2024: add o -> ‹anon›{ V -> Pattern;  } to allMethods
-2009: processing defdec testDec
-2022: in def or var case
-574: defd: defdec testDec
-575: defd.dtype o.V.T
-1172 is member o.V.T
-1173 finding V.T
-1174 memb.receiver is: o.V
-Scope types in member search is: [dict⟬Done::Done, Point::Point, String::String, Set::Set, Range::Range, Object::Object, Sequence::Sequence, Unknown::Unknown, List::List, Pattern::Pattern, Number::Number, Boolean::Boolean, Binding::Binding, Dictionary::Dictionary⟭, dict⟬U::‹anon›{ V -> Pattern;  }⟭]
-Scope methods in member search is: [dict⟬Done::Done -> Pattern, Boolean::Boolean -> Pattern, Set::Set -> Pattern, Number::Number -> Pattern, Object::Object -> Pattern, List::List -> Pattern, Pattern::Pattern -> Pattern, Dynamic::Dynamic -> Pattern, Binding::Binding -> Pattern, done::done -> Done, true::true -> Boolean, Point::Point -> Pattern, String::String -> Pattern, Dictionary::Dictionary -> Pattern, Range::Range -> Pattern, Sequence::Sequence -> Pattern, Unknown::Unknown -> Pattern, false::false -> Boolean⟭, dict⟬o::o -> ‹anon›{ V -> Pattern;  }⟭]
-1172 is member o.V
-1173 finding o.V
-1174 memb.receiver is: identifier‹o›
-Scope types in member search is: [dict⟬Done::Done, Point::Point, String::String, Set::Set, Range::Range, Object::Object, Sequence::Sequence, Unknown::Unknown, List::List, Pattern::Pattern, Number::Number, Boolean::Boolean, Binding::Binding, Dictionary::Dictionary⟭, dict⟬U::‹anon›{ V -> Pattern;  }⟭]
-Scope methods in member search is: [dict⟬Done::Done -> Pattern, Boolean::Boolean -> Pattern, Set::Set -> Pattern, Number::Number -> Pattern, Object::Object -> Pattern, List::List -> Pattern, Pattern::Pattern -> Pattern, Dynamic::Dynamic -> Pattern, Binding::Binding -> Pattern, done::done -> Done, true::true -> Boolean, Point::Point -> Pattern, String::String -> Pattern, Dictionary::Dictionary -> Pattern, Range::Range -> Pattern, Sequence::Sequence -> Pattern, Unknown::Unknown -> Pattern, false::false -> Boolean⟭, dict⟬o::o -> ‹anon›{ V -> Pattern;  }⟭]
-1183 recType is: ‹anon›{ V -> Pattern;  }
-1185 recType's type list is: dict⟬V::‹anon›{ T -> Pattern;  }⟭
-1184 member retType is: ‹anon›{ T -> Pattern;  }
-1183 recType is: ‹anon›{ T -> Pattern;  }
-1185 recType's type list is: dict⟬T::Number⟭
-1184 member retType is: Number
-2024: add testDec -> Number to allMethods
-2009: processing call print "test succeeded"
-2410 allTypes is: dict⟬U::‹anon›{ V -> Pattern;  }⟭
-2411 publicTypes is: dict⟬U::‹anon›{ V -> Pattern;  }⟭
-2045: internalType is { 
-  ≠(_ : Object) -> Boolean; 
-  testDec -> Number; 
-  U -> Pattern; 
-  hash -> Number; 
-  asDebugString -> String; 
-  o -> ‹anon›{ V -> Pattern;  }; 
-  :: -> Binding; 
-  basicAsString -> String; 
-  isMe(other : Object) -> Boolean; 
-  debugIterator -> Iterator; 
-  match -> Unknown; 
-  list(_ : Collection) -> List; 
-  debugValue -> String; }
-
-
-2046: internalType's types is dict⟬U::‹anon›{ V -> Pattern;  }⟭
-
-2058: publicType is { 
-  ≠(_ : Object) -> Boolean; 
-  U -> Pattern; 
-  hash -> Number; 
-  asDebugString -> String; 
-  :: -> Binding; 
-  basicAsString -> String; 
-  debugIterator -> Iterator; 
-  match -> Unknown; 
-  list(_ : Collection) -> List; 
-  debugValue -> String; }
-
-
-2070: checking index 1 at line 3
-182: checking types of typedec U
-2072: finished index 1
-
-2070: checking index 2 at line 9
-182: checking types of defdec o
-1141: typesScope in fromIdentifier of ident: identifier‹U› is: [dict⟬Done::Done, Point::Point, String::String, Set::Set, Range::Range, Object::Object, Sequence::Sequence, Unknown::Unknown, List::List, Pattern::Pattern, Number::Number, Boolean::Boolean, Binding::Binding, Dictionary::Dictionary⟭, dict⟬$elf::{ 
-  ≠(_ : Object) -> Boolean; 
-  testDec -> Number; 
-  U -> Pattern; 
-  hash -> Number; 
-  asDebugString -> String; 
-  o -> ‹anon›{ V -> Pattern;  }; 
-  :: -> Binding; 
-  basicAsString -> String; 
-  isMe(other : Object) -> Boolean; 
-  debugIterator -> Iterator; 
-  match -> Unknown; 
-  list(_ : Collection) -> List; 
-  debugValue -> String; }
-, U::‹anon›{ V -> Pattern;  }⟭]
-ident.value is: U
-1820: defType is ‹anon›{ V -> Pattern;  }
-182: checking types of object o
-1958: superclass: false
-
-matched as typeDec
-1141: typesScope in fromIdentifier of ident: identifier‹Number› is: [dict⟬Done::Done, Point::Point, String::String, Set::Set, Range::Range, Object::Object, Sequence::Sequence, Unknown::Unknown, List::List, Pattern::Pattern, Number::Number, Boolean::Boolean, Binding::Binding, Dictionary::Dictionary⟭, dict⟬$elf::{ 
-  ≠(_ : Object) -> Boolean; 
-  testDec -> Number; 
-  U -> Pattern; 
-  hash -> Number; 
-  asDebugString -> String; 
-  o -> ‹anon›{ V -> Pattern;  }; 
-  :: -> Binding; 
-  basicAsString -> String; 
-  isMe(other : Object) -> Boolean; 
-  debugIterator -> Iterator; 
-  match -> Unknown; 
-  list(_ : Collection) -> List; 
-  debugValue -> String; }
-, U::‹anon›{ V -> Pattern;  }⟭, dict⟬V::{ 
-  ≠(_ : Object) -> Boolean; 
-  hash -> Number; 
-  asDebugString -> String; 
-  :: -> Binding; 
-  basicAsString -> String; 
-  debugIterator -> Iterator; 
-  match -> Unknown; 
-  list(_ : Collection) -> List; 
-  debugValue -> String; }
-⟭]
-ident.value is: Number
-2518 The type name is: V and it has embedded types of: dict⟬T::Number⟭
-2518.5 The type itself is: ‹anon›{ T -> Pattern;  }
-1965: hasInherits is false
-
-1989: superType is Object
-
-2009: processing typedec V
-1141: typesScope in fromIdentifier of ident: identifier‹Number› is: [dict⟬Done::Done, Point::Point, String::String, Set::Set, Range::Range, Object::Object, Sequence::Sequence, Unknown::Unknown, List::List, Pattern::Pattern, Number::Number, Boolean::Boolean, Binding::Binding, Dictionary::Dictionary⟭, dict⟬$elf::{ 
-  ≠(_ : Object) -> Boolean; 
-  testDec -> Number; 
-  U -> Pattern; 
-  hash -> Number; 
-  asDebugString -> String; 
-  o -> ‹anon›{ V -> Pattern;  }; 
-  :: -> Binding; 
-  basicAsString -> String; 
-  isMe(other : Object) -> Boolean; 
-  debugIterator -> Iterator; 
-  match -> Unknown; 
-  list(_ : Collection) -> List; 
-  debugValue -> String; }
-, U::‹anon›{ V -> Pattern;  }⟭, dict⟬V::{ 
-  ≠(_ : Object) -> Boolean; 
-  hash -> Number; 
-  asDebugString -> String; 
-  :: -> Binding; 
-  basicAsString -> String; 
-  debugIterator -> Iterator; 
-  match -> Unknown; 
-  list(_ : Collection) -> List; 
-  debugValue -> String; 
-  T -> Pattern; }
-⟭]
-ident.value is: Number
-2493 mType is: V -> Pattern
-2410 allTypes is: dict⟬V::‹anon›{ T -> Pattern;  }⟭
-2411 publicTypes is: dict⟬V::‹anon›{ T -> Pattern;  }⟭
-2045: internalType is { 
-  ≠(_ : Object) -> Boolean; 
-  V -> Pattern; 
-  hash -> Number; 
-  asDebugString -> String; 
-  :: -> Binding; 
-  basicAsString -> String; 
-  isMe(other : Object) -> Boolean; 
-  debugIterator -> Iterator; 
-  match -> Unknown; 
-  list(_ : Collection) -> List; 
-  debugValue -> String; }
-
-
-2046: internalType's types is dict⟬V::‹anon›{ T -> Pattern;  }⟭
-
-2058: publicType is { 
-  ≠(_ : Object) -> Boolean; 
-  V -> Pattern; 
-  hash -> Number; 
-  asDebugString -> String; 
-  :: -> Binding; 
-  basicAsString -> String; 
-  debugIterator -> Iterator; 
-  match -> Unknown; 
-  list(_ : Collection) -> List; 
-  debugValue -> String; }
-
-
-2070: checking index 1 at line 10
-182: checking types of typedec V
-2072: finished index 1
-
-2602 types scope is: [dict⟬Done::Done, Point::Point, String::String, Set::Set, Range::Range, Object::Object, Sequence::Sequence, Unknown::Unknown, List::List, Pattern::Pattern, Number::Number, Boolean::Boolean, Binding::Binding, Dictionary::Dictionary⟭, dict⟬$elf::{ 
-  ≠(_ : Object) -> Boolean; 
-  testDec -> Number; 
-  U -> Pattern; 
-  hash -> Number; 
-  asDebugString -> String; 
-  o -> ‹anon›{ V -> Pattern;  }; 
-  :: -> Binding; 
-  basicAsString -> String; 
-  isMe(other : Object) -> Boolean; 
-  debugIterator -> Iterator; 
-  match -> Unknown; 
-  list(_ : Collection) -> List; 
-  debugValue -> String; }
-, U::‹anon›{ V -> Pattern;  }⟭, dict⟬$elf::{ 
-  ≠(_ : Object) -> Boolean; 
-  V -> Pattern; 
-  hash -> Number; 
-  asDebugString -> String; 
-  :: -> Binding; 
-  basicAsString -> String; 
-  isMe(other : Object) -> Boolean; 
-  debugIterator -> Iterator; 
-  match -> Unknown; 
-  list(_ : Collection) -> List; 
-  debugValue -> String; }
-, V::‹anon›{ T -> Pattern;  }⟭]
-1971: *** Visited object object oconfidential type is { 
-  ≠(_ : Object) -> Boolean; 
-  V -> Pattern; 
-  hash -> Number; 
-  asDebugString -> String; 
-  :: -> Binding; 
-  basicAsString -> String; 
-  isMe(other : Object) -> Boolean; 
-  debugIterator -> Iterator; 
-  match -> Unknown; 
-  list(_ : Collection) -> List; 
-  debugValue -> String; }
-
-public type is { 
-  ≠(_ : Object) -> Boolean; 
-  V -> Pattern; 
-  hash -> Number; 
-  asDebugString -> String; 
-  :: -> Binding; 
-  basicAsString -> String; 
-  debugIterator -> Iterator; 
-  match -> Unknown; 
-  list(_ : Collection) -> List; 
-  debugValue -> String; }
-
-829 otherTypes is dict⟬V::‹anon›{ T -> Pattern;  }⟭
-830 selfTypes is dict⟬V::‹anon›{ T -> Pattern;  }⟭
-829 otherTypes is dict⟬T::Number⟭
-830 selfTypes is dict⟬T::Number⟭
-2072: finished index 2
-
-2070: checking index 3 at line 15
-182: checking types of defdec testDec
-1172 is member o.V.T
-1173 finding V.T
-1174 memb.receiver is: o.V
-Scope types in member search is: [dict⟬Done::Done, Point::Point, String::String, Set::Set, Range::Range, Object::Object, Sequence::Sequence, Unknown::Unknown, List::List, Pattern::Pattern, Number::Number, Boolean::Boolean, Binding::Binding, Dictionary::Dictionary⟭, dict⟬$elf::{ 
-  ≠(_ : Object) -> Boolean; 
-  testDec -> Number; 
-  U -> Pattern; 
-  hash -> Number; 
-  asDebugString -> String; 
-  o -> ‹anon›{ V -> Pattern;  }; 
-  :: -> Binding; 
-  basicAsString -> String; 
-  isMe(other : Object) -> Boolean; 
-  debugIterator -> Iterator; 
-  match -> Unknown; 
-  list(_ : Collection) -> List; 
-  debugValue -> String; }
-, U::‹anon›{ V -> Pattern;  }⟭]
-Scope methods in member search is: [dict⟬Done::Done -> Pattern, Boolean::Boolean -> Pattern, Set::Set -> Pattern, Number::Number -> Pattern, Object::Object -> Pattern, List::List -> Pattern, Pattern::Pattern -> Pattern, Dynamic::Dynamic -> Pattern, Binding::Binding -> Pattern, done::done -> Done, true::true -> Boolean, Point::Point -> Pattern, String::String -> Pattern, Dictionary::Dictionary -> Pattern, Range::Range -> Pattern, Sequence::Sequence -> Pattern, Unknown::Unknown -> Pattern, false::false -> Boolean⟭, dict⟬testDec::testDec -> Number, o::o -> ‹anon›{ V -> Pattern;  }⟭]
-1172 is member o.V
-1173 finding o.V
-1174 memb.receiver is: identifier‹o›
-Scope types in member search is: [dict⟬Done::Done, Point::Point, String::String, Set::Set, Range::Range, Object::Object, Sequence::Sequence, Unknown::Unknown, List::List, Pattern::Pattern, Number::Number, Boolean::Boolean, Binding::Binding, Dictionary::Dictionary⟭, dict⟬$elf::{ 
-  ≠(_ : Object) -> Boolean; 
-  testDec -> Number; 
-  U -> Pattern; 
-  hash -> Number; 
-  asDebugString -> String; 
-  o -> ‹anon›{ V -> Pattern;  }; 
-  :: -> Binding; 
-  basicAsString -> String; 
-  isMe(other : Object) -> Boolean; 
-  debugIterator -> Iterator; 
-  match -> Unknown; 
-  list(_ : Collection) -> List; 
-  debugValue -> String; }
-, U::‹anon›{ V -> Pattern;  }⟭]
-Scope methods in member search is: [dict⟬Done::Done -> Pattern, Boolean::Boolean -> Pattern, Set::Set -> Pattern, Number::Number -> Pattern, Object::Object -> Pattern, List::List -> Pattern, Pattern::Pattern -> Pattern, Dynamic::Dynamic -> Pattern, Binding::Binding -> Pattern, done::done -> Done, true::true -> Boolean, Point::Point -> Pattern, String::String -> Pattern, Dictionary::Dictionary -> Pattern, Range::Range -> Pattern, Sequence::Sequence -> Pattern, Unknown::Unknown -> Pattern, false::false -> Boolean⟭, dict⟬testDec::testDec -> Number, o::o -> ‹anon›{ V -> Pattern;  }⟭]
-1183 recType is: ‹anon›{ V -> Pattern;  }
-1185 recType's type list is: dict⟬V::‹anon›{ T -> Pattern;  }⟭
-1184 member retType is: ‹anon›{ T -> Pattern;  }
-1183 recType is: ‹anon›{ T -> Pattern;  }
-1185 recType's type list is: dict⟬T::Number⟭
-1184 member retType is: Number
+233: checking types of x
+235: x not in cache
 1820: defType is Number
-182: checking types of num 3
-2072: finished index 3
-
-2070: checking index 4 at line 17
-182: checking types of call print "test succeeded"
-1672: receiver is identifier‹prelude›
-1673: reciever name is: prelude
-182: checking types of identifier‹prelude›
-182: checking types of identifier‹prelude›
-1680: type of receiver identifier‹prelude› is Unknown
-1681: rType is Unknown
-1701: callType: Unknown
-2072: finished index 4
-
-2602 types scope is: [dict⟬Done::Done, Point::Point, String::String, Set::Set, Range::Range, Object::Object, Sequence::Sequence, Unknown::Unknown, List::List, Pattern::Pattern, Number::Number, Boolean::Boolean, Binding::Binding, Dictionary::Dictionary⟭, dict⟬$elf::{ 
-  ≠(_ : Object) -> Boolean; 
-  testDec -> Number; 
-  U -> Pattern; 
-  hash -> Number; 
-  asDebugString -> String; 
-  o -> ‹anon›{ V -> Pattern;  }; 
-  :: -> Binding; 
-  basicAsString -> String; 
-  isMe(other : Object) -> Boolean; 
-  debugIterator -> Iterator; 
-  match -> Unknown; 
-  list(_ : Collection) -> List; 
-  debugValue -> String; }
-, U::‹anon›{ V -> Pattern;  }⟭]
-1971: *** Visited object module t317_typeInNestedTypes_testconfidential type is { 
-  ≠(_ : Object) -> Boolean; 
-  testDec -> Number; 
-  U -> Pattern; 
-  hash -> Number; 
-  asDebugString -> String; 
-  o -> ‹anon›{ V -> Pattern;  }; 
-  :: -> Binding; 
-  basicAsString -> String; 
-  isMe(other : Object) -> Boolean; 
-  debugIterator -> Iterator; 
-  match -> Unknown; 
-  list(_ : Collection) -> List; 
-  debugValue -> String; }
-
-public type is { 
-  ≠(_ : Object) -> Boolean; 
-  U -> Pattern; 
-  hash -> Number; 
-  asDebugString -> String; 
-  :: -> Binding; 
-  basicAsString -> String; 
-  debugIterator -> Iterator; 
-  match -> Unknown; 
-  list(_ : Collection) -> List; 
-  debugValue -> String; }
-minigrace[.]: t317_typeInNestedTypes_test: 0.94 (+0.11): generating JavaScript code.
-AST nodes compiled:
-    identifier	3
-    defdec	2
-    typeliteral	2
-    member	2
-    dialect	1
-    typedec	1
-    object	1
-    num	1
-    method	1
-    call	1
-    string	1
-minigrace[.]: t317_typeInNestedTypes_test: 0.98 (+0.04): done.
-NoSuchMethod on line 15 of t317_typeInNestedTypes_test: no method T on Type type V.
-  raised at module initialization at line 15 of t317_typeInNestedTypes_test
-  requested on line 0 of .  14:   15: def testDec: o.V.T = 3  16: !FAIL t317_typeInNestedTypes_test.grace: wrong output
-Errors:
-NoSuchMethod on line 15 of t317_typeInNestedTypes_test: no method T on Type type V.
-  raised at module initialization at line 15 of t317_typeInNestedTypes_test
-  requested on line 0 of .  14:   15: def testDec: o.V.T = 3  16: Got output:
-Expected output:
-test succeeded
-minigrace[.]: t331_ampersandEmbeddedTypes_test: 0.2 (+0.2): starting compilation
-minigrace[.]: t331_ampersandEmbeddedTypes_test: 0.24 (+0.04): lexing.
-minigrace[.]: t331_ampersandEmbeddedTypes_test: 0.26 (+0.02): parsing.
-minigrace[.]: t331_ampersandEmbeddedTypes_test: 0.32 (+0.06): checking dialect gradualTypesND used by module t331_ampersandEmbeddedTypes_test
-minigrace[.]: t331_ampersandEmbeddedTypes_test: 0.56 (+0.24): loading dialect "gradualTypesND" for checkers.
-minigrace[.]: t331_ampersandEmbeddedTypes_test: 0.78 (+0.22): rewriting tree.
-minigrace[.]: t331_ampersandEmbeddedTypes_test: 0.81 (+0.03): symbol tables built.
-
-1958: superclass: false
-
-matched as typeDec
-matched as typeDec
-didn't match as typeDec
-didn't match as typeDec
-didn't match as typeDec
-1141: typesScope in fromIdentifier of ident: identifier‹Number› is: [dict⟬Done::Done, Point::Point, String::String, Set::Set, Range::Range, Object::Object, Sequence::Sequence, Unknown::Unknown, List::List, Pattern::Pattern, Number::Number, Boolean::Boolean, Binding::Binding, Dictionary::Dictionary⟭, dict⟬T::{ 
-  ≠(_ : Object) -> Boolean; 
-  hash -> Number; 
-  asDebugString -> String; 
-  :: -> Binding; 
-  basicAsString -> String; 
-  debugIterator -> Iterator; 
-  match -> Unknown; 
-  list(_ : Collection) -> List; 
-  debugValue -> String; }
-, U::{ 
-  ≠(_ : Object) -> Boolean; 
-  hash -> Number; 
-  asDebugString -> String; 
-  :: -> Binding; 
-  basicAsString -> String; 
-  debugIterator -> Iterator; 
-  match -> Unknown; 
-  list(_ : Collection) -> List; 
-  debugValue -> String; }
-⟭]
-ident.value is: Number
-2518 The type name is: T and it has embedded types of: dict⟬internalType1::Number⟭
-2518.5 The type itself is: ‹anon›{ internalType1 -> Pattern;  }
-1141: typesScope in fromIdentifier of ident: identifier‹Number› is: [dict⟬Done::Done, Point::Point, String::String, Set::Set, Range::Range, Object::Object, Sequence::Sequence, Unknown::Unknown, List::List, Pattern::Pattern, Number::Number, Boolean::Boolean, Binding::Binding, Dictionary::Dictionary⟭, dict⟬T::{ 
-  ≠(_ : Object) -> Boolean; 
-  hash -> Number; 
-  asDebugString -> String; 
-  :: -> Binding; 
-  basicAsString -> String; 
-  debugIterator -> Iterator; 
-  match -> Unknown; 
-  list(_ : Collection) -> List; 
-  debugValue -> String; 
-  internalType1 -> Pattern; }
-, U::{ 
-  ≠(_ : Object) -> Boolean; 
-  hash -> Number; 
-  asDebugString -> String; 
-  :: -> Binding; 
-  basicAsString -> String; 
-  debugIterator -> Iterator; 
-  match -> Unknown; 
-  list(_ : Collection) -> List; 
-  debugValue -> String; }
-⟭]
-ident.value is: Number
-2518 The type name is: U and it has embedded types of: dict⟬internalType2::Number⟭
-2518.5 The type itself is: ‹anon›{ internalType2 -> Pattern;  }
-1965: hasInherits is false
-
-1989: superType is Object
-
-2009: processing typedec T
-1141: typesScope in fromIdentifier of ident: identifier‹Number› is: [dict⟬Done::Done, Point::Point, String::String, Set::Set, Range::Range, Object::Object, Sequence::Sequence, Unknown::Unknown, List::List, Pattern::Pattern, Number::Number, Boolean::Boolean, Binding::Binding, Dictionary::Dictionary⟭, dict⟬T::{ 
-  ≠(_ : Object) -> Boolean; 
-  hash -> Number; 
-  asDebugString -> String; 
-  :: -> Binding; 
-  basicAsString -> String; 
-  debugIterator -> Iterator; 
-  match -> Unknown; 
-  list(_ : Collection) -> List; 
-  debugValue -> String; 
-  internalType1 -> Pattern; }
-, U::{ 
-  ≠(_ : Object) -> Boolean; 
-  hash -> Number; 
-  asDebugString -> String; 
-  :: -> Binding; 
-  basicAsString -> String; 
-  debugIterator -> Iterator; 
-  match -> Unknown; 
-  list(_ : Collection) -> List; 
-  debugValue -> String; 
-  internalType2 -> Pattern; }
-⟭]
-ident.value is: Number
-2493 mType is: T -> Pattern
-2009: processing typedec U
-1141: typesScope in fromIdentifier of ident: identifier‹Number› is: [dict⟬Done::Done, Point::Point, String::String, Set::Set, Range::Range, Object::Object, Sequence::Sequence, Unknown::Unknown, List::List, Pattern::Pattern, Number::Number, Boolean::Boolean, Binding::Binding, Dictionary::Dictionary⟭, dict⟬T::‹anon›{ internalType1 -> Pattern;  }, U::{ 
-  ≠(_ : Object) -> Boolean; 
-  hash -> Number; 
-  asDebugString -> String; 
-  :: -> Binding; 
-  basicAsString -> String; 
-  debugIterator -> Iterator; 
-  match -> Unknown; 
-  list(_ : Collection) -> List; 
-  debugValue -> String; 
-  internalType2 -> Pattern; }
-⟭]
-ident.value is: Number
-2493 mType is: U -> Pattern
-2009: processing defdec x
-2022: in def or var case
-574: defd: defdec x
-575: defd.dtype op &(1)
-1172 is member T.internalType1
-1173 finding T.internalType1
-1174 memb.receiver is: identifier‹T›
-Scope types in member search is: [dict⟬Done::Done, Point::Point, String::String, Set::Set, Range::Range, Object::Object, Sequence::Sequence, Unknown::Unknown, List::List, Pattern::Pattern, Number::Number, Boolean::Boolean, Binding::Binding, Dictionary::Dictionary⟭, dict⟬T::‹anon›{ internalType1 -> Pattern;  }, U::‹anon›{ internalType2 -> Pattern;  }⟭]
-Scope methods in member search is: [dict⟬Done::Done -> Pattern, Boolean::Boolean -> Pattern, Set::Set -> Pattern, Number::Number -> Pattern, Object::Object -> Pattern, List::List -> Pattern, Pattern::Pattern -> Pattern, Dynamic::Dynamic -> Pattern, Binding::Binding -> Pattern, done::done -> Done, true::true -> Boolean, Point::Point -> Pattern, String::String -> Pattern, Dictionary::Dictionary -> Pattern, Range::Range -> Pattern, Sequence::Sequence -> Pattern, Unknown::Unknown -> Pattern, false::false -> Boolean⟭, dict⟬⟭]
-1183 recType is: ‹anon›{ internalType1 -> Pattern;  }
-1185 recType's type list is: dict⟬internalType1::Number⟭
-1184 member retType is: Number
-1172 is member U.internalType2
-1173 finding U.internalType2
-1174 memb.receiver is: identifier‹U›
-Scope types in member search is: [dict⟬Done::Done, Point::Point, String::String, Set::Set, Range::Range, Object::Object, Sequence::Sequence, Unknown::Unknown, List::List, Pattern::Pattern, Number::Number, Boolean::Boolean, Binding::Binding, Dictionary::Dictionary⟭, dict⟬T::‹anon›{ internalType1 -> Pattern;  }, U::‹anon›{ internalType2 -> Pattern;  }⟭]
-Scope methods in member search is: [dict⟬Done::Done -> Pattern, Boolean::Boolean -> Pattern, Set::Set -> Pattern, Number::Number -> Pattern, Object::Object -> Pattern, List::List -> Pattern, Pattern::Pattern -> Pattern, Dynamic::Dynamic -> Pattern, Binding::Binding -> Pattern, done::done -> Done, true::true -> Boolean, Point::Point -> Pattern, String::String -> Pattern, Dictionary::Dictionary -> Pattern, Range::Range -> Pattern, Sequence::Sequence -> Pattern, Unknown::Unknown -> Pattern, false::false -> Boolean⟭, dict⟬⟭]
-1183 recType is: ‹anon›{ internalType2 -> Pattern;  }
-1185 recType's type list is: dict⟬internalType2::Number⟭
-1184 member retType is: Number
-966: ampersand called
-967: &Self is: Number
-968: &other is: Number
-2024: add x -> Number to allMethods
-2009: processing call print("" ++ x ++ "")
-2009: processing call print "Test Succeeded"
-2410 allTypes is: dict⟬T::‹anon›{ internalType1 -> Pattern;  }, U::‹anon›{ internalType2 -> Pattern;  }⟭
-2411 publicTypes is: dict⟬T::‹anon›{ internalType1 -> Pattern;  }, U::‹anon›{ internalType2 -> Pattern;  }⟭
-2045: internalType is { 
-  ≠(_ : Object) -> Boolean; 
-  U -> Pattern; 
-  hash -> Number; 
-  x -> Number; 
-  asDebugString -> String; 
-  :: -> Binding; 
-  basicAsString -> String; 
-  isMe(other : Object) -> Boolean; 
-  debugIterator -> Iterator; 
-  match -> Unknown; 
-  list(_ : Collection) -> List; 
-  debugValue -> String; 
-  T -> Pattern; }
-
-
-2046: internalType's types is dict⟬T::‹anon›{ internalType1 -> Pattern;  }, U::‹anon›{ internalType2 -> Pattern;  }⟭
-
-2058: publicType is { 
-  ≠(_ : Object) -> Boolean; 
-  U -> Pattern; 
-  hash -> Number; 
-  asDebugString -> String; 
-  :: -> Binding; 
-  basicAsString -> String; 
-  debugIterator -> Iterator; 
-  match -> Unknown; 
-  list(_ : Collection) -> List; 
-  debugValue -> String; 
-  T -> Pattern; }
-
-
-2070: checking index 1 at line 3
-182: checking types of typedec T
+233: checking types of ?
+235: ? not in cache
 2072: finished index 1
 
-2070: checking index 2 at line 7
-182: checking types of typedec U
-2072: finished index 2
-
-2070: checking index 3 at line 11
-182: checking types of defdec x
-1172 is member T.internalType1
-1173 finding T.internalType1
-1174 memb.receiver is: identifier‹T›
-Scope types in member search is: [dict⟬Done::Done, Point::Point, String::String, Set::Set, Range::Range, Object::Object, Sequence::Sequence, Unknown::Unknown, List::List, Pattern::Pattern, Number::Number, Boolean::Boolean, Binding::Binding, Dictionary::Dictionary⟭, dict⟬$elf::{ 
-  ≠(_ : Object) -> Boolean; 
-  U -> Pattern; 
-  hash -> Number; 
-  x -> Number; 
-  asDebugString -> String; 
-  :: -> Binding; 
-  basicAsString -> String; 
-  isMe(other : Object) -> Boolean; 
-  debugIterator -> Iterator; 
-  match -> Unknown; 
-  list(_ : Collection) -> List; 
-  debugValue -> String; 
-  T -> Pattern; }
-, T::‹anon›{ internalType1 -> Pattern;  }, U::‹anon›{ internalType2 -> Pattern;  }⟭]
-Scope methods in member search is: [dict⟬Done::Done -> Pattern, Boolean::Boolean -> Pattern, Set::Set -> Pattern, Number::Number -> Pattern, Object::Object -> Pattern, List::List -> Pattern, Pattern::Pattern -> Pattern, Dynamic::Dynamic -> Pattern, Binding::Binding -> Pattern, done::done -> Done, true::true -> Boolean, Point::Point -> Pattern, String::String -> Pattern, Dictionary::Dictionary -> Pattern, Range::Range -> Pattern, Sequence::Sequence -> Pattern, Unknown::Unknown -> Pattern, false::false -> Boolean⟭, dict⟬x::x -> Number⟭]
-1183 recType is: ‹anon›{ internalType1 -> Pattern;  }
-1185 recType's type list is: dict⟬internalType1::Number⟭
-1184 member retType is: Number
-1172 is member U.internalType2
-1173 finding U.internalType2
-1174 memb.receiver is: identifier‹U›
-Scope types in member search is: [dict⟬Done::Done, Point::Point, String::String, Set::Set, Range::Range, Object::Object, Sequence::Sequence, Unknown::Unknown, List::List, Pattern::Pattern, Number::Number, Boolean::Boolean, Binding::Binding, Dictionary::Dictionary⟭, dict⟬$elf::{ 
-  ≠(_ : Object) -> Boolean; 
-  U -> Pattern; 
-  hash -> Number; 
-  x -> Number; 
-  asDebugString -> String; 
-  :: -> Binding; 
-  basicAsString -> String; 
-  isMe(other : Object) -> Boolean; 
-  debugIterator -> Iterator; 
-  match -> Unknown; 
-  list(_ : Collection) -> List; 
-  debugValue -> String; 
-  T -> Pattern; }
-, T::‹anon›{ internalType1 -> Pattern;  }, U::‹anon›{ internalType2 -> Pattern;  }⟭]
-Scope methods in member search is: [dict⟬Done::Done -> Pattern, Boolean::Boolean -> Pattern, Set::Set -> Pattern, Number::Number -> Pattern, Object::Object -> Pattern, List::List -> Pattern, Pattern::Pattern -> Pattern, Dynamic::Dynamic -> Pattern, Binding::Binding -> Pattern, done::done -> Done, true::true -> Boolean, Point::Point -> Pattern, String::String -> Pattern, Dictionary::Dictionary -> Pattern, Range::Range -> Pattern, Sequence::Sequence -> Pattern, Unknown::Unknown -> Pattern, false::false -> Boolean⟭, dict⟬x::x -> Number⟭]
-1183 recType is: ‹anon›{ internalType2 -> Pattern;  }
-1185 recType's type list is: dict⟬internalType2::Number⟭
-1184 member retType is: Number
-966: ampersand called
-967: &Self is: Number
-968: &other is: Number
-1820: defType is Number
-182: checking types of num 47
-2072: finished index 3
-
-2070: checking index 4 at line 13
-182: checking types of call print("" ++ x ++ "")
-1672: receiver is identifier‹prelude›
-1673: reciever name is: prelude
-182: checking types of identifier‹prelude›
-182: checking types of identifier‹prelude›
-1680: type of receiver identifier‹prelude› is Unknown
-1681: rType is Unknown
-1701: callType: Unknown
-1672: receiver is op ++(1)
-1673: reciever name is: ++(1)
-182: checking types of op ++(1)
-1672: receiver is string ""
-1673: reciever name is: ?
-182: checking types of string ""
-182: checking types of string ""
-1680: type of receiver string "" is String
-1681: rType is String
-request on ++(1)
-1999: rType.getTypeList is: dict⟬⟭ and name is ++(1)
-2000: rType.methods is: set{asUpper -> String, ord -> Number, hash -> Number, ++(_ : Object) -> String, asString -> String, _escape -> String, replace(_ : String)with(_ : String) -> String, encode -> String, iter -> Iterator, substringFrom(_ : Number)to(_ : Number) -> String, trim -> String, asNumber -> Number, contains(_ : String) -> Boolean, <=(_ : String) -> Boolean, startsWithLetter -> Boolean, &(_ : Pattern) -> Pattern, indexOf(_ : String) -> Number, startsWithPeriod -> Boolean, *(_ : Number) -> String, at(_ : Number) -> String, capitalized -> String, endsWith(_ : String) -> Boolean, startsWith(_ : String) -> Boolean, match -> Unknown, list(_ : Collection) -> List, startsWithSpace -> Boolean, ==(_ : Object) -> Boolean, asLower -> String, indexOf(_ : String)startingAt(_ : Number) -> Number, <(_ : String) -> Boolean, isEmpty -> Boolean, >(_ : String) -> Boolean, compare(_ : String) -> Boolean, lastIndexOf(_ : String) -> Number, startsWithDigit -> Boolean, >=(_ : String) -> Boolean, basicAsString -> String, debugValue -> String, iterator -> Object, ≠(_ : Object) -> Boolean, ≤(_ : String) -> Boolean, ≥(_ : String) -> Boolean, lastIndexOf(_ : String)startingAt(_ : Number) -> Number, indices -> List, do(_ : Block{ apply(_ : String) -> Done;  }) -> Done, asDebugString -> String, :: -> Binding, debugIterator -> Iterator, size -> Number, substringFrom(_ : Number)size(_ : Number) -> String}
-checking request op ++(1) against ++(_ : Object) -> String
-182: checking types of identifier‹x›
-1631 Checking identifier‹x› is subtype of Object
-while checking op ++(1) against ++(_ : Object) -> String
-182: checking types of identifier‹x›
-829 otherTypes is dict⟬⟭
-830 selfTypes is dict⟬⟭
-1701: callType: String
-182: checking types of op ++(1)
-1672: receiver is string ""
-1673: reciever name is: ?
-182: checking types of string ""
-182: checking types of string ""
-1680: type of receiver string "" is String
-1681: rType is String
-request on ++(1)
-1999: rType.getTypeList is: dict⟬⟭ and name is ++(1)
-2000: rType.methods is: set{asUpper -> String, ord -> Number, hash -> Number, ++(_ : Object) -> String, asString -> String, _escape -> String, replace(_ : String)with(_ : String) -> String, encode -> String, iter -> Iterator, substringFrom(_ : Number)to(_ : Number) -> String, trim -> String, asNumber -> Number, contains(_ : String) -> Boolean, <=(_ : String) -> Boolean, startsWithLetter -> Boolean, &(_ : Pattern) -> Pattern, indexOf(_ : String) -> Number, startsWithPeriod -> Boolean, *(_ : Number) -> String, at(_ : Number) -> String, capitalized -> String, endsWith(_ : String) -> Boolean, startsWith(_ : String) -> Boolean, match -> Unknown, list(_ : Collection) -> List, startsWithSpace -> Boolean, ==(_ : Object) -> Boolean, asLower -> String, indexOf(_ : String)startingAt(_ : Number) -> Number, <(_ : String) -> Boolean, isEmpty -> Boolean, >(_ : String) -> Boolean, compare(_ : String) -> Boolean, lastIndexOf(_ : String) -> Number, startsWithDigit -> Boolean, >=(_ : String) -> Boolean, basicAsString -> String, debugValue -> String, iterator -> Object, ≠(_ : Object) -> Boolean, ≤(_ : String) -> Boolean, ≥(_ : String) -> Boolean, lastIndexOf(_ : String)startingAt(_ : Number) -> Number, indices -> List, do(_ : Block{ apply(_ : String) -> Done;  }) -> Done, asDebugString -> String, :: -> Binding, debugIterator -> Iterator, size -> Number, substringFrom(_ : Number)size(_ : Number) -> String}
-checking request op ++(1) against ++(_ : Object) -> String
-182: checking types of identifier‹x›
-1631 Checking identifier‹x› is subtype of Object
-while checking op ++(1) against ++(_ : Object) -> String
-182: checking types of identifier‹x›
-829 otherTypes is dict⟬⟭
-830 selfTypes is dict⟬⟭
-1701: callType: String
-1680: type of receiver op ++(1) is String
-1681: rType is String
-request on ++(1)
-1999: rType.getTypeList is: dict⟬⟭ and name is ++(1)
-2000: rType.methods is: set{asUpper -> String, ord -> Number, hash -> Number, ++(_ : Object) -> String, asString -> String, _escape -> String, replace(_ : String)with(_ : String) -> String, encode -> String, iter -> Iterator, substringFrom(_ : Number)to(_ : Number) -> String, trim -> String, asNumber -> Number, contains(_ : String) -> Boolean, <=(_ : String) -> Boolean, startsWithLetter -> Boolean, &(_ : Pattern) -> Pattern, indexOf(_ : String) -> Number, startsWithPeriod -> Boolean, *(_ : Number) -> String, at(_ : Number) -> String, capitalized -> String, endsWith(_ : String) -> Boolean, startsWith(_ : String) -> Boolean, match -> Unknown, list(_ : Collection) -> List, startsWithSpace -> Boolean, ==(_ : Object) -> Boolean, asLower -> String, indexOf(_ : String)startingAt(_ : Number) -> Number, <(_ : String) -> Boolean, isEmpty -> Boolean, >(_ : String) -> Boolean, compare(_ : String) -> Boolean, lastIndexOf(_ : String) -> Number, startsWithDigit -> Boolean, >=(_ : String) -> Boolean, basicAsString -> String, debugValue -> String, iterator -> Object, ≠(_ : Object) -> Boolean, ≤(_ : String) -> Boolean, ≥(_ : String) -> Boolean, lastIndexOf(_ : String)startingAt(_ : Number) -> Number, indices -> List, do(_ : Block{ apply(_ : String) -> Done;  }) -> Done, asDebugString -> String, :: -> Binding, debugIterator -> Iterator, size -> Number, substringFrom(_ : Number)size(_ : Number) -> String}
-checking request op ++(1) against ++(_ : Object) -> String
-182: checking types of string ""
-1631 Checking string "" is subtype of Object
-while checking op ++(1) against ++(_ : Object) -> String
-182: checking types of string ""
-829 otherTypes is dict⟬⟭
-830 selfTypes is dict⟬⟭
-1701: callType: String
-1672: receiver is string ""
-1673: reciever name is: ?
-182: checking types of string ""
-182: checking types of string ""
-1680: type of receiver string "" is String
-1681: rType is String
-request on ++(1)
-1999: rType.getTypeList is: dict⟬⟭ and name is ++(1)
-2000: rType.methods is: set{asUpper -> String, ord -> Number, hash -> Number, ++(_ : Object) -> String, asString -> String, _escape -> String, replace(_ : String)with(_ : String) -> String, encode -> String, iter -> Iterator, substringFrom(_ : Number)to(_ : Number) -> String, trim -> String, asNumber -> Number, contains(_ : String) -> Boolean, <=(_ : String) -> Boolean, startsWithLetter -> Boolean, &(_ : Pattern) -> Pattern, indexOf(_ : String) -> Number, startsWithPeriod -> Boolean, *(_ : Number) -> String, at(_ : Number) -> String, capitalized -> String, endsWith(_ : String) -> Boolean, startsWith(_ : String) -> Boolean, match -> Unknown, list(_ : Collection) -> List, startsWithSpace -> Boolean, ==(_ : Object) -> Boolean, asLower -> String, indexOf(_ : String)startingAt(_ : Number) -> Number, <(_ : String) -> Boolean, isEmpty -> Boolean, >(_ : String) -> Boolean, compare(_ : String) -> Boolean, lastIndexOf(_ : String) -> Number, startsWithDigit -> Boolean, >=(_ : String) -> Boolean, basicAsString -> String, debugValue -> String, iterator -> Object, ≠(_ : Object) -> Boolean, ≤(_ : String) -> Boolean, ≥(_ : String) -> Boolean, lastIndexOf(_ : String)startingAt(_ : Number) -> Number, indices -> List, do(_ : Block{ apply(_ : String) -> Done;  }) -> Done, asDebugString -> String, :: -> Binding, debugIterator -> Iterator, size -> Number, substringFrom(_ : Number)size(_ : Number) -> String}
-checking request op ++(1) against ++(_ : Object) -> String
-182: checking types of identifier‹x›
-1631 Checking identifier‹x› is subtype of Object
-while checking op ++(1) against ++(_ : Object) -> String
-182: checking types of identifier‹x›
-829 otherTypes is dict⟬⟭
-830 selfTypes is dict⟬⟭
-1701: callType: String
-2072: finished index 4
-
-2070: checking index 5 at line 14
-182: checking types of call print "Test Succeeded"
-1672: receiver is identifier‹prelude›
-1673: reciever name is: prelude
-182: checking types of identifier‹prelude›
-182: checking types of identifier‹prelude›
-1680: type of receiver identifier‹prelude› is Unknown
-1681: rType is Unknown
-1701: callType: Unknown
-2072: finished index 5
-
-2602 types scope is: [dict⟬Done::Done, Point::Point, String::String, Set::Set, Range::Range, Object::Object, Sequence::Sequence, Unknown::Unknown, List::List, Pattern::Pattern, Number::Number, Boolean::Boolean, Binding::Binding, Dictionary::Dictionary⟭, dict⟬$elf::{ 
-  ≠(_ : Object) -> Boolean; 
-  U -> Pattern; 
-  hash -> Number; 
-  x -> Number; 
-  asDebugString -> String; 
-  :: -> Binding; 
-  basicAsString -> String; 
-  isMe(other : Object) -> Boolean; 
-  debugIterator -> Iterator; 
-  match -> Unknown; 
-  list(_ : Collection) -> List; 
-  debugValue -> String; 
-  T -> Pattern; }
-, T::‹anon›{ internalType1 -> Pattern;  }, U::‹anon›{ internalType2 -> Pattern;  }⟭]
-1971: *** Visited object module t331_ampersandEmbeddedTypes_testconfidential type is { 
-  ≠(_ : Object) -> Boolean; 
-  U -> Pattern; 
-  hash -> Number; 
-  x -> Number; 
-  asDebugString -> String; 
-  :: -> Binding; 
-  basicAsString -> String; 
-  isMe(other : Object) -> Boolean; 
-  debugIterator -> Iterator; 
-  match -> Unknown; 
-  list(_ : Collection) -> List; 
-  debugValue -> String; 
-  T -> Pattern; }
-
-public type is { 
-  ≠(_ : Object) -> Boolean; 
-  U -> Pattern; 
-  hash -> Number; 
-  asDebugString -> String; 
-  :: -> Binding; 
-  basicAsString -> String; 
-  debugIterator -> Iterator; 
-  match -> Unknown; 
-  list(_ : Collection) -> List; 
-  debugValue -> String; 
-  T -> Pattern; }
-minigrace[.]: t331_ampersandEmbeddedTypes_test: 0.93 (+0.12): generating JavaScript code.
-AST nodes compiled:
-    identifier	5
-    string	3
-    op	3
-    typeliteral	2
-    method	2
-    typedec	2
-    member	2
-    call	2
-    num	1
-    dialect	1
-    defdec	1
-minigrace[.]: t331_ampersandEmbeddedTypes_test: 0.97 (+0.04): done.
-NoSuchMethod on line 11 of t331_ampersandEmbeddedTypes_test: no method internalType1 on Type type T.
-  raised at module initialization at line 11 of t331_ampersandEmbeddedTypes_test
-  requested on line 0 of .  10:   11: def x: T.internalType1 & U.internalType2 = 47  12: !FAIL t331_ampersandEmbeddedTypes_test.grace: wrong output
-Errors:
-NoSuchMethod on line 11 of t331_ampersandEmbeddedTypes_test: no method internalType1 on Type type T.
-  raised at module initialization at line 11 of t331_ampersandEmbeddedTypes_test
-  requested on line 0 of .  10:   11: def x: T.internalType1 & U.internalType2 = 47  12: Got output:
-Expected output:
-47
-Test Succeeded
-43/49 passed.
+2070: checking index 2 at line 5
+233: checking types of while(1)do(1)
+235: while(1)do(1) not in cache
+1673: visitCall's call is: prelude.while(1)do(1)
+2085 rec.kind = identifier
+233: checking types of prelude
+235: prelude not in cache
+2154: prelude.while(1)do(1)
+2155: while(1)do(1)
+request on while(1)do(1)
+2000: rType.methods is: set{print(_ : Object) → Done}
+2001: got to case noSuchMethod
+2002: scope here is 
+dict⟬
+  Done::Done
+  Point::Point
+  String::String
+  Set::Set
+  Range::Range
+  Object::Object
+  Sequence::Sequence
+  Unknown::Unknown
+  List::List
+  Pattern::Pattern
+  Number::Number
+  Boolean::Boolean
+  Binding::Binding
+  Dictionary::Dictionary
+⟭
+dict⟬
+⟭RequestError on line 2190 of gradualTypesND: no such method or type'while(1)do(1)' in `prelude` of type
+    'Prelude' 
+in type 
+  'set{print(_ : Object) → Done}'
+  requested from Exception.raise(_)with(_) at line 2190 of gradualTypesND
+  requested from block.apply at line 2190 of gradualTypesND
+  requested from stackOfKind(_).findAtTop(_)butIfMissing(_) at line 168 of gradualTypesND
+  requested from astVisitor.visitCall(_) at line 2186 of gradualTypesND
+  requested from astVisitor.visitCall(_)up(_) at line 3189 of ast
+  requested from callNode.new(_,_).accept(_)from(_) at line 1329 of ast
+  requested from callNode.new(_,_).accept(_) at line 273 of ast
+  requested from block.apply at line 237 of gradualTypesND
+  requested from dictionary.empty.at(_)ifAbsent(_) at line 1315 of collectionsPrelude
+  requested from checkTypes(_) at line 235 of gradualTypesND
+  requested from block.apply(_) at line 2778 of gradualTypesND
+  requested from block.apply at line 1728 of collectionsPrelude
+  requested from while(_)do(_) at line 1727 of collectionsPrelude
+  requested from range.uncheckedFrom(_)to(_).do(_) at line 1727 of collectionsPrelude
+  requested from for(_)do(_) at line 2776 of gradualTypesND
+  requested from processBody(_,_) at line 2776 of gradualTypesND
+  requested from block.apply at line 2208 of gradualTypesND
+  requested from scope.enter(_) at line 218 of gradualTypesND
+  requested from astVisitor.visitObject(_) at line 2207 of gradualTypesND
+  requested from astVisitor.visitModule(_) at line 2249 of gradualTypesND
+  requested from astVisitor.visitModule(_)up(_) at line 3191 of ast
+  requested from moduleNode.body(_).accept(_)from(_) at line 1461 of ast
+  requested from moduleNode.body(_).accept(_) at line 273 of ast
+  requested from thisDialect.astChecker(_) at line 2883 of gradualTypesND
+[.]whileTest_test.grace[0]: Unexpected exception raised by AST checker for dialect 'gradualTypesND'.
+RequestError: no such method or type'while(1)do(1)' in `prelude` of type
+    'Prelude' 
+in type 
+  'set{print(_ : Object) → Done}'
+!FAIL whileTest_test.grace: compile error
+24/35 passed.
 6 tests compiled but produced the wrong output.
+5 tests did not compile but should have.

@@ -88,8 +88,10 @@ def typeVisitor: ast.AstVisitor = object {
             } elseif { rightkind=="op" } then {
                 visitOp(op.right)
             }
+            false
+        } else {
+            visitCall(op)
         }
-        return false
     }
 }
 
@@ -2488,46 +2490,69 @@ def astVisitor: ast.AstVisitor is public= object {
     method importHelper(typeName : String, impName : String,
                         unresolvedTypes : List⟦String⟧,
                         typeDefs : Dictionary⟦String, List⟦String⟧⟧) → Done {
+
+        if (typeDefs.containsKey(typeName).not) then {
+            Exception.raise ("\nCannot find type {typeName}. It is not " ++
+                "defined in the {impName} GCT file. Likely a problem with " ++
+                "writing the GCT file.")
+        }
         io.error.write "\n 2413: looking for {typeName} defined as {typeDefs.at(typeName)}"
 
-        //Holds the types that make up 'typeName'
+        //Holds the type literals that make up 'typeName'
         def typeLiterals: Dictionary⟦String,ObjectType⟧ = emptyDictionary
 
         //Holds all methods belonging to 'typeName'
         def typeMeths: Set⟦MethodType⟧ = emptySet
 
-        def methSigs : List⟦String⟧ = typeDefs.at(typeName)
+        def typeDef : List⟦String⟧ = typeDefs.at(typeName)
 
         //populates typeLiterals with all the type literals declared in the type
-        while {(methSigs.size > 0) && {methSigs.at(1).startsWithDigit}} do {
-            def methPrefix : String = split(methSigs.at(1), " ").at(1)
+        while {(typeDef.size > 0) && {typeDef.at(1).startsWithDigit}} do {
+            def methPrefix : String = split(typeDef.at(1), " ").at(1)
 
             if (typeLiterals.containsKey(methPrefix).not) then {
-                typeLiterals.at(methPrefix) put (anObjectType.fromMethods(emptySet))
+                typeLiterals.at(methPrefix)
+                                        put (anObjectType.fromMethods(emptySet))
             }
             typeLiterals.at(methPrefix).methods.add(
-                                aMethodType.fromGctLine(methSigs.removeFirst, impName))
+                          aMethodType.fromGctLine(typeDef.removeFirst, impName))
         }
 
+        //*******************************************************
+        //At this point in the method, typeDef only contains the
+        //lines that come after the type literal definitions
+        //*******************************************************
+
         //This will hold the resulting ObjectType of the type being evaluated
-        var myType : ObjectType
-
-        //At this point in the method, methSigs only contains the lines that
-        //                               come after the type literal definitions
-
-        //if needed, call importOpHelper to evaluate types defined using operations
-        if (methSigs.size > 0) then { //checks if the type was just a type literal
-            if ((methSigs.at(1).at(1) == "&") || {methSigs.at(1).at(1) == "|"}) then {
-                myType := importOpHelper(methSigs, typeLiterals, typeName, impName, unresolvedTypes, typeDefs)
-            }  else { //This could only be reached if the GCT was written wrong
-                ProgrammingError.raise ("This error should never be raised")
-            }
+        def myType : ObjectType = if (typeDef.size == 0) then {
+            //type is defined by a type literal
+            typeLiterals.values.first
         } else {
-            myType := typeLiterals.values.first
+            def fstLine : String = typeDef.at(1)
+            if ((fstLine.at(1) == "&") || {fstLine.at(1) == "|"}) then {
+                //type is defined by operations on other types
+                importOpHelper(typeDef, typeLiterals, typeName, impName,
+                                                      unresolvedTypes, typeDefs)
+            } elseif {anObjectType.preludeTypes.contains(fstLine)} then {
+                //type is defined by a prelude type
+                scope.types.findAtTop("{fstLine}") butIfMissing{
+                    Exception.raise ("\nCannot find type {fstLine}. "++
+                        "Likely a problem with writing the GCT file.")
+                }
+            } else {
+                //type is defined by an imported type
+                if (unresolvedTypes.contains(fstLine)) then {
+                    importHelper(typeName, impName, unresolvedTypes, typeDefs)
+                }
+                scope.types.findAtTop("{impName}.{fstLine}") butIfMissing{
+                    Exception.raise ("\nCannot find type {impName}.{fstLine}."++
+                        " Likely a problem with writing the GCT file.")
+                }
+            }
         }
 
         io.error.write ("\nThe type {impName}.{typeName} was put in the scope as" ++
-                                      "{impName}.{typeName}::{myType}")
+                                      " {impName}.{typeName}::{myType}")
 
         io.error.write "\n2483 trying to remove {typeName} from {unresolvedTypes}"
         unresolvedTypes.remove(typeName)
@@ -2570,7 +2595,7 @@ def astVisitor: ast.AstVisitor is public= object {
                                                           "{scope.types.stack}"
             scope.types.findAtTop("{impName}.{elt}") butIfMissing {
                                   ScopingError.raise("Could not " ++
-                                  "find type {elt} from import in scope")
+                                        "find type {elt} from import in scope")
             }
         }
     }

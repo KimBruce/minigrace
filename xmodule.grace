@@ -413,7 +413,8 @@ method writeGCT(modname, dict) is confidential {
         def fp = io.open("{util.outDir}{modname}.gct", "w")
         list(dict.bindings).sortBy(keyCompare).do { b ->
             fp.write "{b.key}:\n"
-            list(b.value).sort.do { v ->
+            //changed from 'list(b.value).sort.do' to preserve method orders
+            list(b.value).do { v ->
                 fp.write " {v}\n"
             }
         }
@@ -430,20 +431,22 @@ method gctAsString(gctDict) {
     var ret := ""
     list(gctDict.bindings).sortBy(keyCompare).do { b ->
         ret := ret ++ "{b.key}:\n"
-        list(b.value).sort.do { v ->
+        //changed from 'list(b.value).sort.do' to preserve method orders
+        list(b.value).do { v ->
             ret := ret ++ " {v}\n"
         }
     }
     return ret
 }
 
+var opTree := [ ]
 var methodtypes := [ ]
 def typeVisitor = object {
     inherit ast.baseVisitor
     var literalCount := 1
 
     method visitIdentifier(ident) {
-        methodtypes.push("& {ident.value}")
+        opTree.push("{ident.value}")
         return false
     }
 
@@ -492,22 +495,25 @@ def typeVisitor = object {
         if ((op.value=="&") || (op.value=="|")) then {
             def leftkind = op.left.kind
             def rightkind = op.right.kind
+
+            opTree.push(op.value)
+
             if ((leftkind=="identifier") || (leftkind=="member")) then {
                 var typeIdent := op.left.toGrace(0)
-                methodtypes.push("{op.value} {typeIdent}")
+                opTree.push("{typeIdent}")
             } elseif { leftkind=="typeliteral" } then {
                 literalCount := literalCount + 1
-                methodtypes.push("{op.value} {literalCount}")
+                opTree.push("{literalCount}")
                 visitTypeLiteral(op.left)
             } elseif { leftkind=="op" } then {
                 visitOp(op.left)
             }
             if ((rightkind=="identifier") || (rightkind=="member")) then {
                 var typeIdent := op.right.toGrace(0)
-                methodtypes.push("{op.value} {typeIdent}")
+                opTree.push("{typeIdent}")
             } elseif { rightkind=="typeliteral" } then {
                 literalCount := literalCount + 1
-                methodtypes.push("{op.value} {literalCount}")
+                opTree.push("{literalCount}")
                 visitTypeLiteral(op.right)
             } elseif { rightkind=="op" } then {
                 visitOp(op.right)
@@ -571,7 +577,7 @@ method buildGctFor(module) {
             } else {
                 confidentials.push(v.name.value)
             }
-            def varWrite: String = "{v.name.value}:=({v.name.value}': {gctType}) → Done"   
+            def varWrite: String = "{v.name.value}:=({v.name.value}': {gctType}) → Done"
             if (v.isWritable) then {
                 meths.push(v.name.value ++ ":=(1)")
                 publicMethodTypes.push(varWrite)
@@ -589,13 +595,15 @@ method buildGctFor(module) {
             if (v.isPublic) then {
                 meths.push(v.nameString)
                 types.push(v.name.value)
-                methodtypes := [ ]
-                v.accept(typeVisitor)
                 var typename := v.name.toGrace(0)
                 if (v.typeParams != false) then {
                     typename := typename ++ v.typeParams
                 }
-                gct.at "methodtypes-of:{typename}" put(methodtypes)
+
+                methodtypes := [ ]
+                opTree := [ ]
+                v.value.accept(typeVisitor)
+                gct.at "methodtypes-of:{typename}" put(methodtypes ++ opTree)
             } else {
                 confidentials.push(v.nameString)
             }

@@ -18,7 +18,7 @@ method myMethWithParam(myParam : Number) -> Number { myParam }
 
 method myConfidentialMeth -> Number is confidential { 47 }
 
-// ********* ampersand and variant, i think
+// ********* ampersand and variant
 
 type FirstHalf  = { firstMeth -> Number }
 type SecondHalf = { secondMeth -> Number }

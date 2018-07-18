@@ -2169,7 +2169,7 @@ def astVisitor: ast.AstVisitor is public= object {
         allCache.at(obj) put (pcType.inheritableType)
         io.error.write "\n1971: *** Visited object {obj}"
         io.error.write (pcType.asString)
-        io.error.write "\n2153: Scope at end is: {scope.types}"
+        io.error.write "\n2153: Scope at end is: {scope.methods}"
         false
     }
 
@@ -2609,7 +2609,8 @@ method processBody (body : List⟦AstNode⟧, superclass: AstNode | false)
     var inheritedMethods: Set⟦MethodType⟧ := emptySet
     def hasInherits = false ≠ superclass
     io.error.write "\n1965: hasInherits is {hasInherits}\n"
-    def superType = if(hasInherits) then {
+    var publicSuperType: ObjectType := anObjectType.base
+    def superType: ObjectType = if(hasInherits) then {
         def inheriting: AstNode = superclass
 //        inheriting.accept(object {
 //            inherit ast.baseVisitor
@@ -2630,12 +2631,12 @@ method processBody (body : List⟦AstNode⟧, superclass: AstNode | false)
             inheriting.value.parts.removeLast
             name := inheriting.value.nameString
         }
-        io.error.write "\nGT2513: name is {name} for {inheriting.value}"
  
         def inheritedType: ObjectType = allCache.at(name)
         inheritedMethods := inheritedType.methods
-        // TODO: Also take care of public inherited methods!
-        io.error.write "\n1984: inherited methods: {inheritedMethods}"
+        publicSuperType := typeOf(inheriting.value)
+        io.error.write "\n2641: public super type: {publicSuperType}"
+        
         inheritedType
     } else {
         anObjectType.base
@@ -2662,7 +2663,7 @@ method processBody (body : List⟦AstNode⟧, superclass: AstNode | false)
         // add isMe method as confidential
         def isMeMeth: MethodType = aMethodType.signature(list[part]) returnType(anObjectType.boolean)
 
-        def publicMethods: Set⟦MethodType⟧ = emptySet
+        def publicMethods: Set⟦MethodType⟧ = publicSuperType.methods.copy
         def allMethods: Set⟦MethodType⟧ = superType.methods.copy
         allMethods.add(isMeMeth)
 
@@ -2671,6 +2672,7 @@ method processBody (body : List⟦AstNode⟧, superclass: AstNode | false)
         def allTypes: Dictionary⟦String,ObjectType⟧ = emptyDictionary
 
         // gather types for all methods in object
+        // TODO: Worry about overriding with refined signature
         for(body) do { stmt: AstNode →
             io.error.write "\n2009: processing {stmt}"
             match(stmt) case { meth : Method →
@@ -2719,24 +2721,14 @@ method processBody (body : List⟦AstNode⟧, superclass: AstNode | false)
             } case { _ → io.error.write"\n2617 ignored {stmt}"}
         }
 
-        //io.error.write"\n2410 allTypes is: {allTypes}"
-        //io.error.write"\n2411 publicTypes is: {publicTypes}"
-
         internalType := anObjectType.fromMethods(allMethods)
         scope.variables.at("$elf") put (internalType)
 
-        if (hasInherits) then {
-            // Need to worry about overriding with different signature!! TODO
-            def allMethodsWithInheritedMethods: Set⟦MethodType⟧ =
-                    allMethods ++ inheritedMethods
-            anObjectType.fromMethods(allMethodsWithInheritedMethods)
-        } else {
-            anObjectType.fromMethods(publicMethods)
-        }
+        anObjectType.fromMethods(publicMethods)
     }
-    // io.error.write "\n1820: done calculating publicType"
 
     scope.variables.at("self") put(publicType)
+    io.error.write "\n2744: Type of self is {publicType}"
 
     // Type-check the object body.
     def indices: Collection⟦Number⟧ = if(hasInherits) then {

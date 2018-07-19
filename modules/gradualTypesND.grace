@@ -1522,20 +1522,13 @@ def anObjectType: ObjectTypeFactory is public = object {
     def doneType : ObjectType is public = fromMethods(sg.emptySet) withName("Done") withTypes(emptyDictionary)
     base := fromMethods(sg.emptySet) withName("Object") withTypes(emptyDictionary)
 
-    def pattern : ObjectType is public = fromMethods(sg.emptySet) withName("Pattern") withTypes(emptyDictionary)
-    def iterator : ObjectType is public = fromMethods(sg.emptySet) withName("Iterator") withTypes(emptyDictionary)
-    def boolean : ObjectType is public = fromMethods(sg.emptySet) withName("Boolean") withTypes(emptyDictionary)
-    def number : ObjectType is public = fromMethods(sg.emptySet) withName("Number") withTypes(emptyDictionary)
-    def string : ObjectType is public = fromMethods(sg.emptySet) withName("String") withTypes(emptyDictionary)
-    def listTp : ObjectType is public = fromMethods(sg.emptySet) withName("List") withTypes(emptyDictionary)
-    def set : ObjectType is public = fromMethods(sg.emptySet) withName("Set") withTypes(emptyDictionary)
-    def sequence : ObjectType is public = fromMethods(sg.emptySet) withName("Sequence") withTypes(emptyDictionary)
-    def dictionary : ObjectType is public = fromMethods(sg.emptySet) withName("Dictionary") withTypes(emptyDictionary)
-    def point : ObjectType is public = fromMethods(sg.emptySet) withName("Point") withTypes(emptyDictionary)
-    def binding : ObjectType is public = fromMethods(sg.emptySet) withName("Binding") withTypes(emptyDictionary)
-    def collection : ObjectType is public = fromMethods(sg.emptySet) withName("Collection") withTypes(emptyDictionary)
-    def enumerable : ObjectType is public = fromMethods(sg.emptySet) withName("Enumerable") withTypes(emptyDictionary)
-    def rangeTp : ObjectType is public = fromMethods(sg.emptySet) withName("Range") withTypes(emptyDictionary)
+    //Used for type-checking imports; please update both this list and its copy
+    //inside the method 'buildGct' inside xmodule.grace. For when additional
+    //types are added
+    def preludeTypes: Set⟦String⟧ is public = ["Pattern", "Iterator", "Boolean", "Number",
+                                    "String", "List", "Set", "Sequence",
+                                    "Dictionary", "Point", "Binding",
+                                    "Collection", "Enumerable", "Range"]
 
     def pattern : ObjectType is public = fromMethods(sg.emptySet) withName("Pattern")
     def iterator : ObjectType is public = fromMethods(sg.emptySet) withName("Iterator")
@@ -2293,7 +2286,8 @@ def astVisitor: ast.AstVisitor is public= object {
         allCache.at(obj) put (pcType.inheritableType)
         io.error.write "\n1971: *** Visited object {obj}"
         io.error.write (pcType.asString)
-
+        io.error.write "\n2153: Methods scope at end is: {scope.methods}"
+        //io.error.write "\n2154: Types scope at end is: {scope.types}"
         false
     }
 
@@ -2360,6 +2354,12 @@ def astVisitor: ast.AstVisitor is public= object {
 
     }
 
+    method visitTypeDec(node: TypeDeclaration) → Boolean {
+        cache.at(node) put (anObjectType.fromDType(node.value))
+        false
+    }
+
+
     // Fix later
     method visitOctets (node: AstNode) → Boolean {
         io.error.write "\n1736: visiting Octets {node} (not implemented)"
@@ -2391,6 +2391,11 @@ def astVisitor: ast.AstVisitor is public= object {
             visitCall(node)
         }
         false
+    }
+
+    method visitTypeLiteral(node: TypeLiteral) → Boolean {
+        cache.at(node) put(anObjectType.fromDType(node))
+        true
     }
 
     method visitBind (bind: AstNode) → Boolean {

@@ -1,5 +1,5 @@
 dialect "gradualTypesND"
- 
+
 method d(aa:Number) → Number {aa}
 
 print(d(5))
@@ -16,8 +16,8 @@ def obj: A = object {
         var sf: Number is public := 12
         method p(m: Number) → Number {m}
         method q → String {"d"}
-    }
-    
+}
+
 obj.sf
 
 obj.p(23)
@@ -70,5 +70,4 @@ var zz: Number | String := 5
 match(zz)
     case {zzn: Number → print "number {zzn+1}"}
     case {zzs: String → print "string {zzs++"!"}"}
-    case {_ → print "no match"}
-
+    case {_ : Object → print "no match"}

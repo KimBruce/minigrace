@@ -9,91 +9,88 @@ import "identifierresolution" as ir
 
 //Divided the input into testBlock objects so that each testBlock can be
 //type checked independently by the astVisitor inside gradualTypesND
-def input = sequence [
-    "def testBlock1: Object = object \{",
-    "   def value: String = \"Hello World\"",
-    "",
-    "   var specific: String := match(value)",
-    "       case\{\"Hello World\" -> \"Hello World\" \}",
-    "       case\{s:String -> \"\" \}",
-    "",
-    "   var general: String := match(value)",
-    "       case\{s:String -> \"\" \}",
-    "",
-    "   var wildcard: String := match(value)",
-    "       case\{_:Object -> \"\" \}",
-    "\}",
-    "",
-    "def testBlock2: Object = object \{",
-    "   def value: Number = 5",
-    "",
-    "   var result: String := match(value)",
-    "       case\{\"Hello World\" -> \"Hello World\" \}",
-    "       case\{s:String -> \"\" \}",
-    "\}",
-    "",
-    "def testBlock3: Object = object \{",
-    "   def value: String = \"Hello World\"",
-    "",
-    "   var result: String := match(value)",
-    "       case\{\"Hello\" , \"World\" -> \"Hello World\" \}",
-    "       case\{s:String -> \"\" \}",
-    "\}",
-    "",
-    "def testBlock4: Object = object \{",
-    "   def value: String | Number = \"Hello World\"",
-    "",
-    "   var result: String := match(value)",
-    "       case\{s:String -> \"\" \}",
-    "       case\{n:Number -> \"\" \}",
-    "\}",
-    "",
-    "def testBlock5: Object = object \{",
-    "   def value: String | Number = \"Hello World\"",
-    "",
-    "   var result: String := match(value)",
-    "       case\{s:String -> \"\" \}",
-    "       case\{b:Boolean -> \"\" \}",
-    "\}",
-    "",
-    "def testBlock6: Object = object \{",
-    "   def value: String = \"Hello World\"",
-    "",
-    "   var result: String | Boolean := match(value)",
-    "       case\{\"Hello World\" -> \"Hello World\" \}",
-    "       case\{s:String -> true \}",
-    "\}",
-    "",
-    "def testBlock7: Object = object \{",
-    "   def value: String = \"Hello World\"",
-    "",
-    "   var result: String | Boolean := match(value)",
-    "       case\{\"Hello World\" -> \"Hello World\" \}",
-    "       case\{s:String -> 5 \}",
-    "\}",
-    "",
-    "def testBlock8: Object = object \{",
-    "   var value: Number := 0",
-    "",
-    "   var result: Done := match(value)",
-    "       case\{0 -> def foobar: Number = value + 1 \}",
-    "       case\{n:Number -> def foobar: Number = value + 2 \}",
-    "\}",
-    "",
-    "def testBlock9: Object = object \{",
-    "   var value: Number := 0",
-    "",
-    "   var result: Done := match(value)",
-    "       case\{0 -> def foobar: Number = value + 1 \}",
-    "       case\{n:Number -> 2 \}",
-    "\}",
+def input : String =
+    "def testBlock1: Object = object \{\n" ++
+    "   def value: String = \"Hello World\"\n" ++
+    "\n" ++
+    "   var specific: String := match(value)\n" ++
+    "       case\{\"Hello World\" -> \"Hello World\" \}\n" ++
+    "       case\{s:String -> \"\" \}\n" ++
+    "\n" ++
+    "   var general: String := match(value)\n" ++
+    "       case\{s:String -> \"\" \}\n" ++
+    "\n" ++
+    "   var wildcard: String := match(value)\n" ++
+    "       case\{_:Object -> \"\" \}\n" ++
+    "\}\n" ++
+    "\n" ++
+    "def testBlock2: Object = object \{\n" ++
+    "   def value: Number = 5\n" ++
+    "\n" ++
+    "   var result: String := match(value)\n" ++
+    "       case\{\"Hello World\" -> \"Hello World\" \}\n" ++
+    "       case\{s:String -> \"\" \}\n" ++
+    "\}\n" ++
+    "\n" ++
+    "def testBlock3: Object = object \{\n" ++
+    "   def value: String = \"Hello World\"\n" ++
+    "\n" ++
+    "   var result: String := match(value)\n" ++
+    "       case\{\"Hello\" , \"World\" -> \"Hello World\" \}\n" ++
+    "       case\{s:String -> \"\" \}\n" ++
+    "\}\n" ++
+    "\n" ++
+    "def testBlock4: Object = object \{\n" ++
+    "   def value: String | Number = \"Hello World\"\n" ++
+    "\n" ++
+    "   var result: String := match(value)\n" ++
+    "       case\{s:String -> \"\" \}\n" ++
+    "       case\{n:Number -> \"\" \}\n" ++
+    "\}\n" ++
+    "\n" ++
+    "def testBlock5: Object = object \{\n" ++
+    "   def value: String | Number = \"Hello World\"\n" ++
+    "\n" ++
+    "   var result: String := match(value)\n" ++
+    "       case\{s:String -> \"\" \}\n" ++
+    "       case\{b:Boolean -> \"\" \}\n" ++
+    "\}\n" ++
+    "\n" ++
+    "def testBlock6: Object = object \{\n" ++
+    "   def value: String = \"Hello World\"\n" ++
+    "\n" ++
+    "   var result: String | Boolean := match(value)\n" ++
+    "       case\{\"Hello World\" -> \"Hello World\" \}\n" ++
+    "       case\{s:String -> true \}\n" ++
+    "\}\n" ++
+    "\n" ++
+    "def testBlock7: Object = object \{\n" ++
+    "   def value: String = \"Hello World\"\n" ++
+    "\n" ++
+    "   var result: String | Boolean := match(value)\n" ++
+    "       case\{\"Hello World\" -> \"Hello World\" \}\n" ++
+    "       case\{s:String -> 5 \}\n" ++
+    "\}\n" ++
+    "\n" ++
+    "def testBlock8: Object = object \{\n" ++
+    "   var value: Number := 0\n" ++
+    "\n" ++
+    "   var result: Done := match(value)\n" ++
+    "       case\{0 -> def foobar: Number = value + 1 \}\n" ++
+    "       case\{n:Number -> def foobar: Number = value + 2 \}\n" ++
+    "\}\n" ++
+    "\n" ++
+    "def testBlock9: Object = object \{\n" ++
+    "   var value: Number := 0\n" ++
+    "\n" ++
+    "   var result: Done := match(value)\n" ++
+    "       case\{0 -> def foobar: Number = value + 1 \}\n" ++
+    "       case\{n:Number -> 2 \}\n" ++
+    "\}\n" ++
     ""
-]
-
-util.lines.addAll(input)
 
 //Turns input into an abstract syntax tree (ast)
-def tokens = lexer.new.lexinput(input)
+def tokens = lexer.new.lexString(input)
 def module = parser.parse(tokens)
 def inputTree = ir.resolve(module)
 

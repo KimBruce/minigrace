@@ -1466,7 +1466,9 @@ def anObjectType: ObjectTypeFactory is public = object {
     def doneType : ObjectType is public = fromMethods(sg.emptySet) withName("Done")
     base := fromMethods(sg.emptySet) withName("Object")
 
-    //Used for type-checking imports; please update when additional types are added
+    //Used for type-checking imports; please update both this list and its copy
+    //inside the method 'buildGct' inside xmodule.grace. For when additional
+    //types are added
     def preludeTypes: Set⟦String⟧ is public = ["Pattern", "Iterator", "Boolean", "Number",
                                     "String", "List", "Set", "Sequence",
                                     "Dictionary", "Point", "Binding",
@@ -2220,7 +2222,8 @@ def astVisitor: ast.AstVisitor is public= object {
         allCache.at(obj) put (pcType.inheritableType)
         io.error.write "\n1971: *** Visited object {obj}"
         io.error.write (pcType.asString)
-        io.error.write "\n2153: Scope at end is: {scope.methods}"
+        io.error.write "\n2153: Methods scope at end is: {scope.methods}"
+        //io.error.write "\n2154: Types scope at end is: {scope.types}"
         false
     }
 
@@ -2277,8 +2280,8 @@ def astVisitor: ast.AstVisitor is public= object {
 
     // look up identifier type in scope
     method visitIdentifier (ident: AstNode) → Boolean {
-        //io.error.write "\nvisitIdentifier scope.variables processing node
-        //    {ident} is {scope.variables}"
+        //io.error.write ("\nvisitIdentifier scope.variables processing node" ++
+        //    "{ident} is {scope.variables}")
         def idType: ObjectType = match(ident.value)
           case { "outer" →
             outerAt(scope.size)
@@ -2289,6 +2292,12 @@ def astVisitor: ast.AstVisitor is public= object {
         true
 
     }
+
+    method visitTypeDec(node: TypeDeclaration) → Boolean {
+        cache.at(node) put (anObjectType.fromDType(node.value))
+        false
+    }
+
 
     // Fix later
     method visitOctets (node: AstNode) → Boolean {
@@ -2321,6 +2330,11 @@ def astVisitor: ast.AstVisitor is public= object {
             visitCall(node)
         }
         false
+    }
+
+    method visitTypeLiteral(node: TypeLiteral) → Boolean {
+        cache.at(node) put(anObjectType.fromDType(node))
+        true
     }
 
     method visitBind (bind: AstNode) → Boolean {

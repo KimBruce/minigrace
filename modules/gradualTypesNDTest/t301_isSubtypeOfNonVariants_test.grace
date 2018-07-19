@@ -8,29 +8,26 @@ import "gradualTypesND" as gt
 import "identifierresolution" as ir
 
 //Declare types such that types C and D are subtypes of type A
-def input = sequence [
-    "type A = \{one -> Boolean\}",
-    "type A' = \{",
-    "    one -> Boolean",
-    "    two -> Number",
-    "\}",
-    "",
-    "type B = \{one(b:Boolean) -> Boolean\}",
-    "type B' = \{",
-    "    one(b:Boolean) -> Boolean",
-    "    two(n:Number) -> Number",
-    "\}",
-    "type B'' = \{",
-    "    one(b:Boolean) -> Boolean",
-    "    two(n1:Number, n2:Number) -> Number",
-    "\}",
+def input : String =
+    "type A = \{one -> Boolean\}\n" ++
+    "type A' = \{\n" ++
+    "    one -> Boolean\n" ++
+    "    two -> Number\n" ++
+    "\}\n" ++
+    "\n" ++
+    "type B = \{one(b:Boolean) -> Boolean\}\n" ++
+    "type B' = \{\n" ++
+    "    one(b:Boolean) -> Boolean\n" ++
+    "    two(n:Number) -> Number\n" ++
+    "\}\n" ++
+    "type B'' = \{\n" ++
+    "    one(b:Boolean) -> Boolean\n" ++
+    "    two(n1:Number, n2:Number) -> Number\n" ++
+    "\}\n" ++
     ""
-]
-
-util.lines.addAll(input)
 
 //Turns input into an abstract syntax tree (ast)
-def tokens = lexer.new.lexinput(input)
+def tokens = lexer.new.lexString(input)
 def module = parser.parse(tokens)
 def inputTree = ir.resolve(module)
 
@@ -44,12 +41,12 @@ def typeB  : ast.AstNode = nodes.at(3)
 def typeB' : ast.AstNode = nodes.at(4)
 def typeB'': ast.AstNode = nodes.at(5)
 
-def objTypeA  : gt.ObjectType = gt.anObjectType.fromDType(typeA)
-def objTypeA' : gt.ObjectType = gt.anObjectType.fromDType(typeA')
+def objTypeA  : gt.ObjectType = gt.anObjectType.fromDType(typeA.value)
+def objTypeA' : gt.ObjectType = gt.anObjectType.fromDType(typeA'.value)
 
-def objTypeB  : gt.ObjectType = gt.anObjectType.fromDType(typeB)
-def objTypeB' : gt.ObjectType = gt.anObjectType.fromDType(typeB')
-def objTypeB'': gt.ObjectType = gt.anObjectType.fromDType(typeB'')
+def objTypeB  : gt.ObjectType = gt.anObjectType.fromDType(typeB.value)
+def objTypeB' : gt.ObjectType = gt.anObjectType.fromDType(typeB'.value)
+def objTypeB'': gt.ObjectType = gt.anObjectType.fromDType(typeB''.value)
 
 //  *****************************
 //  **   start of test suite   **

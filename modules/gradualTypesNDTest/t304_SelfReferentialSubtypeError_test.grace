@@ -8,25 +8,22 @@ import "gradualTypesND" as gt
 import "identifierresolution" as ir
 
 //Declare types such that types C and D are subtypes of type A
-def input = sequence [
-    "type Foo = \{",
-    "    a -> Foo",
-    "    b -> Number",
-    "\}",
-    "type Bar = \{",
-    "    a -> Bar",
-    "\}",
-    "class bar -> Bar \{",
-    "    method a -> Bar \{ self \}",
-    "\}",
-    "def test : Foo = bar",
+def input : String =
+    "type Foo = \{\n" ++
+    "    a -> Foo\n" ++
+    "    b -> Number\n" ++
+    "\}\n" ++
+    "type Bar = \{\n" ++
+    "    a -> Bar\n" ++
+    "\}\n" ++
+    "class bar -> Bar \{\n" ++
+    "    method a -> Bar \{ self \}\n" ++
+    "\}\n" ++
+    "def test : Foo = bar\n" ++
     ""
-]
-
-util.lines.addAll(input)
 
 //Turns input into an abstract syntax tree (ast)
-def tokens = lexer.new.lexinput(input)
+def tokens = lexer.new.lexString(input)
 def module = parser.parse(tokens)
 def inputTree = ir.resolve(module)
 

@@ -88,10 +88,8 @@ def typeVisitor: ast.AstVisitor = object {
             } elseif { rightkind=="op" } then {
                 visitOp(op.right)
             }
-            false
-        } else {
-            visitCall(op)
         }
+        return false
     }
 }
 
@@ -894,7 +892,7 @@ def anObjectType: ObjectTypeFactory is public = object {
 
                             if (isSpec.ans) then { continue.apply }
                         }
-                        io.error.write "\n885: didn't find {otherMeth} in {self}"
+                        //io.error.write "\n885: didn't find {otherMeth} in {self}"
                         io.error.write "\n other methods: {other.methods}"
                         io.error.write "\n self methods: {self.methods}"
 
@@ -1554,6 +1552,9 @@ def anObjectType: ObjectTypeFactory is public = object {
     def enumerable : ObjectType is public = fromMethods(sg.emptySet) withName("Enumerable")
     def rangeTp : ObjectType is public = fromMethods(sg.emptySet) withName("Range")
     def prelude: ObjectType is public = fromMethods(sg.emptySet) withName("Prelude")
+    def boolBlock: ObjectType is public = fromMethods(sg.emptySet) withName("BoolBlock")
+    def doneBlock: ObjectType is public = fromMethods(sg.emptySet) withName("DoneBlock")
+    def dynamicDoneBlock: ObjectType is public = fromMethods(sg.emptySet) withName("DynamicDoneBlock")
 
     addTo (base) name ("==") param(base) returns(boolean)
     addTo (base) name ("≠") param(base) returns(boolean)
@@ -1720,7 +1721,13 @@ def anObjectType: ObjectTypeFactory is public = object {
     addTo(binding) name("key") returns(dynamic)
     addTo(binding) name("value") returns(dynamic)
 
+    addTo(boolBlock) name("apply") returns(boolean)
+    addTo(doneBlock) name("apply") returns(doneType)
+
+
     addTo (prelude) name("print") param(base) returns(doneType)
+    addTo (prelude) names(list["while", "do"]) parts(list[list[boolBlock], list[doneBlock] ]) returns(doneType)
+    addTo (prelude) names(list["for", "do"]) parts(list[list[listTp], list[dynamicDoneBlock] ]) returns(doneType)
 
     scope.types.at("Unknown") put(dynamic)
     scope.types.at("Done") put(doneType)
@@ -2687,8 +2694,8 @@ def astVisitor: ast.AstVisitor is public= object {
             if (unresolvedTypes.contains(elt)) then {
                 importHelper (elt, impName, unresolvedTypes, typeDefs)
             }
-            io.error.write "\n2470 scope before search in import is" ++
-                                                          "{scope.types.stack}"
+            io.error.write ("\n2470 scope before search in import is" ++
+                                                            "{scope.types}")
             scope.types.findAtTop("{impName}.{elt}") butIfMissing {
                                   ScopingError.raise("Could not " ++
                                         "find type {elt} from import in scope")
@@ -2789,12 +2796,12 @@ method processBody (body : List⟦AstNode⟧, superclass: AstNode | false)
             inheriting.value.parts.removeLast
             name := inheriting.value.nameString
         }
- 
+
         def inheritedType: ObjectType = allCache.at(name)
         inheritedMethods := inheritedType.methods
         publicSuperType := typeOf(inheriting.value)
         io.error.write "\n2641: public super type: {publicSuperType}"
-        
+
         inheritedType
     } else {
         anObjectType.base

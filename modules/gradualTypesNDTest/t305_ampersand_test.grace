@@ -8,25 +8,21 @@ import "gradualTypesND" as gt
 import "identifierresolution" as ir
 
 //Declare types such that types C and D are subtypes of type A
-def input = sequence [
-    "type A = \{a -> Boolean\}",
-    "type B = \{b -> Boolean\}",
-    "type C = \{c -> Boolean\}",
-    "type D = \{d -> Boolean\}",
-    "type AB = \{",
-    "   a -> Boolean",
-    "   b -> Boolean\}",
-    "type AC = \{",
-    "   a -> Boolean",
-    "   c -> Boolean\}",
+def input : String =
+    "type A = \{a -> Boolean\}\n" ++
+    "type B = \{b -> Boolean\}\n" ++
+    "type C = \{c -> Boolean\}\n" ++
+    "type D = \{d -> Boolean\}\n" ++
+    "type AB = \{\n" ++
+    "   a -> Boolean\n" ++
+    "   b -> Boolean\}\n" ++
+    "type AC = \{\n" ++
+    "   a -> Boolean\n" ++
+    "   c -> Boolean\}\n" ++
     ""
-]
-
-
-util.lines.addAll(input)
 
 //Turns input into an abstract syntax tree (ast)
-def tokens = lexer.new.lexinput(input)
+def tokens = lexer.new.lexString(input)
 def module = parser.parse(tokens)
 def inputTree = ir.resolve(module)
 
@@ -41,12 +37,12 @@ def typeNodeD : ast.AstNode = nodes.at(4)
 def typeNodeAB: ast.AstNode = nodes.at(5)
 def typeNodeAC: ast.AstNode = nodes.at(6)
 
-def A : gt.ObjectType = gt.anObjectType.fromDType(typeNodeA)
-def B : gt.ObjectType = gt.anObjectType.fromDType(typeNodeB)
-def C : gt.ObjectType = gt.anObjectType.fromDType(typeNodeC)
-def D : gt.ObjectType = gt.anObjectType.fromDType(typeNodeD)
-def AB: gt.ObjectType = gt.anObjectType.fromDType(typeNodeAB)
-def AC: gt.ObjectType = gt.anObjectType.fromDType(typeNodeAC)
+def A : gt.ObjectType = gt.anObjectType.fromDType(typeNodeA.value)
+def B : gt.ObjectType = gt.anObjectType.fromDType(typeNodeB.value)
+def C : gt.ObjectType = gt.anObjectType.fromDType(typeNodeC.value)
+def D : gt.ObjectType = gt.anObjectType.fromDType(typeNodeD.value)
+def AB: gt.ObjectType = gt.anObjectType.fromDType(typeNodeAB.value)
+def AC: gt.ObjectType = gt.anObjectType.fromDType(typeNodeAC.value)
 
 //  *****************************
 //  **   start of test suite   **

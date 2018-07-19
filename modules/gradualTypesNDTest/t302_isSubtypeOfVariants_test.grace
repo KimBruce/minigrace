@@ -8,24 +8,21 @@ import "gradualTypesND" as gt
 import "identifierresolution" as ir
 
 //Declare types such that types C and D are subtypes of type A
-def input = sequence [
-    "type A = \{one -> Boolean\}",
-    "type B = \{two -> Number\}",
-    "type C = \{",
-    "    one -> Boolean",
-    "    three -> Number",
-    "\}",
-    "type D = \{",
-    "    one -> Boolean",
-    "    four -> String",
-    "\}",
+def input : String =
+    "type A = \{one -> Boolean\}\n" ++
+    "type B = \{two -> Number\}\n" ++
+    "type C = \{\n" ++
+    "    one -> Boolean\n" ++
+    "    three -> Number\n" ++
+    "\}\n" ++
+    "type D = \{\n" ++
+    "    one -> Boolean\n" ++
+    "    four -> String\n" ++
+    "\}\n" ++
     ""
-]
-
-util.lines.addAll(input)
 
 //Turns input into an abstract syntax tree (ast)
-def tokens = lexer.new.lexinput(input)
+def tokens = lexer.new.lexString(input)
 def module = parser.parse(tokens)
 def inputTree = ir.resolve(module)
 
@@ -38,10 +35,10 @@ def typeB : ast.AstNode = nodes.at(2)
 def typeC : ast.AstNode = nodes.at(3)
 def typeD : ast.AstNode = nodes.at(4)
 
-def objTypeA : gt.ObjectType = gt.anObjectType.fromDType(typeA)
-def objTypeB : gt.ObjectType = gt.anObjectType.fromDType(typeB)
-def objTypeC : gt.ObjectType = gt.anObjectType.fromDType(typeC)
-def objTypeD : gt.ObjectType = gt.anObjectType.fromDType(typeD)
+def objTypeA : gt.ObjectType = gt.anObjectType.fromDType(typeA.value)
+def objTypeB : gt.ObjectType = gt.anObjectType.fromDType(typeB.value)
+def objTypeC : gt.ObjectType = gt.anObjectType.fromDType(typeC.value)
+def objTypeD : gt.ObjectType = gt.anObjectType.fromDType(typeD.value)
 
 //  *****************************
 //  **   start of test suite   **

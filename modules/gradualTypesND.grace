@@ -2424,7 +2424,6 @@ def astVisitor: ast.AstVisitor is public= object {
         visitDefDec (node)
     }
 
-
     // Grab information from gct file
     //Move processImport back into visitImport
     method visitImport (imp: AstNode) → Boolean {
@@ -2432,7 +2431,7 @@ def astVisitor: ast.AstVisitor is public= object {
         // headers of sections of gct form keys
         // Associated values are lines beneath the header
         def gct: Dictionary⟦String, List⟦String⟧⟧ = xmodule.parseGCT(imp.path)
-
+        def impName : String = imp.nameString
         io.error.write("\n1953 gct is {gct}")
         io.error.write("\n1954 keys are {gct.keys}\n")
 
@@ -2457,35 +2456,64 @@ def astVisitor: ast.AstVisitor is public= object {
             }
         }
 
-        // Loops until all imported types are resolved and stored in the types scope
+        //Loops until all imported types are resolved and stored in the types scope
         while{unresolvedTypes.size > 0} do {
             //To resolve its given type, importHelper recursively resolves other
             //unresolved types that its given type's type definition depends on.
-            importHelper(unresolvedTypes.at(1), imp.nameString,
-                                                      unresolvedTypes, typeDefs)
+            importHelper(unresolvedTypes.at(1), impName, unresolvedTypes,
+                                                                      typeDefs)
         }
 
-        //retrieves public defs, vars, and methods from imported module
+        //retrieves the names of public methods from imported module
         def importMethods : Set⟦MethodType⟧ = emptySet
 
         def importedMethodTypes: List⟦String⟧ = gct.at("publicMethodTypes")
                                                           ifAbsent { emptyList }
 
-        for (importedMethodTypes) do { methodSignature : String →
-            importMethods.add(aMethodType.fromGctLine(methodSignature, imp.nameString))
+        //construct the MethodType corressponding to each method name
+        for (importedMethodTypes) do { methSig : String →
+            //if the method name begins with a '$', then it is a method that
+            //returns an object corresponding to a public module that was
+            //imported by our own import. We have already constructed the type
+            //that this '$nickname' method returns in the while-do above. Since
+            //that type is the type of an import and is not from a type-dec,
+            //we want to remove it from our types scope after we've used it to
+            //construct this '$nickname' method.
+            if (methSig.at(1) == "$") then{
+                def name : String = methSig.substringFrom(2) to
+                                                    (methSig.indexOf("→") - 2)
+                def mixPart : MixPart = aMixPartWithName(name)
+                                                          parameters(emptyList)
+
+                def retType : ObjectType =
+                    scope.types.findAtTop("{impName}.{name}")
+                        butIfMissing { Exception.raise
+                            ("\nCannot find type " ++
+                                "{impName}.{name}. It is not defined in the " ++
+                                "{impName} GCT file. Likely a problem with " ++
+                                "writing the GCT file.")}
+
+                importMethods.add(aMethodType.signature(list[mixPart])
+                                                          returnType (retType))
+
+                //remove the type belonging to '$nickname' from the types scope
+                scope.types.stack.at(1).removeKey("{impName}.{name}")
+            } else {
+                importMethods.add(aMethodType.fromGctLine(methSig, impName))
+            }
         }
 
         // Create the ObjectType and MethodType of import
         def impOType: ObjectType = anObjectType.fromMethods(importMethods)
-        def sig: List⟦MixPart⟧ = list[aMixPartWithName(imp.nameString)
+        def sig: List⟦MixPart⟧ = list[aMixPartWithName(impName)
                                                   parameters (emptyList)]
         def impMType: MethodType = aMethodType.signature(sig) returnType (impOType)
 
         // Store import in scopes and cache
-        scope.variables.at(imp.nameString) put(impOType)
-        scope.methods.at(imp.nameString) put(impMType)
+        scope.variables.at(impName) put(impOType)
+        scope.methods.at(impName) put(impMType)
         cache.at(imp) put (impOType)
-        io.error.write"\n2421: ObjectType of the import {imp.nameString} is: {impOType}"
+        io.error.write"\n2421: ObjectType of the import {impName} is: {impOType}"
         false
     }
 
@@ -2555,7 +2583,7 @@ def astVisitor: ast.AstVisitor is public= object {
             } else {
                 //type is defined by an imported type
                 if (unresolvedTypes.contains(fstLine)) then {
-                    importHelper(typeName, impName, unresolvedTypes, typeDefs)
+                    importHelper(fstLine, impName, unresolvedTypes, typeDefs)
                 }
                 scope.types.findAtTop("{impName}.{fstLine}") butIfMissing{
                     Exception.raise ("\nCannot find type {impName}.{fstLine}."++
@@ -2579,21 +2607,25 @@ def astVisitor: ast.AstVisitor is public= object {
     //Param typeLits - Holds all the pre-processed type literals from the type definition
     //                    mapped to digits as temporary type names
     //The other parameters are just so this method can recursively call importHelper
-    method importOpHelper (list : List⟦String⟧, typeLits : Dictionary⟦String,ObjectType⟧,
-                typeName : String, impName : String, unresolvedTypes : List⟦String⟧,
-                      typeDefs : Dictionary⟦String, List⟦String⟧⟧) → ObjectType {
-        def elt : String = list.removeFirst
-        if (elt == "&") then { //elt is an op, and what comes after it is its left
-                                                        //side and right side
-            def leftSide  : ObjectType = importOpHelper(list, typeLits, elt,
+    method importOpHelper (typeDef : List⟦String⟧,
+                typeLits : Dictionary⟦String,ObjectType⟧, typeName : String,
+                impName : String, unresolvedTypes : List⟦String⟧,
+                typeDefs : Dictionary⟦String, List⟦String⟧⟧) → ObjectType {
+
+        io.error.write("\nCalled importOpHelper on {typeName} with the " ++
+                                                          "typeDef of {list}")
+        def elt : String = typeDef.removeFirst
+        //elt is an op, and what comes after it is its left side and right side
+        if (elt == "&") then {
+            def leftSide  : ObjectType = importOpHelper(typeDef, typeLits, elt,
                                             impName, unresolvedTypes, typeDefs)
-            def rightSide : ObjectType = importOpHelper(list, typeLits, elt,
+            def rightSide : ObjectType = importOpHelper(typeDef, typeLits, elt,
                                             impName, unresolvedTypes, typeDefs)
             leftSide & rightSide
         } elseif {elt == "|"} then {
-            def leftSide  : ObjectType = importOpHelper(list, typeLits, elt,
+            def leftSide  : ObjectType = importOpHelper(typeDef, typeLits, elt,
                                             impName, unresolvedTypes, typeDefs)
-            def rightSide : ObjectType = importOpHelper(list, typeLits, elt,
+            def rightSide : ObjectType = importOpHelper(typeDef, typeLits, elt,
                                             impName, unresolvedTypes, typeDefs)
             leftSide | rightSide
         //elt refers to an already-processed type literal
@@ -2824,14 +2856,14 @@ method processBody (body : List⟦AstNode⟧, superclass: AstNode | false)
 
 method checkOverride(mType: MethodType, allMethods: Set⟦MethodType⟧,
                                         publicMethods: Set⟦MethodType⟧) → Done {
-    def oldMethType: MethodType = allMethods.find{m:MethodType → 
+    def oldMethType: MethodType = allMethods.find{m:MethodType →
         mType.nameString == m.nameString
     } ifNone {return}
-    
+
     if(mType.isSpecialisationOf(emptyList, oldMethType).ans.not) then {
         MethodError.raise ("Type of overriding method {mType} is not"
             ++ " a specialization of existing method {oldMethType}") with (mType)
-    }   
+    }
 }
 
 

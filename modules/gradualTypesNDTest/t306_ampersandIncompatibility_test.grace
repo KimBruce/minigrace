@@ -45,7 +45,7 @@ testSuiteNamed "ampersand incompatibility" with {
     }
 
     test "incompatible parameter count" by {
-        assert({Base & Param}) shouldRaise (TypeError)
+        assert({Base & Param}) shouldntRaise (TypeError)
     }
 
     test "incompatible parameter type" by {

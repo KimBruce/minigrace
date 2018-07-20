@@ -517,7 +517,7 @@ def aMethodType: MethodTypeFactory is public = object {
                     return answerConstructor(true, trials)
                 }
 
-                if (name != other.name) then {
+                if (nameString != other.nameString) then {
                     return answerConstructor(false, trials)
                 }
 

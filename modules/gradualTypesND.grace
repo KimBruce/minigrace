@@ -366,6 +366,8 @@ class answerConstructor(ans':Boolean, trials':List⟦TypePair⟧) → Answer {
 type MethodType = {
     // name of the method
     name → String
+    // name of the method with number of parameters for each part
+    nameString → String
     // parameters and their types for each part
     signature → List⟦MixPart⟧
     // return type
@@ -1138,7 +1140,7 @@ def anObjectType: ObjectTypeFactory is public = object {
                 // Produce union between two object types.
                 for(methods) doWithContinue { meth, continue →
                     for(other.methods) do { meth':MethodType →
-                        if(meth.name == meth'.name) then {
+                        if(meth.nameString == meth'.nameString) then {
                             if(meth.isSpecialisationOf(emptyList,meth').ans) then {
                                 combine.add(meth)
                             } elseif{meth'.isSpecialisationOf(emptyList,meth).ans} then {
@@ -1466,9 +1468,7 @@ def anObjectType: ObjectTypeFactory is public = object {
     def doneType : ObjectType is public = fromMethods(sg.emptySet) withName("Done")
     base := fromMethods(sg.emptySet) withName("Object")
 
-    //Used for type-checking imports; please update both this list and its copy
-    //inside the method 'buildGct' inside xmodule.grace. For when additional
-    //types are added
+    //Used for type-checking imports; please update when additional types are added
     def preludeTypes: Set⟦String⟧ is public = ["Pattern", "Iterator", "Boolean", "Number",
                                     "String", "List", "Set", "Sequence",
                                     "Dictionary", "Point", "Binding",
@@ -1493,15 +1493,15 @@ def anObjectType: ObjectTypeFactory is public = object {
     def doneBlock: ObjectType is public = fromMethods(sg.emptySet) withName("DoneBlock")
     def dynamicDoneBlock: ObjectType is public = fromMethods(sg.emptySet) withName("DynamicDoneBlock")
 
-    addTo (base) name ("==") param(base) returns(boolean)
+//    addTo (base) name ("==") param(base) returns(boolean)
     addTo (base) name ("≠") param(base) returns(boolean)
     addTo (base) name ("hash") returns(number)
-    addTo (base) name ("match") returns(dynamic)
+//    addTo (base) name ("match") returns(dynamic)
     addTo (base) name ("asString") returns(string)
     addTo (base) name ("basicAsString") returns(string)
     addTo (base) name ("asDebugString") returns(string)
-    addTo (base) name ("debugValue") returns(string)
-    addTo (base) name ("debugIterator") returns(iterator)
+//    addTo (base) name ("debugValue") returns(string)
+//    addTo (base) name ("debugIterator") returns(iterator)
     addTo (base) name ("::") returns(binding)
     addTo (base) name ("list") param(collection) returns(listTp)
 
@@ -2222,8 +2222,7 @@ def astVisitor: ast.AstVisitor is public= object {
         allCache.at(obj) put (pcType.inheritableType)
         io.error.write "\n1971: *** Visited object {obj}"
         io.error.write (pcType.asString)
-        io.error.write "\n2153: Methods scope at end is: {scope.methods}"
-        //io.error.write "\n2154: Types scope at end is: {scope.types}"
+        io.error.write "\n2153: Scope at end is: {scope.methods}"
         false
     }
 
@@ -2280,8 +2279,8 @@ def astVisitor: ast.AstVisitor is public= object {
 
     // look up identifier type in scope
     method visitIdentifier (ident: AstNode) → Boolean {
-        //io.error.write ("\nvisitIdentifier scope.variables processing node" ++
-        //    "{ident} is {scope.variables}")
+        //io.error.write "\nvisitIdentifier scope.variables processing node
+        //    {ident} is {scope.variables}"
         def idType: ObjectType = match(ident.value)
           case { "outer" →
             outerAt(scope.size)
@@ -2292,12 +2291,6 @@ def astVisitor: ast.AstVisitor is public= object {
         true
 
     }
-
-    method visitTypeDec(node: TypeDeclaration) → Boolean {
-        cache.at(node) put (anObjectType.fromDType(node.value))
-        false
-    }
-
 
     // Fix later
     method visitOctets (node: AstNode) → Boolean {
@@ -2330,11 +2323,6 @@ def astVisitor: ast.AstVisitor is public= object {
             visitCall(node)
         }
         false
-    }
-
-    method visitTypeLiteral(node: TypeLiteral) → Boolean {
-        cache.at(node) put(anObjectType.fromDType(node))
-        true
     }
 
     method visitBind (bind: AstNode) → Boolean {
@@ -2758,6 +2746,7 @@ method processBody (body : List⟦AstNode⟧, superclass: AstNode | false)
             io.error.write "\n2009: processing {stmt}"
             match(stmt) case { meth : Method →
                 def mType: MethodType = aMethodType.fromNode(meth)
+                checkOverride(mType,allMethods,publicMethods)
                 allMethods.add(mType)
                 if(isPublic(meth)) then {
                     publicMethods.add(mType)
@@ -2828,6 +2817,19 @@ method processBody (body : List⟦AstNode⟧, superclass: AstNode | false)
     io.error.write "\n 2675 methods scope is: {scope.methods}"
     pubConf(publicType,internalType)
 }
+
+method checkOverride(mType: MethodType, allMethods: Set⟦MethodType⟧,
+                                        publicMethods: Set⟦MethodType⟧) → Done {
+    def oldMethType: MethodType = allMethods.find{m:MethodType → 
+        mType.nameString == m.nameString
+    } ifNone {return}
+    
+    if(mType.isSpecialisationOf(emptyList, oldMethType).ans.not) then {
+        MethodError.raise ("Type of overriding method {mType} is not"
+            ++ " a specialization of existing method {oldMethType}") with (mType)
+    }   
+}
+
 
 
 def TypeDeclarationError = TypeError.refine "TypeDeclarationError"

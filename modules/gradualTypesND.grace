@@ -2353,6 +2353,11 @@ def astVisitor: ast.AstVisitor is public= object {
 
     }
 
+    method visitTypeDec(node: TypeDeclaration) → Boolean {
+        cache.at(node) put (anObjectType.fromDType(node.value))
+        false
+    }
+
     // Fix later
     method visitOctets (node: AstNode) → Boolean {
         io.error.write "\n1736: visiting Octets {node} (not implemented)"
@@ -2384,6 +2389,11 @@ def astVisitor: ast.AstVisitor is public= object {
             visitCall(node)
         }
         false
+    }
+
+    method visitTypeLiteral(node: TypeLiteral) → Boolean {
+        cache.at(node) put(anObjectType.fromDType(node))
+        true
     }
 
     method visitBind (bind: AstNode) → Boolean {

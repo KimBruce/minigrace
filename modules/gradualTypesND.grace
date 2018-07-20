@@ -2535,7 +2535,11 @@ def astVisitor: ast.AstVisitor is public= object {
         //This will hold the resulting ObjectType of the type being evaluated
         def myType : ObjectType = if (typeDef.size == 0) then {
             //type is defined by a type literal
-            typeLiterals.values.first
+            if (typeLiterals.size == 0) then {
+                anObjectType.fromMethods(emptySet)
+            } else {
+                typeLiterals.values.first
+            }
         } else {
             def fstLine : String = typeDef.at(1)
             if ((fstLine.at(1) == "&") || {fstLine.at(1) == "|"}) then {

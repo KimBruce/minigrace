@@ -2513,12 +2513,16 @@ def astVisitor: ast.AstVisitor is public= object {
         io.error.write("\n1954 keys are {gct.keys}\n")
 
         // Define a list of types that we have yet to resolve. All public types
-        // are placed in this list at the start
+        // are placed in this list at the start.
+        //Comment about publicImpType
         def unresolvedTypes: List⟦String⟧ = list[]
+        def publicImpTypes : List⟦String⟧ = list[]
         if (gct.containsKey("types")) then {
             for(gct.at("types")) do { typ →
-                typeNames.push(typ)
-                placeholders.push(anObjectType.dynamic)
+                if (typ.startsWith("$")) then {
+                    publicImpTypes.push(typ)
+                }
+                unresolvedTypes.push(typ)
             }
         }
 
@@ -2596,17 +2600,17 @@ def astVisitor: ast.AstVisitor is public= object {
             //that type is the type of an import and is not from a type-dec,
             //we want to remove it from our types scope after we've used it to
             //construct this '$nickname' method.
-            if (methSig.at(1) == "$") then{
-                def name : String = methSig.substringFrom(2) to
-                                                    (methSig.indexOf("→") - 2)
-                def mixPart : MixPart = aMixPartWithName(name)
+            def retName : String = methSig.substringFrom(methSig.indexOf("→") + 2)
+            if (retName.startsWith("$")) then {
+                def withoutDollar : String = retName.substringFrom(2)
+                def mixPart : MixPart = aMixPartWithName(withoutDollar)
                                                           parameters(emptyList)
 
                 def retType : ObjectType =
-                    scope.types.findAtTop("{impName}.{name}")
+                    scope.types.findAtTop("{impName}.{retName}")
                         butIfMissing { Exception.raise
                             ("\nCannot find type " ++
-                                "{impName}.{name}. It is not defined in the " ++
+                                "{impName}.{retName}. It is not defined in the " ++
                                 "{impName} GCT file. Likely a problem with " ++
                                 "writing the GCT file.")}
 
@@ -2614,7 +2618,7 @@ def astVisitor: ast.AstVisitor is public= object {
                                                           returnType (retType))
 
                 //remove the type belonging to '$nickname' from the types scope
-                scope.types.stack.at(1).removeKey("{impName}.{name}")
+                scope.types.stack.at(1).removeKey("{impName}.{retName}")
             } else {
                 importMethods.add(aMethodType.fromGctLine(methSig, impName))
             }
@@ -2998,6 +3002,8 @@ method processBody (body : List⟦AstNode⟧, superclass: AstNode | false)
         io.error.write "\n2072: finished index {i}\n"
     }
 
+    io.error.write "\n 2674 types scope is: {scope.types}"
+    io.error.write "\n 2675 methods scope is: {scope.methods}"
     pubConf(publicType,internalType)
 }
 

@@ -592,16 +592,16 @@ method buildGctFor(module) {
                                         parseGCT(v.path) sourceDir(util.outDir)
 
               if (v.isPublic) then {
-                  meths.push("${v.nameString}")
-                  publicMethodTypes.push("${v.nameString} → {v.nameString}")
-                  types.push("{v.nameString}")
+                  meths.push("{v.nameString}")
+                  publicMethodTypes.push("{v.nameString} → ${v.nameString}")
+                  types.push("${v.nameString}")
 
                   var impMeths : List⟦String⟧ := emptyList
 
                   if (impGct.containsKey("publicMethodTypes")) then {
                       impMeths := impGct.at("publicMethodTypes")
                       for(impMeths.indices) do { i : Number →
-                          var read : String := "1 " //Number to indicate a method signature
+                          var read : String := "999 " //Number to indicate a method signature
                           var unread : String := impMeths.at(i)
                           var param : Number := unread.indexOf(":")
 
@@ -653,7 +653,7 @@ method buildGctFor(module) {
                   }
 
 
-                  gct.at ("methodtypes-of:{v.nameString}") put(impMeths)
+                  gct.at ("methodtypes-of:${v.nameString}") put(impMeths)
               } else {
                   confidentials.push(v.nameString)
               }

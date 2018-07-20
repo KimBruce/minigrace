@@ -592,8 +592,8 @@ method buildGctFor(module) {
                                         parseGCT(v.path) sourceDir(util.outDir)
 
               if (v.isPublic) then {
-                  meths.push("{v.nameString}")
-                  publicMethodTypes.push("{v.nameString} → {v.nameString}")
+                  meths.push("${v.nameString}")
+                  publicMethodTypes.push("${v.nameString} → {v.nameString}")
                   types.push("{v.nameString}")
 
                   var impMeths : List⟦String⟧ := emptyList

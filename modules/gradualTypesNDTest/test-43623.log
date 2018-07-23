@@ -1,9 +1,0 @@
-minigrace[.]: ifTest_test: 0.2 (+0.2): starting compilation
-minigrace[.]: ifTest_test: 0.24 (+0.04): lexing.
-minigrace[.]: ifTest_test: 0.26 (+0.02): parsing.
-minigrace[.]: ifTest_test: 0.34 (+0.08): checking dialect gradualTypesND used by module ifTest_test
-minigrace[.]: ifTest_test: 0.35 (+0.01): executing sub-compile "/home/tnguyen/Documents/GitHub/minigrace/j2/compiler-js" --verbose 60 --dir ./ --vtag . --gracelib /home/tnguyen/Documents/GitHub/minigrace/j2/ --target js --make "././gradualTypesND.grace"
-minigrace[.]: gradualTypesND: 0.2 (+0.2): starting compilation
-minigrace[.]: gradualTypesND: 0.44 (+0.24): lexing.
-minigrace[.]: gradualTypesND: 1.49 (+1.05): parsing.
-minigrace[.]: gradualTypesND: 4.67 (+3.18): rewriting tree.

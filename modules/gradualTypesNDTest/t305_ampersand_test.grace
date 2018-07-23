@@ -4,7 +4,8 @@ import "parser" as parser
 import "ast" as ast
 import "util" as util
 import "io" as io
-import "gradualTypesND" as gt
+import "SharedTypes" as sh
+import "ObjectTypeModule" as ot
 import "identifierresolution" as ir
 
 //Declare types such that types C and D are subtypes of type A
@@ -37,12 +38,12 @@ def typeNodeD : ast.AstNode = nodes.at(4)
 def typeNodeAB: ast.AstNode = nodes.at(5)
 def typeNodeAC: ast.AstNode = nodes.at(6)
 
-def A : gt.ObjectType = gt.anObjectType.fromDType(typeNodeA.value)
-def B : gt.ObjectType = gt.anObjectType.fromDType(typeNodeB.value)
-def C : gt.ObjectType = gt.anObjectType.fromDType(typeNodeC.value)
-def D : gt.ObjectType = gt.anObjectType.fromDType(typeNodeD.value)
-def AB: gt.ObjectType = gt.anObjectType.fromDType(typeNodeAB.value)
-def AC: gt.ObjectType = gt.anObjectType.fromDType(typeNodeAC.value)
+def A : sh.ObjectType = ot.anObjectType.fromDType(typeNodeA.value)
+def B : sh.ObjectType = ot.anObjectType.fromDType(typeNodeB.value)
+def C : sh.ObjectType = ot.anObjectType.fromDType(typeNodeC.value)
+def D : sh.ObjectType = ot.anObjectType.fromDType(typeNodeD.value)
+def AB: sh.ObjectType = ot.anObjectType.fromDType(typeNodeAB.value)
+def AC: sh.ObjectType = ot.anObjectType.fromDType(typeNodeAC.value)
 
 //  *****************************
 //  **   start of test suite   **
@@ -69,7 +70,7 @@ testSuiteNamed "ampersand with variant types" with {
     }
 
     test "non-variant self, variant other" by {
-        def BorC : gt.ObjectType = B | C
+        def BorC : sh.ObjectType = B | C
 
         assert((A & BorC).isSubtypeOf(AB | AC)) description
             ("Type A & (B|C) should equal (A&B)|(A&C)")
@@ -79,7 +80,7 @@ testSuiteNamed "ampersand with variant types" with {
     }
 
     test "variant self, non-variant other" by {
-        def BorC : gt.ObjectType = B | C
+        def BorC : sh.ObjectType = B | C
 
         assert((BorC & A).isSubtypeOf(AB | AC)) description
             ("Type A & (B|C) should equal (A&B)|(A&C)")
@@ -89,8 +90,8 @@ testSuiteNamed "ampersand with variant types" with {
     }
 
     test "variant self, variant other" by {
-        def AorB : gt.ObjectType = A | B
-        def CorD : gt.ObjectType = C | D
+        def AorB : sh.ObjectType = A | B
+        def CorD : sh.ObjectType = C | D
 
         assert((AorB & CorD).isSubtypeOf((A&C)|(A&D)|(B&C)|(B&D))) description
             ("(A|B) & (B|C) should equal (A&C)|(A&D)|(B&C)|(B&D)")

@@ -1,4 +1,4 @@
-dialect "gradualTypesND"
+dialect "StaticTyping"
 
 // Need to put in a second SelfType (that is not public)
 // to provide the type of "self".  It will include "isMe"
@@ -14,6 +14,6 @@ def a: A = object {
     }
 }
 
-// a.isMe(a)  //Properly not recognized 
+// a.isMe(a)  //Properly not recognized
 
 print (a.m)

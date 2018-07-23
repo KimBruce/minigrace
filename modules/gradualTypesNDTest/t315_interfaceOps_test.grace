@@ -1,4 +1,4 @@
-dialect "gradualTypesND"
+dialect "StaticTyping"
 
 type A = interface { m -> String }
 type B = A & interface { q(_:Number)→String }

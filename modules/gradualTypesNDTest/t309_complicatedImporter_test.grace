@@ -1,4 +1,4 @@
-dialect "gradualTypesND"
+dialect "StaticTyping"
 import "t308_complicatedImportee_test" as im
 
 type Test = im.ComplicatedType

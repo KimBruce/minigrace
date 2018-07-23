@@ -1,4 +1,4 @@
-dialect "gradualTypesND"
+dialect "StaticTyping"
 
 method f(hh: Number) → Number {
     if (hh == 0) then {

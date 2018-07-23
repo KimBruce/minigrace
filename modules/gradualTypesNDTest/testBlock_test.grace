@@ -1,4 +1,4 @@
-dialect "gradualTypesND"
+dialect "StaticTyping"
 
 type Block = {apply(x: Number) → Number}
 

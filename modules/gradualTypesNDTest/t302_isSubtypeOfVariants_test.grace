@@ -4,7 +4,8 @@ import "parser" as parser
 import "ast" as ast
 import "util" as util
 import "io" as io
-import "gradualTypesND" as gt
+import "SharedTypes" as sh
+import "ObjectTypeModule" as ot
 import "identifierresolution" as ir
 
 //Declare types such that types C and D are subtypes of type A
@@ -35,10 +36,10 @@ def typeB : ast.AstNode = nodes.at(2)
 def typeC : ast.AstNode = nodes.at(3)
 def typeD : ast.AstNode = nodes.at(4)
 
-def objTypeA : gt.ObjectType = gt.anObjectType.fromDType(typeA.value)
-def objTypeB : gt.ObjectType = gt.anObjectType.fromDType(typeB.value)
-def objTypeC : gt.ObjectType = gt.anObjectType.fromDType(typeC.value)
-def objTypeD : gt.ObjectType = gt.anObjectType.fromDType(typeD.value)
+def objTypeA : sh.ObjectType = ot.anObjectType.fromDType(typeA.value)
+def objTypeB : sh.ObjectType = ot.anObjectType.fromDType(typeB.value)
+def objTypeC : sh.ObjectType = ot.anObjectType.fromDType(typeC.value)
+def objTypeD : sh.ObjectType = ot.anObjectType.fromDType(typeD.value)
 
 //  *****************************
 //  **   start of test suite   **
@@ -47,8 +48,8 @@ def objTypeD : gt.ObjectType = gt.anObjectType.fromDType(typeD.value)
 testSuiteNamed "isSubtypeOf variant tests" with {
 
     test "non-variant self, variant other" by {
-      def objTypeAorB : gt.ObjectType = objTypeA | objTypeB
-      def objTypeBorC : gt.ObjectType = objTypeB | objTypeC
+      def objTypeAorB : sh.ObjectType = objTypeA | objTypeB
+      def objTypeBorC : sh.ObjectType = objTypeB | objTypeC
 
       assert(objTypeC.isSubtypeOf(objTypeAorB)) description
             ("Type C should have evaluated as a subtype of Type A | B")
@@ -58,8 +59,8 @@ testSuiteNamed "isSubtypeOf variant tests" with {
     }
 
     test "variant self, non-variant other" by {
-      def objTypeCorD : gt.ObjectType = objTypeC | objTypeD
-      def objTypeBorC : gt.ObjectType = objTypeB | objTypeC
+      def objTypeCorD : sh.ObjectType = objTypeC | objTypeD
+      def objTypeBorC : sh.ObjectType = objTypeB | objTypeC
 
       assert(objTypeCorD.isSubtypeOf(objTypeA)) description
             ("Type C | D should have evaluated as a subtype of Type A")
@@ -70,11 +71,11 @@ testSuiteNamed "isSubtypeOf variant tests" with {
     }
 
     test "variant self, variant other" by {
-      def objTypeCorD : gt.ObjectType = objTypeC | objTypeD
-      def objTypeBorA : gt.ObjectType = objTypeB | objTypeA
+      def objTypeCorD : sh.ObjectType = objTypeC | objTypeD
+      def objTypeBorA : sh.ObjectType = objTypeB | objTypeA
 
-      def objTypeCorB : gt.ObjectType = objTypeC | objTypeB
-      def objTypeAorC : gt.ObjectType = objTypeA | objTypeC
+      def objTypeCorB : sh.ObjectType = objTypeC | objTypeB
+      def objTypeAorC : sh.ObjectType = objTypeA | objTypeC
 
       assert(objTypeCorD.isSubtypeOf(objTypeBorA)) description
             ("Type C | D should have evaluated as a subtype of Type B | A")

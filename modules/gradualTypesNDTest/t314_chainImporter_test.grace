@@ -1,4 +1,4 @@
-dialect "gradualTypesND"
+dialect "StaticTyping"
 import "t308_complicatedImportee_test" as im1
 import "t313_chainImportee_test" as im2
 //im2 imports im1, so we can test whether chained imports are passed correctly

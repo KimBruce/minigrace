@@ -1,3 +1,3 @@
-dialect "gradualTypesND"
+dialect "StaticTyping"
 type T = Number
 type U = T

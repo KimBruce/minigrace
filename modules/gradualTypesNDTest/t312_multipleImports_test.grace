@@ -1,4 +1,4 @@
-dialect "gradualTypesND"
+dialect "StaticTyping"
 
 import "identImportee_test" as im1
 import "t335A_basicImportee_test" as im2

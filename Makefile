@@ -428,9 +428,8 @@ test: minigrace.env
 	js/tests/harness-js j2/minigrace-js js/tests "" $(TESTS)
 
 #only test gradualTypesND dialect
-testGradualTypes: minigrace.env
-	rm -f modules/gradualTypesNDTest/gradualTypesND.js
-	modules/gradualTypesNDTest/harness-js j2/minigrace-js modules/gradualTypesNDTest "" $(TESTS)
+testStaticTyping: minigrace.env
+	modules/staticTypingTests/harness-js j2/minigrace-js modules/staticTypingTests "" $(TESTS)
 
 togracetest: minigrace
 	tests/harness minigrace tests tograce $(TESTS)

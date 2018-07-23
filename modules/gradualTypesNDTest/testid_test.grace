@@ -1,4 +1,4 @@
-dialect "gradualTypesND"
+dialect "StaticTyping"
 
 def n: Number = 12
 
@@ -23,7 +23,7 @@ type A = {
 def z : A = object {
     var r: String is public := "zzz"
     def const: Number is public = 12
-    method p(nz:Number) -> Number {nz - const}   
+    method p(nz:Number) -> Number {nz - const}
 }
 
 print ("z.p(3) is {z.p(3)}")
@@ -33,4 +33,3 @@ z.r := "aaa"
 print (z.r)
 
 if (z.const > 0) then {print "positive"}
-

@@ -4,7 +4,8 @@ import "parser" as parser
 import "ast" as ast
 import "util" as util
 import "io" as io
-import "gradualTypesND" as gt
+import "StaticTyping" as st
+import "ObjectTypeModule" as ot
 import "identifierresolution" as ir
 
 //Divided the input into testBlock objects so that each testBlock can be
@@ -102,7 +103,7 @@ testSuiteNamed "visitMatchCase tests" with {
   //type checker raises no Exception given legal match cases
   test "match specific, general, and wildcard cases" by {
     def blk1 = nodes.filter{n -> n.name.name == "testBlock1"}.first
-    assert ({blk1.accept(gt.astVisitor)}) shouldntRaise (Exception)
+    assert ({blk1.accept(st.astVisitor)}) shouldntRaise (Exception)
   }
 
   //test type-checking of non-variant return type
@@ -111,41 +112,41 @@ testSuiteNamed "visitMatchCase tests" with {
     def blk1Specific = blk1.value.value.at(2)
 
     //checks that the type of the var result is String
-    assert(gt.anObjectType.fromDType(blk1Specific.dtype))
-        shouldBe (gt.anObjectType.string)
+    assert(ot.anObjectType.fromDType(blk1Specific.dtype))
+        shouldBe (ot.anObjectType.string)
   }
 
   test "matchee and param type-mismatch error" by {
     def blk2 = nodes.filter{n -> n.name.name == "testBlock2"}.first
-    assert ({blk2.accept(gt.astVisitor)}) shouldRaise (TypeError)
+    assert ({blk2.accept(st.astVisitor)}) shouldRaise (TypeError)
   }
 
   test "multiple params error" by {
     def blk3 = nodes.filter{n -> n.name.name == "testBlock3"}.first
-    assert ({blk3.accept(gt.astVisitor)}) shouldRaise (RequestError)
+    assert ({blk3.accept(st.astVisitor)}) shouldRaise (RequestError)
   }
 
   test "variant type matchee and params" by {
     def blk4 = nodes.filter{n -> n.name.name == "testBlock4"}.first
-    assert({blk4.accept(gt.astVisitor)}) shouldntRaise (Exception)
+    assert({blk4.accept(st.astVisitor)}) shouldntRaise (Exception)
 
     def blk5 = nodes.filter{n -> n.name.name == "testBlock5"}.first
-    assert ({blk5.accept(gt.astVisitor)}) shouldRaise (TypeError)
+    assert ({blk5.accept(st.astVisitor)}) shouldRaise (TypeError)
   }
 
   test "variant return-type" by {
     def blk6 = nodes.filter{n -> n.name.name == "testBlock6"}.first
-    assert ({blk6.accept(gt.astVisitor)}) shouldntRaise (Exception)
+    assert ({blk6.accept(st.astVisitor)}) shouldntRaise (Exception)
 
     def blk7 = nodes.filter{n -> n.name.name == "testBlock7"}.first
-    assert ({blk7.accept(gt.astVisitor)}) shouldRaise (TypeError)
+    assert ({blk7.accept(st.astVisitor)}) shouldRaise (TypeError)
   }
 
   test "return-type Done" by {
     def blk8 = nodes.filter{n -> n.name.name == "testBlock8"}.first
-    assert ({blk8.accept(gt.astVisitor)}) shouldntRaise (Exception)
+    assert ({blk8.accept(st.astVisitor)}) shouldntRaise (Exception)
 
     def blk9 = nodes.filter{n -> n.name.name == "testBlock9"}.first
-    assert ({blk9.accept(gt.astVisitor)}) shouldntRaise (Exception)
+    assert ({blk9.accept(st.astVisitor)}) shouldntRaise (Exception)
   }
 }

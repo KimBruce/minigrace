@@ -4,7 +4,7 @@ import "parser" as parser
 import "ast" as ast
 import "util" as util
 import "io" as io
-import "gradualTypesND" as gt
+import "StaticTyping" as st
 import "identifierresolution" as ir
 
 //Declare types such that types C and D are subtypes of type A
@@ -29,6 +29,6 @@ def inputTree = ir.resolve(module)
 
 testSuiteNamed "self-referential subtype test" with {
     test "self-referential not a subtype" by {
-        assert({inputTree.accept(gt.astVisitor)}) shouldRaise (TypeError)
+        assert({inputTree.accept(st.astVisitor)}) shouldRaise (TypeError)
     }
 }

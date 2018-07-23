@@ -4,7 +4,8 @@ import "parser" as parser
 import "ast" as ast
 import "util" as util
 import "io" as io
-import "gradualTypesND" as gt
+import "SharedTypes" as sh
+import "ObjectTypeModule" as ot
 import "identifierresolution" as ir
 
 //Declare types such that types C and D are subtypes of type A
@@ -41,12 +42,12 @@ def typeB  : ast.AstNode = nodes.at(3)
 def typeB' : ast.AstNode = nodes.at(4)
 def typeB'': ast.AstNode = nodes.at(5)
 
-def objTypeA  : gt.ObjectType = gt.anObjectType.fromDType(typeA.value)
-def objTypeA' : gt.ObjectType = gt.anObjectType.fromDType(typeA'.value)
+def objTypeA  : sh.ObjectType = ot.anObjectType.fromDType(typeA.value)
+def objTypeA' : sh.ObjectType = ot.anObjectType.fromDType(typeA'.value)
 
-def objTypeB  : gt.ObjectType = gt.anObjectType.fromDType(typeB.value)
-def objTypeB' : gt.ObjectType = gt.anObjectType.fromDType(typeB'.value)
-def objTypeB'': gt.ObjectType = gt.anObjectType.fromDType(typeB''.value)
+def objTypeB  : sh.ObjectType = ot.anObjectType.fromDType(typeB.value)
+def objTypeB' : sh.ObjectType = ot.anObjectType.fromDType(typeB'.value)
+def objTypeB'': sh.ObjectType = ot.anObjectType.fromDType(typeB''.value)
 
 //  *****************************
 //  **   start of test suite   **

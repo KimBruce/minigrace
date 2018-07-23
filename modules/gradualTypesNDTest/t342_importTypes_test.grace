@@ -1,4 +1,4 @@
-dialect "gradualTypesND"
+dialect "StaticTyping"
 import "t335A_basicImportee_test" as im
 
 class m -> im.MyType {

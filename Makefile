@@ -429,6 +429,10 @@ test: minigrace.env
 
 #only test gradualTypesND dialect
 testStaticTyping: minigrace.env
+	rm -f modules/staticTypingTests/ScopeModule.js
+	rm -f modules/staticTypingTests/ObjectTypeModule.js
+	rm -f modules/staticTypingTests/SharedTypes.js
+	rm -f modules/staticTypingTests/StaticTyping.js
 	modules/staticTypingTests/harness-js j2/minigrace-js modules/staticTypingTests "" $(TESTS)
 
 togracetest: minigrace

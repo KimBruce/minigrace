@@ -325,8 +325,8 @@ def astVisitor: ast.AstVisitor is public = object {
         def matchee = node.value
         var matcheeType: ObjectType := typeOf(matchee)
         //Note: currently only one matchee is supported
-        var paramTypesList: List⟦ObjectType⟧ := emptyList
-        var returnTypesList: List⟦ObjectType⟧ := emptyList
+        def paramTypesList: List⟦ObjectType⟧ = emptyList
+        def returnTypesList: List⟦ObjectType⟧ = emptyList
         var paramType: ObjectType
         var returnType: ObjectType
 
@@ -361,13 +361,13 @@ def astVisitor: ast.AstVisitor is public = object {
 
           //Return type collection
           def blockReturnType : ObjectType = objectTypeFromBlock(block)
-          if (paramTypesList.contains(blockReturnType).not) then {
+          if (returnTypesList.contains(blockReturnType).not) then {
             returnTypesList.add(blockReturnType)
           }
         }
 
-        //io.error.write("\n\nThe paramTypesList contains {paramTypesList}\n")
-        //io.error.write("\n\nThe returnTypesList contains {returnTypesList}\n")
+        //io.error.write("\n371: The paramTypesList contains {paramTypesList}\n")
+        //io.error.write("\n370: The returnTypesList contains {returnTypesList}\n")
 
         paramType := ot.fromObjectTypeList(paramTypesList)
         returnType := ot.fromObjectTypeList(returnTypesList)

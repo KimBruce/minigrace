@@ -1084,7 +1084,7 @@ method processBody (body : List⟦AstNode⟧, superclass: AstNode | false)
 
     var inheritedMethods: Set⟦MethodType⟧ := emptySet
     def hasInherits = false ≠ superclass
-    io.error.write "\n1965: hasInherits is {hasInherits}\n"
+//    io.error.write "\n1965: hasInherits is {hasInherits}\n"
     var publicSuperType: ObjectType := anObjectType.base
     def superType: ObjectType = if(hasInherits) then {
         def inheriting: AstNode = superclass
@@ -1101,6 +1101,11 @@ method processBody (body : List⟦AstNode⟧, superclass: AstNode | false)
 //                true
 //            }
 //        })
+        io.error.write "aliases: {superclass.aliases}"
+        if (superclass.aliases.size > 0) then {
+            io.error.write "first alias is {superclass.aliases.at(1).newName.kind}"
+        }
+        
         io.error.write "\nGT1981: checking types of inheriting = {inheriting}\n"
         var name: String := inheriting.value.nameString
         if (name.contains "$object(") then {
@@ -1108,10 +1113,37 @@ method processBody (body : List⟦AstNode⟧, superclass: AstNode | false)
             name := inheriting.value.nameString
         }
 
-        def inheritedType: ObjectType = allCache.at(name)
-        inheritedMethods := inheritedType.methods
+        // Handle exclusions and aliases
+        // Exclusions only for now
+        // Unfortunately no type info with exclusions, so if code says
+        // exclude p(s:String) and p in subclass takes a Number, it will
+        // be dropped without any warning of the error.
+        var inheritedType: ObjectType := allCache.at(name)
+        inheritedMethods := inheritedType.methods.copy
         publicSuperType := typeOf(inheriting.value)
-        io.error.write "\n2641: public super type: {publicSuperType}"
+        var pubInheritedMethods := publicSuperType.methods.copy
+        for (superclass.exclusions) do {ex →
+            for (inheritedMethods) do {im →
+//                io.error.write "\n1124 comparing {ex.nameString} and {im.nameString}"
+                if (ex.nameString == im.nameString) then {
+//                    io.error.write "\n1126 removing {im}"
+                    inheritedMethods.remove(im)
+                }
+            }
+            for (pubInheritedMethods) do {im →
+//                io.error.write "\n1124 comparing {ex.nameString} and {im.nameString}"
+//                io.error.write "\n1124 comparing {ex.dtype} and {im}"
+                if (ex.nameString == im.nameString) then {
+//                    io.error.write "\n1126 removing {im}"
+                    pubInheritedMethods.remove(im)
+                }
+            }
+        }
+        inheritedType := anObjectType.fromMethods(inheritedMethods)
+        publicSuperType := anObjectType.fromMethods(pubInheritedMethods)
+
+        io.error.write "\1144: public super type: {publicSuperType}"
+        io.error.write "\n1145: inherited type: {inheritedType}"
 
         inheritedType
     } else {
@@ -1155,6 +1187,9 @@ method processBody (body : List⟦AstNode⟧, superclass: AstNode | false)
                 def mType: MethodType = aMethodType.fromNode(meth)
                 checkOverride(mType,allMethods,publicMethods)
                 allMethods.add(mType)
+                io.error.write "\n1158 Adding {mType} to allMethods"
+                io.error.write "\n1159 AllMethods: {allMethods}"
+                
                 if(isPublic(meth)) then {
                     publicMethods.add(mType)
                 }
@@ -1170,6 +1205,7 @@ method processBody (body : List⟦AstNode⟧, superclass: AstNode | false)
             } case { defd : share.Def | share.Var →
                 def mType: MethodType = aMethodType.fromNode(defd)
                 allMethods.add(mType)
+                io.error.write "\n1177 AllMethods: {allMethods}"
 
                 //create method to access def/var
                 if(defd.isReadable) then {
@@ -1190,6 +1226,8 @@ method processBody (body : List⟦AstNode⟧, superclass: AstNode | false)
                     def aType: MethodType = aMethodType.signature(sig) returnType(anObjectType.doneType)
                     scope.methods.at(name') put(aType)
                     allMethods.add(aType)
+                    io.error.write "\n1197 AllMethods: {allMethods}"
+
                     publicMethods.add(aType)
                 }
 
@@ -1197,10 +1235,10 @@ method processBody (body : List⟦AstNode⟧, superclass: AstNode | false)
                 //Now does nothing if given type declaration; might make this raise an error later
             } case { _ → io.error.write"\n2617 ignored {stmt}"}
         }
-
+        io.error.write "\n1201 allMethods: {allMethods}"
         internalType := anObjectType.fromMethods(allMethods)
         scope.variables.at("$elf") put (internalType)
-
+        io.error.write "\n1204: Internal type is {internalType}"
         anObjectType.fromMethods(publicMethods)
     }
 
@@ -1230,10 +1268,14 @@ method checkOverride(mType: MethodType, allMethods: Set⟦MethodType⟧,
     def oldMethType: MethodType = allMethods.find{m:MethodType →
         mType.nameString == m.nameString
     } ifNone {return}
-
+    io.error.write "\n1233 Found new method {mType} while old was {oldMethType}"
     if(mType.isSpecialisationOf(emptyList, oldMethType).ans.not) then {
         MethodError.raise ("Type of overriding method {mType} is not"
             ++ " a specialization of existing method {oldMethType}") with (mType)
+    }
+    allMethods.remove(oldMethType)
+    if (publicMethods.contains(oldMethType)) then {
+        publicMethods.remove(oldMethType)
     }
 }
 

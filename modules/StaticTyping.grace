@@ -117,7 +117,7 @@ type RequestPart = {
 // the declaration, return the type of the result
 method check (req : share.Request)
         against(meth : MethodType) → ObjectType is confidential {
-    def name: String = meth.name   // CHANGE TO NAMESTRING
+    def name: String = meth.nameString
 
     for(meth.signature) and(req.parts) do { sigPart: MixPart, reqPart: RequestPart →
         def params: List⟦Param⟧ = sigPart.parameters
@@ -513,15 +513,20 @@ def astVisitor: ast.AstVisitor is public = object {
         //io.error.write "\nTypes scope at visitCall is : {scope.types}"\
         //io.error.write "\nVariable scope at visitCall is : {scope.variables}"
 
-        var tempDef := scope.variables.find("$elf") butIfMissing{anObjectType.dynamic}
+        var tempDef := scope.variables.findFromBottom("$elf")
+                                              butIfMissing{anObjectType.dynamic}
         //io.error.write "\nCache at visitCall is: {cache}"
 
         // receiver type
-        def rType: ObjectType = if(rec.isIdentifier &&
-            {(rec.nameString == "self") || (rec.nameString =="module()object")}) then {
+        def rType: ObjectType = if (rec.nameString == "self") then {
             io.error.write "\n1675: looking for type of self"
-            scope.variables.find("$elf") butIfMissing {
-                Exception.raise "type of self missing" with(rec)
+            scope.variables.findFromBottom("$elf") butIfMissing {
+                CheckerFailure.raise "type of self missing" with(rec)
+            }
+        } elseif {rec.nameString == "module()object"} then {
+            io.error.write "\n1676: looking for type of module"
+            scope.variables.findFromTop("$elf") butIfMissing {
+                CheckerFailure.raise "type of self missing" with(rec)
             }
         } else {
             io.error.write "\n2085 rec.kind = {rec.kind}"
@@ -575,7 +580,7 @@ def astVisitor: ast.AstVisitor is public = object {
     // returns false so don't recurse into object
     method visitObject (obj :AstNode) → Boolean {
         def pcType: PublicConfidential = scope.enter {
-            processBody (list (obj.value), obj.superclass)
+            processBody (obj, obj.superclass)
         }
         cache.at(obj) put (pcType.publicType)
         allCache.at(obj) put (pcType.inheritableType)
@@ -920,8 +925,9 @@ def astVisitor: ast.AstVisitor is public = object {
             def methPrefix : String = split(typeDef.at(1), " ").at(1)
 
             if (typeLiterals.containsKey(methPrefix).not) then {
-                typeLiterals.at(methPrefix)
-                                        put (anObjectType.fromMethods(emptySet))
+                def oType : ObjectType = anObjectType.fromMethods(emptySet)
+                                                        withNode (ast.baseNode)
+                typeLiterals.at(methPrefix) put (oType)
             }
             typeLiterals.at(methPrefix).methods.add(
                           aMethodType.fromGctLine(typeDef.removeFirst, impName))
@@ -936,7 +942,7 @@ def astVisitor: ast.AstVisitor is public = object {
         def myType : ObjectType = if (typeDef.size == 0) then {
             //type is defined by a type literal
             if (typeLiterals.size == 0) then {
-                anObjectType.fromMethods(emptySet)
+                anObjectType.fromMethods(emptySet) withNode (ast.baseNode)
             } else {
                 typeLiterals.values.first
             }
@@ -1067,6 +1073,7 @@ method outerAt(i : Number) → ObjectType is confidential {
 
         //Joe - maybe do outer.types
         def oType: ObjectType = anObjectType.fromMethods(meths)
+                                                        withNode (ast.baseNode)
         def mType: MethodType = aMethodType.member("outer") ofType(oType)
 
         curr.at("outer") put(oType)
@@ -1079,8 +1086,10 @@ method outerAt(i : Number) → ObjectType is confidential {
 
 // Typing methods.
 // Type check body of object definition
-method processBody (body : List⟦AstNode⟧, superclass: AstNode | false)
+method processBody (obj : AstNode, superclass: AstNode | false)
                                                 → ObjectType is confidential {
+
+    def body : List⟦AstNode⟧ = list (obj.value)
     io.error.write "\n1958: superclass: {superclass}\n"
 
     var inheritedMethods: Set⟦MethodType⟧ := emptySet
@@ -1140,8 +1149,9 @@ method processBody (body : List⟦AstNode⟧, superclass: AstNode | false)
                 }
             }
         }
-        inheritedType := anObjectType.fromMethods(inheritedMethods)
-        publicSuperType := anObjectType.fromMethods(pubInheritedMethods)
+        //Node of inheritedType could be inheriting.value or inheriting
+        inheritedType := anObjectType.fromMethods(inheritedMethods) withNode (inheriting.value)
+        publicSuperType := anObjectType.fromMethods(pubInheritedMethods) withNode (inheriting.value)
 
         io.error.write "\1144: public super type: {publicSuperType}"
         io.error.write "\n1145: inherited type: {inheritedType}"
@@ -1237,10 +1247,10 @@ method processBody (body : List⟦AstNode⟧, superclass: AstNode | false)
             } case { _ → io.error.write"\n2617 ignored {stmt}"}
         }
         io.error.write "\n1201 allMethods: {allMethods}"
-        internalType := anObjectType.fromMethods(allMethods)
+        internalType := anObjectType.fromMethods(allMethods) withNode(obj)
         scope.variables.at("$elf") put (internalType)
         io.error.write "\n1204: Internal type is {internalType}"
-        anObjectType.fromMethods(publicMethods)
+        anObjectType.fromMethods(publicMethods) withNode(obj)
     }
 
     scope.variables.at("self") put(publicType)

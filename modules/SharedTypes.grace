@@ -36,6 +36,7 @@ method stripNewLines(str) → String is confidential {
 type ObjectType = {
     methods → Set⟦MethodType⟧
     getMethod (name : String) → MethodType | noSuchMethod
+    node → AstNode
     resolve → ObjectType
     isResolved → Boolean
     isDynamic → Boolean
@@ -53,8 +54,9 @@ type ObjectType = {
 // methods to create an object type from various inputs
 type ObjectTypeFactory = {
     definedByNode (node : AstNode) → ObjectType
-    fromMethods (methods' : Set⟦MethodType⟧) → ObjectType
-    fromMethods (methods' : Set⟦MethodType⟧) withName (name : String) → ObjectType
+    fromMethods (methods' : Set⟦MethodType⟧) withNode(node:AstNode)→ ObjectType
+    fromMethods (methods' : Set⟦MethodType⟧) withNode(node:AstNode)
+                                          withName (name : String) → ObjectType
     fromDType (dtype) → ObjectType
     fromIdentifier(ident : Identifier) → ObjectType
     dynamic → ObjectType
@@ -90,10 +92,16 @@ type MethodType = {
     signature → List⟦MixPart⟧
     // return type
     returnType → ObjectType
-    // Does it extend other
-    isSpecialisationOf (trials : List⟦TypePair⟧, other : MethodType) → Answer
+
+    // check equivalence of part names, param types, and return type;
+    // does not check if param names are the same
+    == (other: MethodType) → Boolean
+
     // create restriction of method type using other
     restriction (other : MethodType) → MethodType
+
+    // Does it extend other
+    isSpecialisationOf (trials : List⟦TypePair⟧, other : MethodType) → Answer
 }
 
 type MethodTypeFactory = {

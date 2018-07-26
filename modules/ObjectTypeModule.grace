@@ -979,13 +979,13 @@ def anObjectType: ObjectTypeFactory is public = object {
             }
 
         } case { ident : share.Identifier →
-            def oType : ObjectType = scope.types.findAtTop(ident.value)
-                butIfMissing{ScopingError.raise("Failed to find {ident.value}")}
             io.error.write "\n984: processing {ident}"
 
             //If the type we are referencing is unexpanded, then expand it and
             //update its entry in the type scope
             if(oType.isResolved) then{
+            def oType : ObjectType = scope.types.findType(ident.value)
+                butIfMissing{ScopingError.raise("Failed to find {ident.value}")}
                 return oType
             } else {
                 def resolvedOType : ObjectType = oType.resolve
@@ -995,21 +995,22 @@ def anObjectType: ObjectTypeFactory is public = object {
 
         } case { generic : share.Generic →
             //should we raise an error or return dynamic if not found in scope?
-            scope.types.findAtTop(generic.value.value)
+            scope.types.findType(generic.value.value)
                 butIfMissing{ScopingError.raise("Failed to find {generic.value.value}")}
 
         } case { member : share.Member →
-            def receiverName : String = member.receiver.nameString
-            def memberCall : String = "{receiverName}.{member.value}"
+            def recName : String = member.receiver.nameString
+            def memberCall : String = "{recName}.{member.value}"
             //all members processed here are references to types, so we can ignore
             //these receivers since types are always at the top level of the scope
-            if((receiverName == "self") || (receiverName == "module()object")) then {
-                scope.types.findAtTop (member.value) butIfMissing {
-                    ScopingError.raise("Failed to find {memberCall}")
+            if ((recName == "module()object") || (recName == "self")
+                                              || (recName == "prelude")) then {
+                scope.types.findType (member.value) butIfMissing {
+                      ScopingError.raise("Failed to find {memberCall}")
                 }
             } else {
-                scope.types.findAtTop(memberCall) butIfMissing {
-                    ScopingError.raise("Failed to find {memberCall}")
+                scope.types.findType(memberCall) butIfMissing {
+                      ScopingError.raise("Failed to find {memberCall}")
                 }
             }
 
@@ -1026,8 +1027,9 @@ def anObjectType: ObjectTypeFactory is public = object {
 
     //Find ObjectType corresponding to the identifier in the scope
     method fromIdentifier(ident : share.Identifier) → ObjectType {
-        io.error.write "\n1249 looking for {ident.value} inside {scope.types}"
-        scope.types.find(ident.value) butIfMissing { dynamic }
+        io.error.write "\n1249 fromIdentifier - looking for {ident.value} " ++
+                                                        " inside {scope.types}"
+        scope.types.findType(ident.value) butIfMissing { dynamic }
     }
 
 

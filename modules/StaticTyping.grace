@@ -552,8 +552,8 @@ def astVisitor: ast.AstVisitor is public = object {
             match(rType.getMethod(name))
               case { (ot.noSuchMethod) →
                 io.error.write "\n2001: got to case noSuchMethod"
-                io.error.write "\n2002: scope here is {scope.types}"
-                scope.types.findAtTop(completeCall) butIfMissing {
+                io.error.write "\n2002: scope here is {scope.variables}"
+                scope.types.findType(completeCall) butIfMissing {
                     //Joe - possibly come back and change error msg maybe
                     //less informative, but less confusing msg
 
@@ -709,8 +709,9 @@ def astVisitor: ast.AstVisitor is public = object {
             def rec: AstNode = dest.in
 
             // Type of receiver
-            def rType: ObjectType = if(share.Identifier.match(rec) && {rec.value == "self"}) then {
-                scope.variables.find("$elf") butIfMissing {
+            def rType: ObjectType = if(share.Identifier.match(rec)
+                                                && {rec.value == "self"}) then {
+                scope.variables.findFromBottom("$elf") butIfMissing {
                     Exception.raise "type of self missing" with(rec)
                 }
             } else {
@@ -857,7 +858,7 @@ def astVisitor: ast.AstVisitor is public = object {
                                                           parameters(emptyList)
 
                 def retType : ObjectType =
-                    scope.types.findAtTop("{impName}.{name}")
+                    scope.types.findType("{impName}.{name}")
                         butIfMissing { Exception.raise
                             ("\nCannot find type " ++
                                 "{impName}.{name}. It is not defined in the " ++
@@ -947,7 +948,7 @@ def astVisitor: ast.AstVisitor is public = object {
                                                       unresolvedTypes, typeDefs)
             } elseif {anObjectType.preludeTypes.contains(fstLine)} then {
                 //type is defined by a prelude type
-                scope.types.findAtTop("{fstLine}") butIfMissing{
+                scope.types.findType("{fstLine}") butIfMissing{
                     Exception.raise ("\nCannot find type {fstLine}. "++
                         "Likely a problem with writing the GCT file.")
                 }
@@ -956,7 +957,7 @@ def astVisitor: ast.AstVisitor is public = object {
                 if (unresolvedTypes.contains(fstLine)) then {
                     importHelper(fstLine, impName, unresolvedTypes, typeDefs)
                 }
-                scope.types.findAtTop("{impName}.{fstLine}") butIfMissing{
+                scope.types.findType("{impName}.{fstLine}") butIfMissing{
                     Exception.raise ("\nCannot find type {impName}.{fstLine}."++
                         " Likely a problem with writing the GCT file.")
                 }
@@ -1009,7 +1010,7 @@ def astVisitor: ast.AstVisitor is public = object {
             }
             io.error.write ("\n2470 scope before search in import is" ++
                                                             "{scope.types}")
-            scope.types.findAtTop("{impName}.{elt}") butIfMissing {
+            scope.types.findType("{impName}.{elt}") butIfMissing {
                                   ScopingError.raise("Could not " ++
                                         "find type {elt} from import in scope")
             }

@@ -272,23 +272,15 @@ def astVisitor: ast.AstVisitor is public = object {
                 // where pattern is string literal or number
                 // I'm not sure this is right.  Doesn't seem like anything should be added
                 // for literals!
-                match (param)
-                  case { _ : share.StringLiteral | share.NumberLiteral→
-                    //scope.variables.at(param.value)
-                    //    put(objectTypeFromDType(param))
-              //} case { _ : NumberLiteral →
-                    //scope.variables.at(param.value)
-                    //    put(objectTypeFromDType(param))
-                } case { _ →
+                if ((param.dtype.kind ≠ "string")
+                                      && {param.dtype.kind ≠ "num"}) then {
                     io.error.write("\n1517: {param.value} has {param.dtype}")
                     scope.variables.at(param.value)
                                       put(anObjectType.fromDType(param.dtype))
                 }
             }
 
-
-            collectTypes(body)
-
+            //collectTypes(body)
             for(body) do { stmt: AstNode →
                 checkTypes(stmt)
             }
@@ -300,14 +292,13 @@ def astVisitor: ast.AstVisitor is public = object {
         // Now compute type of block and put in cache
         def parameters = list[]
         for(block.params) do { param: AstNode →
-            match (param)
-              case { _:share.StringLiteral →
+            if (param.dtype.kind == "string") then {
                 parameters.push(aParam.withName(param.value)
-                                    ofType(anObjectType.fromDType(param)))
-            } case { _:share.NumberLiteral →
+                                    ofType(anObjectType.string))
+            } elseif {param.dtype.kind == "num"} then {
                 parameters.push(aParam.withName(param.value)
-                                    ofType(anObjectType.fromDType(param)))
-            } case { _ →
+                                    ofType(anObjectType.string))
+            } else {
                 parameters.push(aParam.withName(param.value)
                                     ofType(anObjectType.fromDType(param.dtype)))
             }
@@ -325,45 +316,38 @@ def astVisitor: ast.AstVisitor is public = object {
         def matchee = node.value
         var matcheeType: ObjectType := typeOf(matchee)
         //Note: currently only one matchee is supported
-        def paramTypesList: List⟦ObjectType⟧ = emptyList
-        def returnTypesList: List⟦ObjectType⟧ = emptyList
+        def paramTypesList: List⟦ObjectType⟧ = emptyList⟦ObjectType⟧
+        def returnTypesList: List⟦ObjectType⟧ = emptyList⟦ObjectType⟧
         var paramType: ObjectType
         var returnType: ObjectType
 
         //goes through each case{} and accumulates its parameter and return types
         for(node.cases) do{block →
 
-          if(block.params.size != 1) then{
-            outer.RequestError.raise("1518: The case you are matching to, " ++
-              "{stripNewLines(block.toGrace(0))}, has more than one argument "++
-              "on the left side. This is not currently supported.") with (matchee)
-          }
+            if(block.isMatchingBlock.not) then{
+              outer.RequestError.raise("1518: The case you are matching to, " ++
+                "{stripNewLines(block.toGrace(0))}, has more than one argument "++
+                "on the left side. This is not currently supported.") with (matchee)
+            }
 
-          //If param is a general case(ie. n:Number), accumulate its type to
-          //paramTypesList; ignore if it is a specific case(ie. 47)
-          def blockParam : Parameter = block.params.at(1)
-          match (blockParam.dtype)
-            case{ s:share.StringLiteral →
-              io.error.write"\n Got StringLiteral"
-          } case{ n:share.NumberLiteral →
-              io.error.write"\n Got NumberLiteral"
-          } case{ t:true →
-              io.error.write"\n Got BooleanLiteral"
-          } case{ f:false →
-              io.error.write"\n Got BooleanLiteral"
-          } case{ _ →
-              def typeOfParam = anObjectType.fromDType(blockParam.decType)
+            //If param is a general case(ie. n:Number), accumulate its type to
+            //paramTypesList; ignore if it is a specific case(ie. 47)
+            def blockParam : AstNode = block.params.at(1)
+            io.error.write"\nMy dtype is {blockParam.dtype}"
+            if ((blockParam.dtype.kind ≠ "string")
+                                  && {blockParam.dtype.kind ≠ "num"}) then {
+                def typeOfParam = anObjectType.fromDType(blockParam.dtype)
 
-              if (paramTypesList.contains(typeOfParam).not) then {
-                  paramTypesList.add(typeOfParam)
-              }
-          }
+                if (paramTypesList.contains(typeOfParam).not) then {
+                    paramTypesList.add(typeOfParam)
+                }
+            }
 
-          //Return type collection
-          def blockReturnType : ObjectType = objectTypeFromBlock(block)
-          if (returnTypesList.contains(blockReturnType).not) then {
-            returnTypesList.add(blockReturnType)
-          }
+            //Return type collection
+            def blockReturnType : ObjectType = objectTypeFromBlock(block)
+            if (returnTypesList.contains(blockReturnType).not) then {
+              returnTypesList.add(blockReturnType)
+            }
         }
 
         //io.error.write("\n371: The paramTypesList contains {paramTypesList}\n")
@@ -376,9 +360,9 @@ def astVisitor: ast.AstVisitor is public = object {
         io.error.write "\nreturnType now equals: {returnType}"
 
         if (matcheeType.isSubtypeOf(paramType).not) then {
-          outer.TypeError.raise("1519: the matchee `{stripNewLines(matchee.toGrace(0))}`"++
-            " of type {matcheeType} does not " ++
-            "match the type(s) {paramTypesList} of the case(s)") with (matchee)
+            outer.TypeError.raise("1519: the matchee `{stripNewLines(matchee.toGrace(0))}`"++
+                " of type {matcheeType} does not " ++
+                "match the type(s) {paramTypesList} of the case(s)") with (matchee)
         }
 
         cache.at(node) put (returnType)
@@ -541,7 +525,7 @@ def astVisitor: ast.AstVisitor is public = object {
         } else {
             //Since we can't have a method or a type with the same name. A call
             //on a name can be searched in both method and type lists
-            //Just have to assume that the programmer used nonconflicting names- Joe
+            //Just have to assume that the programmer used nonconflicting names
 
             var name: String := req.nameString
             if (name.contains "$object(") then {
@@ -586,7 +570,8 @@ def astVisitor: ast.AstVisitor is public = object {
         allCache.at(obj) put (pcType.inheritableType)
         io.error.write "\n1971: *** Visited object {obj}"
         io.error.write (pcType.asString)
-        io.error.write "\n2153: Scope at end is: {scope.methods}"
+        io.error.write ("\n2153: Methods scope at end of visitObject is: " ++
+                                                              scope.methods)
         false
     }
 
@@ -595,7 +580,7 @@ def astVisitor: ast.AstVisitor is public = object {
     method visitModule (node: AstNode) → Boolean {  // added kim
         io.error.write "\n1698: visiting module {node}"
 
-        def importNodes: List⟦AstNode⟧ = emptyList
+        def importNodes: List⟦AstNode⟧ = emptyList⟦AstNode⟧
         def bodyNodes: List⟦AstNode⟧ = list(node.value)
 
         //goes through the body of the module and processes imports
@@ -649,7 +634,8 @@ def astVisitor: ast.AstVisitor is public = object {
           case { "outer" →
             outerAt(scope.size)
         } case { _ →
-            scope.variables.find(ident.value) butIfMissing { anObjectType.dynamic }
+            scope.variables.findFromBottom(ident.value)
+                                          butIfMissing { anObjectType.dynamic }
         }
         cache.at (ident) put (idType)
         true
@@ -845,7 +831,7 @@ def astVisitor: ast.AstVisitor is public = object {
         def importMethods : Set⟦MethodType⟧ = emptySet
 
         def importedMethodTypes: List⟦String⟧ = gct.at("publicMethodTypes")
-                                                          ifAbsent { emptyList }
+                                                  ifAbsent { emptyList⟦String⟧ }
 
         //construct the MethodType corressponding to each method name
         for (importedMethodTypes) do { methSig : String →
@@ -860,7 +846,7 @@ def astVisitor: ast.AstVisitor is public = object {
                 def name : String = methSig.substringFrom(2) to
                                                     (methSig.indexOf("→") - 2)
                 def mixPart : MixPart = ot.aMixPartWithName(name)
-                                                          parameters(emptyList)
+                                                    parameters(emptyList⟦Param⟧)
 
                 def retType : ObjectType =
                     scope.types.findType("{impName}.{name}")
@@ -882,9 +868,11 @@ def astVisitor: ast.AstVisitor is public = object {
 
         // Create the ObjectType and MethodType of import
         def impOType: ObjectType = anObjectType.fromMethods(importMethods)
+                                                                  withNode (imp)
         def sig: List⟦MixPart⟧ = list[ot.aMixPartWithName(impName)
-                                                  parameters (emptyList)]
-        def impMType: MethodType = aMethodType.signature(sig) returnType (impOType)
+                                                  parameters (emptyList⟦Param⟧)]
+        def impMType: MethodType = aMethodType.signature(sig)
+                                                          returnType (impOType)
 
         // Store import in scopes and cache
         scope.variables.at(impName) put(impOType)
@@ -1058,17 +1046,16 @@ method outerAt(i : Number) → ObjectType is confidential {
     }
     io.error.write "processing outer"
 
-    def vStack: List⟦Dictionary⟧ = scope.variables.stack
+    def vStack: List⟦ Dictionary⟦String, ObjectType⟧ ⟧ = scope.variables.stack
 
-    def curr: ObjectType = vStack.at(i)
+    def curr: Dictionary⟦String, ObjectType⟧ = vStack.at(i)
 
-    //Joe-how does an ObjectType have an 'at' method
     return curr.at("outer") ifAbsent {
         def prev: ObjectType = outerAt(i - 1)
 
-        def mStack: List⟦Dictionary⟧ = scope.methods
+        def mStack: List⟦ Dictionary⟦String, MethodType⟧ ⟧ = scope.methods
 
-        def vars: Dictionary = vStack.at(i - 1)
+        def vars: Dictionary⟦String, ObjectType⟧ = vStack.at(i - 1)
         def meths: Set⟦MethodType⟧ = mStack.at(i - 1).values
 
         //Joe - maybe do outer.types
@@ -1082,7 +1069,6 @@ method outerAt(i : Number) → ObjectType is confidential {
         oType
     }
 }
-
 
 // Typing methods.
 // Type check body of object definition
@@ -1115,7 +1101,7 @@ method processBody (obj : AstNode, superclass: AstNode | false)
         if (superclass.aliases.size > 0) then {
             io.error.write "first alias is {superclass.aliases.at(1).newName.kind}"
         }
-        
+
         io.error.write "\nGT1981: checking types of inheriting = {inheriting}\n"
         var name: String := inheriting.value.nameString
         if (name.contains "$object(") then {
@@ -1200,7 +1186,7 @@ method processBody (obj : AstNode, superclass: AstNode | false)
                 allMethods.add(mType)
                 io.error.write "\n1158 Adding {mType} to allMethods"
                 io.error.write "\n1159 AllMethods: {allMethods}"
-                
+
                 if(isPublic(meth)) then {
                     publicMethods.add(mType)
                 }
@@ -1280,7 +1266,7 @@ method checkOverride(mType: MethodType, allMethods: Set⟦MethodType⟧,
         mType.nameString == m.nameString
     } ifNone {return}
     io.error.write "\n1233 Found new method {mType} while old was {oldMethType}"
-    if(mType.isSpecialisationOf(emptyList, oldMethType).ans.not) then {
+    if(mType.isSpecialisationOf(emptyList⟦TypePair⟧, oldMethType).ans.not) then {
         MethodError.raise ("Type of overriding method {mType} is not"
             ++ " a specialization of existing method {oldMethType}") with (mType)
     }
@@ -1289,8 +1275,6 @@ method checkOverride(mType: MethodType, allMethods: Set⟦MethodType⟧,
         publicMethods.remove(oldMethType)
     }
 }
-
-
 
 def TypeDeclarationError = TypeError.refine "TypeDeclarationError"
 

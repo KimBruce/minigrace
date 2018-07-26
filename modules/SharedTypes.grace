@@ -86,10 +86,13 @@ type ObjectTypeFactory = {
 type MethodType = {
     // name of the method
     name → String
+
     // name of the method with number of parameters for each part
     nameString → String
+
     // parameters and their types for each part
     signature → List⟦MixPart⟧
+
     // return type
     returnType → ObjectType
 
@@ -207,5 +210,3 @@ def Dialect: Pattern is public = aPatternMatchingNode "dialect"
 def Return: Pattern is public = aPatternMatchingNode "return"
 def Inherit: Pattern is public = aPatternMatchingNode "inherit"
 def Module: Pattern is public = aPatternMatchingNode "module"
-
-

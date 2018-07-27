@@ -1,7 +1,7 @@
 dialect "StaticTyping"
 
 
-//type NumberCopy = Number
+type NumberCopy = Number
 type MyType = { a -> Number }
 
 class myClass -> MyType {

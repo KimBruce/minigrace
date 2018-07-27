@@ -149,6 +149,11 @@ type Param = {
     typeAnnotation → ObjectType
 }
 
+type ParamFactory = {
+    withName (name' : String) ofType (type' : ObjectType) → Param
+    ofType (type' : ObjectType) → Param
+}
+
 type AstNode = { kind → String }
 
 // Create a pattern for matching kind

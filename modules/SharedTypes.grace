@@ -111,8 +111,14 @@ type MethodTypeFactory = {
     signature (signature' : List⟦MixPart⟧)
             returnType (rType : ObjectType)→ MethodType
     member (name : String) ofType (rType : ObjectType) → MethodType
-    fromGctLine (line : String, importName: String) → MethodType
+    fromGctLine (line : String, importName: String) → MethodPair
     fromNode (node: AstNode) → MethodType
+}
+
+//This type is used as the return type of the method fromGCTLine
+type MethodPair = {
+    mType → MethodType
+    mNode → AstNode
 }
 
 //This type is used for checking subtyping

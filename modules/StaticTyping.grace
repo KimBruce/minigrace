@@ -13,6 +13,7 @@ import "ObjectTypeModule" as ot
 inherit sg.methods
 
 type MethodType = share.MethodType
+type MethodPair = share.MethodPair
 type ObjectType = share.ObjectType
 type ObjectTypeFactory = share.ObjectTypeFactory
 type MethodTypeFactory = share.MethodTypeFactory
@@ -819,6 +820,9 @@ def astVisitor: ast.AstVisitor is public = object {
             }
         }
 
+        io.error.write ("\nBefore trying to resolve, unresolvedTypes = " ++
+              "{unresolvedTypes} \nAnd typeDefs = {typeDefs}")
+
         //Loops until all imported types are resolved and stored in the types scope
         while{unresolvedTypes.size > 0} do {
             //To resolve its given type, importHelper recursively resolves other
@@ -862,7 +866,8 @@ def astVisitor: ast.AstVisitor is public = object {
                 //remove the type belonging to '$nickname' from the types scope
                 scope.types.stack.at(1).removeKey("{impName}.{name}")
             } else {
-                importMethods.add(aMethodType.fromGctLine(methSig, impName))
+                importMethods.add(
+                                aMethodType.fromGctLine(methSig, impName).mType)
             }
         }
 
@@ -898,10 +903,14 @@ def astVisitor: ast.AstVisitor is public = object {
                 "defined in the {impName} GCT file. Likely a problem with " ++
                 "writing the GCT file.")
         }
-        io.error.write "\n 2413: looking for {typeName} defined as {typeDefs.at(typeName)}"
+        io.error.write ("\n 2413: looking for {typeName} defined as " ++
+                                                      "{typeDefs.at(typeName)}")
 
         //Holds the type literals that make up 'typeName'
-        def typeLiterals: Dictionary⟦String,ObjectType⟧ = emptyDictionary
+        def typeLiterals : Dictionary⟦String, ObjectType⟧ = emptyDictionary
+
+        //Holds the MethodTypeNodes which make up the type literal
+        def methodNodes : Dictionary⟦String, List⟦AstNode⟧⟧ = emptyDictionary
 
         //Holds all methods belonging to 'typeName'
         def typeMeths: Set⟦MethodType⟧ = emptySet
@@ -916,9 +925,21 @@ def astVisitor: ast.AstVisitor is public = object {
                 def oType : ObjectType = anObjectType.fromMethods(emptySet)
                                                         withNode (ast.baseNode)
                 typeLiterals.at(methPrefix) put (oType)
+                methodNodes.at(methPrefix) put (emptyList⟦AstNode⟧)
             }
-            typeLiterals.at(methPrefix).methods.add(
-                          aMethodType.fromGctLine(typeDef.removeFirst, impName))
+            def processedLine : MethodPair =
+                          aMethodType.fromGctLine(typeDef.removeFirst, impName)
+
+            typeLiterals.at(methPrefix).methods.add(processedLine.mType)
+            methodNodes.at(methPrefix).add(processedLine.mNode)
+        }
+
+        //go through our dictionaries and update the ObjectTypes to hold the
+        //correct TypeLiteralNodes
+        for (methodNodes.keys) do {literalID : String →
+            def typeLitNode : AstNode = ast.typeLiteralNode.new(
+                                  methodNodes.at(literalID), emptyList⟦AstNode⟧)
+            typeLiterals.at(literalID).node := typeLitNode
         }
 
         //*******************************************************
@@ -981,18 +1002,32 @@ def astVisitor: ast.AstVisitor is public = object {
         io.error.write("\nCalled importOpHelper on {typeName} with the " ++
                                                           "typeDef of {list}")
         def elt : String = typeDef.removeFirst
-        //elt is an op, and what comes after it is its left side and right side
+        //elt is an op, and what comes after it in typeDef is its left operand
+        //and right operand.
+        //Before evaluating & and |, we need to put an unresolved ObjectType for
+        //typeName in the types scope. In the case where these operations deal
+        //with methods with the same nameString, subtyping checks are made. If
+        //one of the conflicting methods refers to typeName, subtyping requires
+        //that typeName is already in the scope.
         if (elt == "&") then {
             def leftSide  : ObjectType = importOpHelper(typeDef, typeLits, elt,
                                             impName, unresolvedTypes, typeDefs)
             def rightSide : ObjectType = importOpHelper(typeDef, typeLits, elt,
                                             impName, unresolvedTypes, typeDefs)
+            def opNode : AstNode = ast.opNode.new(
+                                            "&", leftSide.node, rightSide.node)
+            def tempOType : ObjectType = anObjectType.definedByNode(opNode)
+            scope.types.at("{impName}.{typeName}") put (tempOType)
             leftSide & rightSide
         } elseif {elt == "|"} then {
             def leftSide  : ObjectType = importOpHelper(typeDef, typeLits, elt,
                                             impName, unresolvedTypes, typeDefs)
             def rightSide : ObjectType = importOpHelper(typeDef, typeLits, elt,
                                             impName, unresolvedTypes, typeDefs)
+            def opNode : AstNode = ast.opNode.new(
+                                            "|", leftSide.node, rightSide.node)
+            def tempOType : ObjectType = anObjectType.definedByNode(opNode)
+            scope.types.at("{impName}.{typeName}") put (tempOType)
             leftSide | rightSide
         //elt refers to an already-processed type literal
         } elseif {elt.startsWithDigit} then {

@@ -118,6 +118,18 @@ method dtypeToString(dtype) {
 // Type declarations for type representations to use for type checking
 // -------------------------------------------------------------------
 
+type MethodPair = share.MethodPair
+
+//This class is used to construct the return type of the method fromGCTLine
+class methodPair(mType' : MethodType, mNode' : AstNode) → MethodPair {
+    method mType → MethodType {
+        mType'
+    }
+    method mNode → AstNode {
+        mNode'
+    }
+}
+
 //This type is used for checking subtyping
 type TypePair = share.TypePair
 
@@ -336,12 +348,13 @@ def aMethodType: MethodTypeFactory is public = object {
                                                               returnType (rType)
     }
 
-    // Parses a methodtype line from a gct file into a MethodType object.
+    // Parses a methodtype line from a gct file into a MethodPair holding the
+    // MethodType and ast.MethodTypeNode created from the methodtype line.
     // Lines will always be formatted like this:
     //  1 methname(param : ParamType)part(param : ParamType) → ReturnType
     // The number at the beginning is ignored here, since it is handled
     // down in the Imports rule.
-    method fromGctLine (line : String, importName : String) → MethodType {
+    method fromGctLine (line : String, importName : String) → MethodPair {
         //TODO: Generics are currently skipped over and ignored entirely.
         // string specifying method being imported
         var mstr: String
@@ -349,6 +362,9 @@ def aMethodType: MethodTypeFactory is public = object {
         var lst: Number
         def parts: List⟦MixPart⟧ = list[]
         var ret: String
+
+        //List holding ast.SignatureParts that go into making the MethodTypeNode
+        def sigParts: List⟦AstNode⟧ = emptyList⟦AstNode⟧
 
         //Declare an identifier node that will be used when saving the type
         //of method parameter and method return, so we only retrieve the actual
@@ -379,6 +395,9 @@ def aMethodType: MethodTypeFactory is public = object {
                 fst := lst + 2
                 lst := fst
                 var multiple: Boolean := true
+
+                //list holding the identifier nodes representing parameters
+                def paramNodes: List⟦AstNode⟧ = emptyList⟦AstNode⟧
 
                 //Iterates through all the parameters in this part
                 while {multiple} do {
@@ -414,23 +433,28 @@ def aMethodType: MethodTypeFactory is public = object {
                         multiple := false
                     }
 
-                    //Add this parameter to the parameter list, dtype of ident
+                    //Add this parameter to the parameter lists, dtype of ident
                     //can be set to false because it is never used
                     ident := ast.identifierNode.new("{paramType}", false)
                     partParams.add(aParam.withName(paramName)
                                       ofType(anObjectType.definedByNode(ident)))
+                    paramNodes.add(ast.identifierNode.new(paramName, ident))
                 }
                 //Return from while-loop with the full part definition
                 par := mstr.indexOf ("(") startingAt (lst)
                 fst := lst + 1
                 lst := par - 1
                 parts.add (aMixPartWithName (partName) parameters (partParams))
+                sigParts.add(ast.signaturePart.partName(partName)
+                                                            params (paramNodes))
             }
         } else { //This method is a member, the partName is the method's name
             var partName : String := mstr.substringFrom (fst)
                                                     to (mstr.indexOf(" →") - 1)
             // io.error.write "partName = {partName}"
             parts.add (aMixPartWithName (partName) parameters (list[]))
+            sigParts.add(ast.signaturePart.partName(partName)
+                                                    params (emptyList⟦AstNode⟧))
         }
 
         fst := mstr.indexOf ("→ ") startingAt (1) + 2
@@ -455,8 +479,13 @@ def aMethodType: MethodTypeFactory is public = object {
         io.error.write "\n443: finding rType"
         def rType: ObjectType = anObjectType.definedByNode(ident)
         io.error.write "\n444: rType = {rType}"
-        signature (parts) returnType (rType)
+
+        //construct and return the MethodPair
+        def mType : MethodType = signature (parts) returnType (rType)
+        def mNode : AstNode = ast.methodTypeNode.new(sigParts, ident)
+        methodPair(mType, mNode)
     }
+
     // if node is a method, class, method signature,
     // def, or var, create appropriate method type
     method fromNode (node: AstNode) → MethodType {

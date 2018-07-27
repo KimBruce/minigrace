@@ -833,7 +833,7 @@ def anObjectType: ObjectTypeFactory is public = object {
                 }
                 return object {
                     inherit anObjectType.fromMethods(restrictTypes)
-                                                        withNode(ast.baseNode)
+                                                        withNode(ast.nullNode)
 
                     method asString → String is override {
                         "{outer}|{other}"
@@ -1137,7 +1137,7 @@ def anObjectType: ObjectTypeFactory is public = object {
 
             method getMethod(_ : String) → noSuchMethod { noSuchMethod }
 
-            var node : AstNode is public := ast.baseNode
+            var node : AstNode is public := ast.nullNode
 
             method resolve -> ObjectType { self }
 
@@ -1183,11 +1183,14 @@ def anObjectType: ObjectTypeFactory is public = object {
         def meths: Set⟦MethodType⟧ = emptySet
         meths.add(aMethodType.signature(signature) returnType(rType))
 
-        //Joe - Is there anytime where we want to save the internal types?
-        //when a block has name??
-        //when the last statement is an object or a typeDec?
-        //In here we don't get the astNode; look at returnType?
-        fromMethods(meths) withNode (ast.baseNode) withName("Block")
+        //construct the node corresponding to the block
+        def paramNodes : List⟦AstNode⟧ = emptyList⟦AstNode⟧
+        for (params) do { p: Param →
+            paramNodes.add(ast.identifierNode.new(p.name, false))
+        }
+        def blockNode: AstNode = ast.blockNode.new(paramNodes,emptyList⟦AstNode⟧)
+
+        fromMethods(meths) withNode (blockNode) withName("Block")
     }
 
     method blockReturning(rType : ObjectType) → ObjectType {
@@ -1259,8 +1262,8 @@ def anObjectType: ObjectTypeFactory is public = object {
     // StandardPrelude
     var base : ObjectType is readable := dynamic
     def doneType : ObjectType is public = fromMethods(sg.emptySet)
-                                        withNode(ast.baseNode) withName("Done")
-    base := fromMethods(sg.emptySet) withNode(ast.baseNode) withName("Object")
+                                        withNode(ast.nullNode) withName("Done")
+    base := fromMethods(sg.emptySet) withNode(ast.nullNode) withName("Object")
 
     //Used for type-checking imports; please update when additional types are added
     def preludeTypes: Set⟦String⟧ is public = ["Pattern", "Iterator", "Boolean",
@@ -1269,41 +1272,41 @@ def anObjectType: ObjectTypeFactory is public = object {
                                   "Collection", "Enumerable", "Range"]
 
     def pattern : ObjectType is public = fromMethods(sg.emptySet)
-                            withNode(ast.baseNode) withName("Pattern")
+                            withNode(ast.nullNode) withName("Pattern")
     def iterator : ObjectType is public = fromMethods(sg.emptySet)
-                            withNode(ast.baseNode) withName("Iterator")
+                            withNode(ast.nullNode) withName("Iterator")
     def boolean : ObjectType is public = fromMethods(sg.emptySet)
-                            withNode(ast.baseNode) withName("Boolean")
+                            withNode(ast.nullNode) withName("Boolean")
     def number : ObjectType is public = fromMethods(sg.emptySet)
-                            withNode(ast.baseNode) withName("Number")
+                            withNode(ast.nullNode) withName("Number")
     def string : ObjectType is public = fromMethods(sg.emptySet)
-                            withNode(ast.baseNode) withName("String")
+                            withNode(ast.nullNode) withName("String")
     def listTp : ObjectType is public = fromMethods(sg.emptySet)
-                            withNode(ast.baseNode) withName("List")
+                            withNode(ast.nullNode) withName("List")
     def set : ObjectType is public = fromMethods(sg.emptySet)
-                            withNode(ast.baseNode) withName("Set")
+                            withNode(ast.nullNode) withName("Set")
     def sequence : ObjectType is public = fromMethods(sg.emptySet)
-                            withNode(ast.baseNode) withName("Sequence")
+                            withNode(ast.nullNode) withName("Sequence")
     def dictionary : ObjectType is public = fromMethods(sg.emptySet)
-                            withNode(ast.baseNode) withName("Dictionary")
+                            withNode(ast.nullNode) withName("Dictionary")
     def point : ObjectType is public = fromMethods(sg.emptySet)
-                            withNode(ast.baseNode) withName("Point")
+                            withNode(ast.nullNode) withName("Point")
     def binding : ObjectType is public = fromMethods(sg.emptySet)
-                            withNode(ast.baseNode) withName("Binding")
+                            withNode(ast.nullNode) withName("Binding")
     def collection : ObjectType is public = fromMethods(sg.emptySet)
-                            withNode(ast.baseNode) withName("Collection")
+                            withNode(ast.nullNode) withName("Collection")
     def enumerable : ObjectType is public = fromMethods(sg.emptySet)
-                            withNode(ast.baseNode) withName("Enumerable")
+                            withNode(ast.nullNode) withName("Enumerable")
     def rangeTp : ObjectType is public = fromMethods(sg.emptySet)
-                            withNode(ast.baseNode) withName("Range")
+                            withNode(ast.nullNode) withName("Range")
     def prelude: ObjectType is public = fromMethods(sg.emptySet)
-                            withNode(ast.baseNode) withName("Prelude")
+                            withNode(ast.nullNode) withName("Prelude")
     def boolBlock: ObjectType is public = fromMethods(sg.emptySet)
-                            withNode(ast.baseNode) withName("BoolBlock")
+                            withNode(ast.nullNode) withName("BoolBlock")
     def doneBlock: ObjectType is public = fromMethods(sg.emptySet)
-                            withNode(ast.baseNode) withName("DoneBlock")
+                            withNode(ast.nullNode) withName("DoneBlock")
     def dynamicDoneBlock: ObjectType is public = fromMethods(sg.emptySet)
-                            withNode(ast.baseNode) withName("DynamicDoneBlock")
+                            withNode(ast.nullNode) withName("DynamicDoneBlock")
 
 //    addTo (base) name ("==") param(base) returns(boolean)
     addTo (base) name ("≠") param(base) returns(boolean)

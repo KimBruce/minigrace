@@ -146,11 +146,7 @@ class typePair(first':ObjectType, second':ObjectType) → TypePair is confidenti
 }
 
 //This type is used for checking subtyping
-type Answer = {
-    ans → Boolean
-    trials → List⟦TypePair⟧
-    asString → String
-}
+type Answer = share.Answer
 
 class answerConstructor(ans':Boolean, trials':List⟦TypePair⟧) → Answer {
     method ans → Boolean {ans'}
@@ -162,15 +158,9 @@ class answerConstructor(ans':Boolean, trials':List⟦TypePair⟧) → Answer {
 
 
 // type of a parameter
-type Param = {
-    name → String
-    typeAnnotation → ObjectType
-}
+type Param = share.Param
 
-type ParamFactory = {
-    withName (name' : String) ofType (type' : ObjectType) → Param
-    ofType (type' : ObjectType) → Param
-}
+type ParamFactory = share.ParamFactory
 
 // Create parameter with given name' and type'
 // if no name then use wildcard "_"
@@ -192,10 +182,7 @@ def aParam: ParamFactory is readable = object {
 
 // MixPart is a "segment" of a method:
 // Ex. for (param1) do (param2), for(param1) and do(param2) are separate "MixParts."
-type MixPart = {
-    name → String
-    parameters → List⟦Param⟧
-}
+type MixPart = share.MixPart
 
 // create a mixpart with given name' and parameters'
 class aMixPartWithName(name' : String)

@@ -640,12 +640,13 @@ def astVisitor: ast.AstVisitor is public = object {
         }
         cache.at (ident) put (idType)
         true
-
     }
 
     method visitTypeDec(node: share.TypeDeclaration) → Boolean {
         io.error.write "visit type dec for {node}"
-        cache.at(node) put (anObjectType.fromDType(node.value))
+        def vType : ObjectType = anObjectType.fromDType(node.value)
+        scope.types.addToTopAt(node.nameString) put (vType)
+        cache.at(node) put (vType)
         io.error.write "\n656: type dec for node has in cache {cache.at(node)}"
         false
     }
@@ -923,7 +924,7 @@ def astVisitor: ast.AstVisitor is public = object {
 
             if (typeLiterals.containsKey(methPrefix).not) then {
                 def oType : ObjectType = anObjectType.fromMethods(emptySet)
-                                                        withNode (ast.baseNode)
+                                                        withNode (ast.nullNode)
                 typeLiterals.at(methPrefix) put (oType)
                 methodNodes.at(methPrefix) put (emptyList⟦AstNode⟧)
             }
@@ -951,7 +952,7 @@ def astVisitor: ast.AstVisitor is public = object {
         def myType : ObjectType = if (typeDef.size == 0) then {
             //type is defined by a type literal
             if (typeLiterals.size == 0) then {
-                anObjectType.fromMethods(emptySet) withNode (ast.baseNode)
+                anObjectType.fromMethods(emptySet) withNode (ast.nullNode)
             } else {
                 typeLiterals.values.first
             }
@@ -1000,7 +1001,7 @@ def astVisitor: ast.AstVisitor is public = object {
                 typeDefs : Dictionary⟦String, List⟦String⟧⟧) → ObjectType {
 
         io.error.write("\nCalled importOpHelper on {typeName} with the " ++
-                                                          "typeDef of {list}")
+                                                        "typeDef of {typeDef}")
         def elt : String = typeDef.removeFirst
         //elt is an op, and what comes after it in typeDef is its left operand
         //and right operand.
@@ -1095,7 +1096,7 @@ method outerAt(i : Number) → ObjectType is confidential {
 
         //Joe - maybe do outer.types
         def oType: ObjectType = anObjectType.fromMethods(meths)
-                                                        withNode (ast.baseNode)
+                                                        withNode (ast.nullNode)
         def mType: MethodType = aMethodType.member("outer") ofType(oType)
 
         curr.at("outer") put(oType)

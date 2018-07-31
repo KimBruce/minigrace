@@ -13,7 +13,6 @@ import "ObjectTypeModule" as ot
 inherit sg.methods
 
 type MethodType = share.MethodType
-type MethodPair = share.MethodPair
 type ObjectType = share.ObjectType
 type ObjectTypeFactory = share.ObjectTypeFactory
 type MethodTypeFactory = share.MethodTypeFactory
@@ -29,6 +28,7 @@ def scope: share.Scope = sc.scope
 def aParam: Param = ot.aParam
 def aMethodType:MethodTypeFactory = ot.aMethodType
 
+def debug: Boolean = false
 
 // Checker error
 
@@ -70,9 +70,13 @@ method objectTypeFromBlockBody(body: Sequence⟦AstNode⟧) → ObjectType {
 
 // check the type of node and insert into cache associated with the node
 method checkTypes (node: AstNode) → Done {
-    io.error.write "\n233: checking types of {node.nameString}"
+    if (debug) then {
+        io.error.write "\n233: checking types of {node.nameString}"
+    }
     cache.at (node) ifAbsent {
-        io.error.write "\n235: {node.nameString} not in cache"
+        if (debug) then {
+           io.error.write "\n235: {node.nameString} not in cache"
+        }
         node.accept (astVisitor)
     }
 }
@@ -145,8 +149,10 @@ method check (req : share.Request)
         for (params) and (args) do { param: Param, arg: AstNode →
             def pType: ObjectType = param.typeAnnotation
             def aType: ObjectType = typeOf(arg)
-            io.error.write ("\n1631 Checking {arg} of type {aType} is subtype of {pType}"++
-                "\nwhile checking {req} against {meth}")
+            if (debug) then {
+                io.error.write ("\n1631 Checking {arg} of type {aType} is subtype of {pType}"++
+                    "\nwhile checking {req} against {meth}")
+            }
             if (aType.isConsistentSubtypeOf (pType).not) then {
                 outer.RequestError.raise("the expression " ++
                     "`{stripNewLines(arg.toGrace(0))}` of type '{aType}' does not " ++
@@ -213,7 +219,9 @@ def astVisitor: ast.AstVisitor is public = object {
 
     // Default behavior serving as placeholder only for cases not yet implemented
     method checkMatch(node: AstNode) → Boolean {
-        io.error.write "1436: checkMatch in astVisitor"
+        if (debug) then {
+            io.error.write "1436: checkMatch in astVisitor"
+        }
         true
     }
 
@@ -275,7 +283,9 @@ def astVisitor: ast.AstVisitor is public = object {
                 // for literals!
                 if ((param.dtype.kind ≠ "string")
                                       && {param.dtype.kind ≠ "num"}) then {
-                    io.error.write("\n1517: {param.value} has {param.dtype}")
+                    if (debug) then {
+                        io.error.write("\n1517: {param.value} has {param.dtype}")
+                    }
                     scope.variables.at(param.value)
                                       put(anObjectType.fromDType(param.dtype))
                 }
@@ -309,7 +319,9 @@ def astVisitor: ast.AstVisitor is public = object {
             returning(retType)
 
         cache.at (block) put (blockType)
-        io.error.write "block has type {blockType}"
+        if (debug) then {
+            io.error.write "block has type {blockType}"
+        }
         false
     }
 
@@ -640,13 +652,12 @@ def astVisitor: ast.AstVisitor is public = object {
         }
         cache.at (ident) put (idType)
         true
+
     }
 
     method visitTypeDec(node: share.TypeDeclaration) → Boolean {
         io.error.write "visit type dec for {node}"
-        def vType : ObjectType = anObjectType.fromDType(node.value)
-        scope.types.addToTopAt(node.nameString) put (vType)
-        cache.at(node) put (vType)
+        cache.at(node) put (anObjectType.fromDType(node.value))
         io.error.write "\n656: type dec for node has in cache {cache.at(node)}"
         false
     }
@@ -821,9 +832,6 @@ def astVisitor: ast.AstVisitor is public = object {
             }
         }
 
-        io.error.write ("\nBefore trying to resolve, unresolvedTypes = " ++
-              "{unresolvedTypes} \nAnd typeDefs = {typeDefs}")
-
         //Loops until all imported types are resolved and stored in the types scope
         while{unresolvedTypes.size > 0} do {
             //To resolve its given type, importHelper recursively resolves other
@@ -867,8 +875,7 @@ def astVisitor: ast.AstVisitor is public = object {
                 //remove the type belonging to '$nickname' from the types scope
                 scope.types.stack.at(1).removeKey("{impName}.{name}")
             } else {
-                importMethods.add(
-                                aMethodType.fromGctLine(methSig, impName).mType)
+                importMethods.add(aMethodType.fromGctLine(methSig, impName))
             }
         }
 
@@ -904,14 +911,10 @@ def astVisitor: ast.AstVisitor is public = object {
                 "defined in the {impName} GCT file. Likely a problem with " ++
                 "writing the GCT file.")
         }
-        io.error.write ("\n 2413: looking for {typeName} defined as " ++
-                                                      "{typeDefs.at(typeName)}")
+        io.error.write "\n 2413: looking for {typeName} defined as {typeDefs.at(typeName)}"
 
         //Holds the type literals that make up 'typeName'
-        def typeLiterals : Dictionary⟦String, ObjectType⟧ = emptyDictionary
-
-        //Holds the MethodTypeNodes which make up the type literal
-        def methodNodes : Dictionary⟦String, List⟦AstNode⟧⟧ = emptyDictionary
+        def typeLiterals: Dictionary⟦String,ObjectType⟧ = emptyDictionary
 
         //Holds all methods belonging to 'typeName'
         def typeMeths: Set⟦MethodType⟧ = emptySet
@@ -924,23 +927,11 @@ def astVisitor: ast.AstVisitor is public = object {
 
             if (typeLiterals.containsKey(methPrefix).not) then {
                 def oType : ObjectType = anObjectType.fromMethods(emptySet)
-                                                        withNode (ast.nullNode)
+                                                        withNode (ast.baseNode)
                 typeLiterals.at(methPrefix) put (oType)
-                methodNodes.at(methPrefix) put (emptyList⟦AstNode⟧)
             }
-            def processedLine : MethodPair =
-                          aMethodType.fromGctLine(typeDef.removeFirst, impName)
-
-            typeLiterals.at(methPrefix).methods.add(processedLine.mType)
-            methodNodes.at(methPrefix).add(processedLine.mNode)
-        }
-
-        //go through our dictionaries and update the ObjectTypes to hold the
-        //correct TypeLiteralNodes
-        for (methodNodes.keys) do {literalID : String →
-            def typeLitNode : AstNode = ast.typeLiteralNode.new(
-                                  methodNodes.at(literalID), emptyList⟦AstNode⟧)
-            typeLiterals.at(literalID).node := typeLitNode
+            typeLiterals.at(methPrefix).methods.add(
+                          aMethodType.fromGctLine(typeDef.removeFirst, impName))
         }
 
         //*******************************************************
@@ -952,7 +943,7 @@ def astVisitor: ast.AstVisitor is public = object {
         def myType : ObjectType = if (typeDef.size == 0) then {
             //type is defined by a type literal
             if (typeLiterals.size == 0) then {
-                anObjectType.fromMethods(emptySet) withNode (ast.nullNode)
+                anObjectType.fromMethods(emptySet) withNode (ast.baseNode)
             } else {
                 typeLiterals.values.first
             }
@@ -1001,34 +992,20 @@ def astVisitor: ast.AstVisitor is public = object {
                 typeDefs : Dictionary⟦String, List⟦String⟧⟧) → ObjectType {
 
         io.error.write("\nCalled importOpHelper on {typeName} with the " ++
-                                                        "typeDef of {typeDef}")
+                                                          "typeDef of {list}")
         def elt : String = typeDef.removeFirst
-        //elt is an op, and what comes after it in typeDef is its left operand
-        //and right operand.
-        //Before evaluating & and |, we need to put an unresolved ObjectType for
-        //typeName in the types scope. In the case where these operations deal
-        //with methods with the same nameString, subtyping checks are made. If
-        //one of the conflicting methods refers to typeName, subtyping requires
-        //that typeName is already in the scope.
+        //elt is an op, and what comes after it is its left side and right side
         if (elt == "&") then {
             def leftSide  : ObjectType = importOpHelper(typeDef, typeLits, elt,
                                             impName, unresolvedTypes, typeDefs)
             def rightSide : ObjectType = importOpHelper(typeDef, typeLits, elt,
                                             impName, unresolvedTypes, typeDefs)
-            def opNode : AstNode = ast.opNode.new(
-                                            "&", leftSide.node, rightSide.node)
-            def tempOType : ObjectType = anObjectType.definedByNode(opNode)
-            scope.types.at("{impName}.{typeName}") put (tempOType)
             leftSide & rightSide
         } elseif {elt == "|"} then {
             def leftSide  : ObjectType = importOpHelper(typeDef, typeLits, elt,
                                             impName, unresolvedTypes, typeDefs)
             def rightSide : ObjectType = importOpHelper(typeDef, typeLits, elt,
                                             impName, unresolvedTypes, typeDefs)
-            def opNode : AstNode = ast.opNode.new(
-                                            "|", leftSide.node, rightSide.node)
-            def tempOType : ObjectType = anObjectType.definedByNode(opNode)
-            scope.types.at("{impName}.{typeName}") put (tempOType)
             leftSide | rightSide
         //elt refers to an already-processed type literal
         } elseif {elt.startsWithDigit} then {
@@ -1096,7 +1073,7 @@ method outerAt(i : Number) → ObjectType is confidential {
 
         //Joe - maybe do outer.types
         def oType: ObjectType = anObjectType.fromMethods(meths)
-                                                        withNode (ast.nullNode)
+                                                        withNode (ast.baseNode)
         def mType: MethodType = aMethodType.member("outer") ofType(oType)
 
         curr.at("outer") put(oType)
@@ -1120,6 +1097,7 @@ method processBody (obj : AstNode, superclass: AstNode | false)
     var publicSuperType: ObjectType := anObjectType.base
     def superType: ObjectType = if(hasInherits) then {
         def inheriting: AstNode = superclass
+        // make sure no self, super in "inherit" clause
 //        inheriting.accept(object {
 //            inherit ast.baseVisitor
 
@@ -1133,10 +1111,6 @@ method processBody (obj : AstNode, superclass: AstNode | false)
 //                true
 //            }
 //        })
-        io.error.write "aliases: {superclass.aliases}"
-        if (superclass.aliases.size > 0) then {
-            io.error.write "first alias is {superclass.aliases.at(1).newName.kind}"
-        }
 
         io.error.write "\nGT1981: checking types of inheriting = {inheriting}\n"
         var name: String := inheriting.value.nameString
@@ -1171,6 +1145,38 @@ method processBody (obj : AstNode, superclass: AstNode | false)
                 }
             }
         }
+        
+        io.error.write "aliases: {superclass.aliases}"
+        if (superclass.aliases.size > 0) then {
+            io.error.write ("first alias is {superclass.aliases.at(1).newName} "
+                    ++ "to {superclass.aliases.at(1).oldName}")
+        }
+        
+        // Add new method for each alias given with super class
+        def aliasMethods: List⟦MethodType⟧ = emptyList
+        for (superclass.aliases) do {aliasPair →
+            for (inheritedMethods) do {im →
+                io.error.write "\n1144 comparing {aliasPair.oldName.value} and {im.nameString}"
+                if (aliasPair.oldName.value == im.nameString) then {
+//                    io.error.write "\n1126 aliasing {im}"
+                    def oldSig: List⟦MixPart⟧ = im.signature
+                    var aliasNm: String := aliasPair.newName.value
+                    def firstParen: String = aliasNm.indexOf("(")
+                    if (firstParen > 0) then { 
+                        aliasNm := aliasNm.substringFrom(1) to (firstParen)
+                    }
+                    def newFirst: MixPart = ot.aMixPartWithName(aliasNm)
+                        parameters (oldSig.at(1).parameters)
+                    def newSig: List⟦MixPart⟧ = oldSig.copy.at (1) put (newFirst)
+                    def newMethType: MethodType = ot.aMethodType.signature (newSig)
+                                    returnType (im.returnType)
+                    aliasMethods.add(newMethType)
+                    io.error.write "\n1154: just added alias {newMethType}"
+                }
+            }
+        }
+        inheritedMethods.addAll(aliasMethods)
+
         //Node of inheritedType could be inheriting.value or inheriting
         inheritedType := anObjectType.fromMethods(inheritedMethods) withNode (inheriting.value)
         publicSuperType := anObjectType.fromMethods(pubInheritedMethods) withNode (inheriting.value)
@@ -1213,12 +1219,15 @@ method processBody (obj : AstNode, superclass: AstNode | false)
         def allTypes: Dictionary⟦String,ObjectType⟧ = emptyDictionary
 
         // gather types for all methods in object
-        // TODO: Worry about overriding with refined signature
         for(body) do { stmt: AstNode →
             io.error.write "\n2009: processing {stmt}"
             match(stmt) case { meth : share.Method →
+                // ensure any method overriding one from super class is
+                // compatible
                 def mType: MethodType = aMethodType.fromNode(meth)
                 checkOverride(mType,allMethods,publicMethods)
+                
+                // add new method to the collection of methods
                 allMethods.add(mType)
                 io.error.write "\n1158 Adding {mType} to allMethods"
                 io.error.write "\n1159 AllMethods: {allMethods}"
@@ -1237,6 +1246,12 @@ method processBody (obj : AstNode, superclass: AstNode | false)
 
             } case { defd : share.Def | share.Var →
                 def mType: MethodType = aMethodType.fromNode(defd)
+                // TODO: check nameString instead
+                if (allMethods.contains(mType)) then {
+                    MethodError.raise ("A var or def {mType} may not override "
+                        ++ "an existing method from the superclass}") 
+                        with (mType)
+                }
                 allMethods.add(mType)
                 io.error.write "\n1177 AllMethods: {allMethods}"
 
@@ -1296,16 +1311,20 @@ method processBody (obj : AstNode, superclass: AstNode | false)
     pubConf(publicType,internalType)
 }
 
+// If either allMethods or publicMethods contains a method with the same name
+// and number of parameters as mType then make sure mType is a specialization,
+// and remove the old one from allMethods and publicMethods
 method checkOverride(mType: MethodType, allMethods: Set⟦MethodType⟧,
                                         publicMethods: Set⟦MethodType⟧) → Done {
     def oldMethType: MethodType = allMethods.find{m:MethodType →
         mType.nameString == m.nameString
-    } ifNone {return}
+    } ifNone {return}  // Nothing to be done if corresponding methdo not there
     io.error.write "\n1233 Found new method {mType} while old was {oldMethType}"
     if(mType.isSpecialisationOf(emptyList⟦TypePair⟧, oldMethType).ans.not) then {
         MethodError.raise ("Type of overriding method {mType} is not"
             ++ " a specialization of existing method {oldMethType}") with (mType)
     }
+    // remove the old method type
     allMethods.remove(oldMethType)
     if (publicMethods.contains(oldMethType)) then {
         publicMethods.remove(oldMethType)

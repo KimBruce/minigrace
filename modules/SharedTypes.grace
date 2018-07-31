@@ -36,9 +36,9 @@ method stripNewLines(str) → String is confidential {
 type ObjectType = {
     methods → Set⟦MethodType⟧
     getMethod (name : String) → MethodType | noSuchMethod
-    node → AstNode
     resolve → ObjectType
     isResolved → Boolean
+    isOp → Boolean
     isDynamic → Boolean
     == (other:ObjectType) → Boolean
     isSubtypeOf (other : ObjectType) → Boolean
@@ -47,6 +47,8 @@ type ObjectType = {
     isConsistentSubtypeOf (other : ObjectType) → Boolean
     getVariantTypes → List⟦ObjectType⟧
     setVariantTypes(newVariantTypes:List⟦ObjectType⟧) → Done
+    getOpNode → TypeOp
+    setOpNode (op : TypeOp) → Done
     | (other : ObjectType) → ObjectType
     & (other : ObjectType) → ObjectType
 }
@@ -54,14 +56,13 @@ type ObjectType = {
 // methods to create an object type from various inputs
 type ObjectTypeFactory = {
     definedByNode (node : AstNode) → ObjectType
-    fromMethods (methods' : Set⟦MethodType⟧) withNode(node:AstNode)→ ObjectType
-    fromMethods (methods' : Set⟦MethodType⟧) withNode(node:AstNode)
-                                          withName (name : String) → ObjectType
+    fromMethods (methods' : Set⟦MethodType⟧) → ObjectType
+    fromMethods(methods' : Set⟦MethodType⟧) withName(name : String) → ObjectType
     fromDType (dtype) → ObjectType
     fromIdentifier(ident : Identifier) → ObjectType
     dynamic → ObjectType
     bottom → ObjectType
-    blockTaking (params : List⟦Parameter⟧) returning (rType : ObjectType) → ObjectType
+    blockTaking(params:List⟦Parameter⟧) returning(rType:ObjectType) → ObjectType
     blockReturning (rType : ObjectType) → ObjectType
     preludeTypes → Set⟦String⟧
     base → ObjectType
@@ -111,14 +112,8 @@ type MethodTypeFactory = {
     signature (signature' : List⟦MixPart⟧)
             returnType (rType : ObjectType)→ MethodType
     member (name : String) ofType (rType : ObjectType) → MethodType
-    fromGctLine (line : String, importName: String) → MethodPair
+    fromGctLine (line : String, importName: String) → MethodType
     fromNode (node: AstNode) → MethodType
-}
-
-//This type is used as the return type of the method fromGCTLine
-type MethodPair = {
-    mType → MethodType
-    mNode → AstNode
 }
 
 //This type is used for checking subtyping
@@ -129,18 +124,25 @@ type TypePair = {
     asString → String
 }
 
-// MixPart is a "segment" of a method:
-// Ex. for (param1) do (param2), for(param1) and do(param2) are separate "MixParts."
-type MixPart = {
-    name → String
-    parameters → List⟦Param⟧
-}
-
 //This type is used for checking subtyping
 type Answer = {
     ans → Boolean
     trials → List⟦TypePair⟧
     asString → String
+}
+
+//Type is
+type TypeOp = {
+    op → String
+    left → ObjectType
+    right → ObjectType
+}
+
+// MixPart is a "segment" of a method:
+// Ex. for (param1) do (param2), for(param1) and do(param2) are separate "MixParts."
+type MixPart = {
+    name → String
+    parameters → List⟦Param⟧
 }
 
 // type of a parameter

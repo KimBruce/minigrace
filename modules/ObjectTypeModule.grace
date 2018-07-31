@@ -118,17 +118,6 @@ method dtypeToString(dtype) {
 // Type declarations for type representations to use for type checking
 // -------------------------------------------------------------------
 
-type MethodPair = share.MethodPair
-
-//This class is used to construct the return type of the method fromGCTLine
-class methodPair(mType' : MethodType, mNode' : AstNode) → MethodPair {
-    method mType → MethodType {
-        mType'
-    }
-    method mNode → AstNode {
-        mNode'
-    }
-}
 
 //This type is used for checking subtyping
 type TypePair = share.TypePair
@@ -143,6 +132,22 @@ class typePair(first':ObjectType, second':ObjectType) → TypePair is confidenti
     }
 
     method asString {"<{first'} , {second'}>"}
+}
+
+type TypeOp = share.TypeOp
+
+class typeOp(op' : String, left' : ObjectType, right' : ObjectType) → TypeOp {
+    method op → String {
+        op'
+    }
+
+    method left → ObjectType {
+        left'
+    }
+
+    method right → ObjectType {
+        right'
+    }
 }
 
 //This type is used for checking subtyping
@@ -335,13 +340,12 @@ def aMethodType: MethodTypeFactory is public = object {
                                                               returnType (rType)
     }
 
-    // Parses a methodtype line from a gct file into a MethodPair holding the
-    // MethodType and ast.MethodTypeNode created from the methodtype line.
+    // Parses a methodtype line from a gct file into a MethodType object.
     // Lines will always be formatted like this:
     //  1 methname(param : ParamType)part(param : ParamType) → ReturnType
     // The number at the beginning is ignored here, since it is handled
     // down in the Imports rule.
-    method fromGctLine (line : String, importName : String) → MethodPair {
+    method fromGctLine (line : String, importName : String) → MethodType {
         //TODO: Generics are currently skipped over and ignored entirely.
         // string specifying method being imported
         var mstr: String
@@ -349,9 +353,6 @@ def aMethodType: MethodTypeFactory is public = object {
         var lst: Number
         def parts: List⟦MixPart⟧ = list[]
         var ret: String
-
-        //List holding ast.SignatureParts that go into making the MethodTypeNode
-        def sigParts: List⟦AstNode⟧ = emptyList⟦AstNode⟧
 
         //Declare an identifier node that will be used when saving the type
         //of method parameter and method return, so we only retrieve the actual
@@ -382,9 +383,6 @@ def aMethodType: MethodTypeFactory is public = object {
                 fst := lst + 2
                 lst := fst
                 var multiple: Boolean := true
-
-                //list holding the identifier nodes representing parameters
-                def paramNodes: List⟦AstNode⟧ = emptyList⟦AstNode⟧
 
                 //Iterates through all the parameters in this part
                 while {multiple} do {
@@ -425,23 +423,18 @@ def aMethodType: MethodTypeFactory is public = object {
                     ident := ast.identifierNode.new("{paramType}", false)
                     partParams.add(aParam.withName(paramName)
                                       ofType(anObjectType.definedByNode(ident)))
-                    paramNodes.add(ast.identifierNode.new(paramName, ident))
                 }
                 //Return from while-loop with the full part definition
                 par := mstr.indexOf ("(") startingAt (lst)
                 fst := lst + 1
                 lst := par - 1
                 parts.add (aMixPartWithName (partName) parameters (partParams))
-                sigParts.add(ast.signaturePart.partName(partName)
-                                                            params (paramNodes))
             }
         } else { //This method is a member, the partName is the method's name
             var partName : String := mstr.substringFrom (fst)
                                                     to (mstr.indexOf(" →") - 1)
             // io.error.write "partName = {partName}"
             parts.add (aMixPartWithName (partName) parameters (list[]))
-            sigParts.add(ast.signaturePart.partName(partName)
-                                                    params (emptyList⟦AstNode⟧))
         }
 
         fst := mstr.indexOf ("→ ") startingAt (1) + 2
@@ -467,10 +460,7 @@ def aMethodType: MethodTypeFactory is public = object {
         def rType: ObjectType = anObjectType.definedByNode(ident)
         io.error.write "\n444: rType = {rType}"
 
-        //construct and return the MethodPair
-        def mType : MethodType = signature (parts) returnType (rType)
-        def mNode : AstNode = ast.methodTypeNode.new(sigParts, ident)
-        methodPair(mType, mNode)
+        signature (parts) returnType (rType)
     }
 
     // if node is a method, class, method signature,
@@ -553,6 +543,8 @@ def anObjectType: ObjectTypeFactory is public = object {
     class definedByNode (node': AstNode) -> ObjectType{
         //io.error.write ("\nIn definedByNode with {node'} representing type" ++
         //    self.asString)
+        var storedOp : TypeOp
+
         method methods -> Set⟦MethodType⟧ {
             resolve.methods
         }
@@ -560,8 +552,6 @@ def anObjectType: ObjectTypeFactory is public = object {
         method getMethod (name : String) → MethodType | noSuchMethod {
             resolve.getMethod(name)
         }
-
-        var node : AstNode is public := node'
 
         //Process the AstNode to get its ObjectType
         method resolve -> ObjectType {
@@ -571,6 +561,13 @@ def anObjectType: ObjectTypeFactory is public = object {
         //an ObjectType is unresolved if it has yet to collect its methods and,
         //optionally, variant types
         def isResolved : Boolean is public = false
+
+        var isOp : Boolean is public := node'.kind == "op"
+        if (isOp) then {
+            def left : ObjectType = definedByNode(node'.left)
+            def right : ObjectType = definedByNode(node'.right)
+            setOpNode(typeOp(node'.value, left, right))
+        }
 
         def isDynamic : Boolean is public = false
 
@@ -589,24 +586,23 @@ def anObjectType: ObjectTypeFactory is public = object {
                                                                 "with {other}")
             //if self is defined by an opNode, then we recursively call
             //isSubtypeHelper on its left and right
-            if (node'.kind == "op") then {
-                def leftType : ObjectType = definedByNode(node'.left)
-                def left : Answer = leftType.isSubtypeHelper(trials, other)
+            if (isOp) then {
+                def left : Answer = storedOp.left.isSubtypeHelper(trials, other)
 
-                if (node'.value == "&") then {
+                if (storedOp.op == "&") then {
                     //Check left's result to see if right needs to be evaluated
                     if (left.ans) then {
                         return left
                     }
-                    def rightType : ObjectType = definedByNode(node'.right)
-                    def right : Answer= rightType.isSubtypeHelper(trials, other)
+                    def right : Answer = storedOp.right.isSubtypeHelper(
+                                                                  trials, other)
                     return answerConstructor((left.ans || right.ans), trials)
-                } elseif {node'.value == "|"} then {
+                } elseif {storedOp.op == "|"} then {
                     if (left.ans.not) then {
                         return left
                     }
-                    def rightType : ObjectType = definedByNode(node'.right)
-                    def right : Answer= rightType.isSubtypeHelper(trials, other)
+                    def right : Answer = storedOp.right.isSubtypeHelper(
+                                                                  trials, other)
                     return answerConstructor((left.ans && right.ans), trials)
                 }
             }
@@ -628,6 +624,15 @@ def anObjectType: ObjectTypeFactory is public = object {
 
         method setVariantTypes(newVariantTypes:List⟦ObjectType⟧) → Done {
             resolve.setVariantTypes(newVariantTypes)
+        }
+
+        method getOpNode → TypeOp {
+            storedOp
+        }
+
+        method setOpNode (op : TypeOp) → Done {
+            isOp := true
+            storedOp := op
         }
 
         method | (other : ObjectType) → ObjectType {
@@ -664,14 +669,15 @@ def anObjectType: ObjectTypeFactory is public = object {
     }
 
 
-    method fromMethods (methods' : Set⟦MethodType⟧) withNode (node': AstNode)
-                                                                  → ObjectType {
+    method fromMethods (methods' : Set⟦MethodType⟧) → ObjectType {
         object {
             // List of variant types (A | B | ... )
-            var variantTypes: List⟦ObjectType⟧ := list[]
+            var variantTypes : List⟦ObjectType⟧ := list[]
 
-            def methods : Set⟦MethodType⟧ is public = (if (base == dynamic)
-                then { emptySet } else { emptySet.addAll(base.methods) }).addAll(methods')
+            var storedOp : TypeOp
+
+            def methods : Set⟦MethodType⟧ is public = (if (base == dynamic)then {
+                  emptySet } else { emptySet.addAll(base.methods) }).addAll(methods')
 
             method getMethod(name : String) → MethodType | noSuchMethod {
                 for(methods) do { meth →
@@ -682,11 +688,11 @@ def anObjectType: ObjectTypeFactory is public = object {
                 return noSuchMethod
             }
 
-            var node : AstNode is public := node'
-
             method resolve -> ObjectType { self }
 
             def isResolved : Boolean is public = true
+
+            var isOp : Boolean is public := false
 
             def isDynamic : Boolean is public = false
 
@@ -728,8 +734,8 @@ def anObjectType: ObjectTypeFactory is public = object {
             method isSubtypeHelper(trials:List⟦TypePair⟧, other':ObjectType) → Answer {
                 def selfOtherPair : TypePair = typePair(self, other')
 
-                //io.error.write("\nchecking for selfOtherPair: {selfOtherPair}"++
-                //                                    "in trials list: {trials}")
+                io.error.write("\nchecking for selfOtherPair: {selfOtherPair}"++
+                                                    "in trials list: {trials}")
                 //if trials already contains selfOtherPair, we can assume
                 //self <: other
                 if ((self == other') || {trials.contains(selfOtherPair)}) then{
@@ -741,35 +747,37 @@ def anObjectType: ObjectTypeFactory is public = object {
                 //If other is unresolved, then resolving it will give us either
                 //a resolved ObjectType or an unresolved opNode
                 var other : ObjectType := other'
-                if ((other.isResolved.not) && {other.node.kind != "op"}) then {
+                if ((other.isResolved.not) && {other.isOp.not}) then {
                     other := other.resolve
-                }
-                if (other.isResolved.not) then {
-                    def left : Answer = self.isSubtypeHelper
-                                      (trials, definedByNode(other.node.left))
-
-                    if (other.node.value == "&") then {
-                        //Check left's result to see if right need be evaluated
-                        if (left.ans.not) then {
-                            return left
-                        }
-                        def right : Answer = self.isSubtypeHelper
-                                      (trials, definedByNode(other.node.right))
-                        return answerConstructor((left.ans && right.ans),trials)
-                    } elseif {other.node.value == "|"} then {
-                        if (left.ans) then {
-                            return left
-                        }
-                        def right : Answer = self.isSubtypeHelper
-                                      (trials, definedByNode(other.node.right))
-                        return answerConstructor((left.ans || right.ans),trials)
-                    }
                 }
 
                 if((other.isDynamic)||{other == doneType}||{self == other})then{
                     return answerConstructor(true,trials)
                 } elseif {self == doneType} then {
                     return answerConstructor(false, trials)
+                }
+
+                if ((other.isResolved.not) && (other.isOp)) then {
+                    def otherOp : TypeOp = other.getOpNode
+                    def left : Answer = self.isSubtypeHelper
+                                                          (trials, otherOp.left)
+
+                    if (otherOp.op == "&") then {
+                        //Check left's result to see if right need be evaluated
+                        if (left.ans.not) then {
+                            return left
+                        }
+                        def right : Answer = self.isSubtypeHelper
+                                                        (trials, otherOp.right)
+                        return answerConstructor((left.ans && right.ans),trials)
+                    } elseif {otherOp.op == "|"} then {
+                        if (left.ans) then {
+                            return left
+                        }
+                        def right : Answer = self.isSubtypeHelper
+                                                        (trials, otherOp.right)
+                        return answerConstructor((left.ans || right.ans),trials)
+                    }
                 }
 
                 //io.error.write("\nSubtyping {self} with variantList:" ++
@@ -833,7 +841,6 @@ def anObjectType: ObjectTypeFactory is public = object {
                 }
                 return object {
                     inherit anObjectType.fromMethods(restrictTypes)
-                                                        withNode(ast.nullNode)
 
                     method asString → String is override {
                         "{outer}|{other}"
@@ -860,6 +867,15 @@ def anObjectType: ObjectTypeFactory is public = object {
 
             method setVariantTypes(newVariantTypes:List⟦ObjectType⟧) → Done {
                 variantTypes := newVariantTypes
+            }
+
+            method getOpNode → TypeOp {
+                storedOp
+            }
+
+            method setOpNode (op : TypeOp) → Done {
+                isOp := true
+                storedOp := op
             }
 
             // Variant
@@ -907,16 +923,16 @@ def anObjectType: ObjectTypeFactory is public = object {
                     newVariantTypes.add(other)
                 }
 
-                def opNode : share.Operator =
-                                          ast.opNode.new("|", node, other.node)
+                def op : TypeOp = typeOp("|", self, other)
 
                 return object {
                     //Joe - save types in common | ignore
-                    inherit anObjectType.fromMethods(combine) withNode(opNode)
+                    inherit anObjectType.fromMethods(combine)
 
                     // Set the new object type's variant types to equal
                     // the new variant types.
                     self.setVariantTypes(newVariantTypes)
+                    self.setOpNode(op)
 
                     method asString → String is override {
                         "{outer} | {other}"
@@ -963,8 +979,9 @@ def anObjectType: ObjectTypeFactory is public = object {
                 //Helper method does not work with Done
                 def temp : ObjectType = fromObjectTypeList(components)
                 def result : ObjectType = fromMethods(temp.methods)
-                            withNode(ast.opNode.new("&", self.node, other.node))
+
                 result.setVariantTypes(temp.getVariantTypes)
+                result.setOpNode(typeOp("&", self, other))
 
                 result
             }
@@ -1000,8 +1017,11 @@ def anObjectType: ObjectTypeFactory is public = object {
                         combine.add(meth)
                     }
                 }
-                anObjectType.fromMethods(combine)
-                          withNode(ast.opNode.new("&", node, other.node))
+
+                def result : ObjectType = fromMethods(combine)
+                result.setOpNode(typeOp("&", self, other))
+
+                result
             }
 
             method asString → String is override {
@@ -1019,10 +1039,10 @@ def anObjectType: ObjectTypeFactory is public = object {
         }
     }
 
-    method fromMethods(methods' : Set⟦MethodType⟧) withNode(node' : AstNode)
-                                          withName(name : String) → ObjectType {
+    method fromMethods(methods' : Set⟦MethodType⟧) withName(name : String)
+                                                                  → ObjectType {
         object {
-            inherit fromMethods(methods') withNode (node')
+            inherit fromMethods(methods')
 
             method asString → String is override {
                 if (methods.size == base.methods.size) then { return "Object" }
@@ -1056,7 +1076,7 @@ def anObjectType: ObjectTypeFactory is public = object {
             for(typeLiteral.methods) do { mType : AstNode →
                 meths.add(aMethodType.fromNode(mType))
             }
-            anObjectType.fromMethods(meths) withNode(typeLiteral)
+            anObjectType.fromMethods(meths)
 
         } case { op: share.Operator →
             // Operator takes care of type expressions: Ex. A & B, A | C
@@ -1088,7 +1108,7 @@ def anObjectType: ObjectTypeFactory is public = object {
 
             //If the type we are referencing is unresolved and not an opNode,
             //then resolve it and update the types scope
-            if (oType.isResolved || {oType.node.kind == "op"}) then{
+            if (oType.isResolved || {oType.isOp}) then{
                 return oType
             } else {
                 def resolvedOType : ObjectType = oType.resolve
@@ -1137,11 +1157,11 @@ def anObjectType: ObjectTypeFactory is public = object {
 
             method getMethod(_ : String) → noSuchMethod { noSuchMethod }
 
-            var node : AstNode is public := ast.nullNode
-
             method resolve -> ObjectType { self }
 
             def isResolved : Boolean is public = true
+
+            def isOp : Boolean is public = false
 
             def isDynamic : Boolean is public = true
 
@@ -1160,6 +1180,10 @@ def anObjectType: ObjectTypeFactory is public = object {
             method getVariantTypes → List⟦ObjectType⟧ { emptyList⟦ObjectType⟧ }
 
             method setVariantTypes(newVariantTypes:List⟦ObjectType⟧) → Done { }
+
+            method getOpNode → TypeOp { typeOp(" ", dynamic, dynamic) }
+
+            method setOpNode (op : TypeOp) → Done { }
 
             method |(_ : ObjectType) → dynamic { dynamic }
 
@@ -1182,15 +1206,7 @@ def anObjectType: ObjectTypeFactory is public = object {
         def signature = list[aMixPartWithName("apply") parameters(params)]
         def meths: Set⟦MethodType⟧ = emptySet
         meths.add(aMethodType.signature(signature) returnType(rType))
-
-        //construct the node corresponding to the block
-        def paramNodes : List⟦AstNode⟧ = emptyList⟦AstNode⟧
-        for (params) do { p: Param →
-            paramNodes.add(ast.identifierNode.new(p.name, false))
-        }
-        def blockNode: AstNode = ast.blockNode.new(paramNodes,emptyList⟦AstNode⟧)
-
-        fromMethods(meths) withNode (blockNode) withName("Block")
+        fromMethods(meths) withName("Block")
     }
 
     method blockReturning(rType : ObjectType) → ObjectType {
@@ -1262,8 +1278,8 @@ def anObjectType: ObjectTypeFactory is public = object {
     // StandardPrelude
     var base : ObjectType is readable := dynamic
     def doneType : ObjectType is public = fromMethods(sg.emptySet)
-                                        withNode(ast.nullNode) withName("Done")
-    base := fromMethods(sg.emptySet) withNode(ast.nullNode) withName("Object")
+                                                                withName("Done")
+    base := fromMethods(sg.emptySet) withName("Object")
 
     //Used for type-checking imports; please update when additional types are added
     def preludeTypes: Set⟦String⟧ is public = ["Pattern", "Iterator", "Boolean",
@@ -1272,41 +1288,41 @@ def anObjectType: ObjectTypeFactory is public = object {
                                   "Collection", "Enumerable", "Range"]
 
     def pattern : ObjectType is public = fromMethods(sg.emptySet)
-                            withNode(ast.nullNode) withName("Pattern")
+                                                  withName("Pattern")
     def iterator : ObjectType is public = fromMethods(sg.emptySet)
-                            withNode(ast.nullNode) withName("Iterator")
+                                                  withName("Iterator")
     def boolean : ObjectType is public = fromMethods(sg.emptySet)
-                            withNode(ast.nullNode) withName("Boolean")
+                                                  withName("Boolean")
     def number : ObjectType is public = fromMethods(sg.emptySet)
-                            withNode(ast.nullNode) withName("Number")
+                                                  withName("Number")
     def string : ObjectType is public = fromMethods(sg.emptySet)
-                            withNode(ast.nullNode) withName("String")
+                                                  withName("String")
     def listTp : ObjectType is public = fromMethods(sg.emptySet)
-                            withNode(ast.nullNode) withName("List")
+                                                  withName("List")
     def set : ObjectType is public = fromMethods(sg.emptySet)
-                            withNode(ast.nullNode) withName("Set")
+                                                  withName("Set")
     def sequence : ObjectType is public = fromMethods(sg.emptySet)
-                            withNode(ast.nullNode) withName("Sequence")
+                                                  withName("Sequence")
     def dictionary : ObjectType is public = fromMethods(sg.emptySet)
-                            withNode(ast.nullNode) withName("Dictionary")
+                                                  withName("Dictionary")
     def point : ObjectType is public = fromMethods(sg.emptySet)
-                            withNode(ast.nullNode) withName("Point")
+                                                  withName("Point")
     def binding : ObjectType is public = fromMethods(sg.emptySet)
-                            withNode(ast.nullNode) withName("Binding")
+                                                  withName("Binding")
     def collection : ObjectType is public = fromMethods(sg.emptySet)
-                            withNode(ast.nullNode) withName("Collection")
+                                                  withName("Collection")
     def enumerable : ObjectType is public = fromMethods(sg.emptySet)
-                            withNode(ast.nullNode) withName("Enumerable")
+                                                  withName("Enumerable")
     def rangeTp : ObjectType is public = fromMethods(sg.emptySet)
-                            withNode(ast.nullNode) withName("Range")
-    def prelude: ObjectType is public = fromMethods(sg.emptySet)
-                            withNode(ast.nullNode) withName("Prelude")
+                                                  withName("Range")
+    //def prelude: ObjectType is public = fromMethods(sg.emptySet)
+    //                                            withName("Prelude")
     def boolBlock: ObjectType is public = fromMethods(sg.emptySet)
-                            withNode(ast.nullNode) withName("BoolBlock")
+                                                  withName("BoolBlock")
     def doneBlock: ObjectType is public = fromMethods(sg.emptySet)
-                            withNode(ast.nullNode) withName("DoneBlock")
+                                                  withName("DoneBlock")
     def dynamicDoneBlock: ObjectType is public = fromMethods(sg.emptySet)
-                            withNode(ast.nullNode) withName("DynamicDoneBlock")
+                                                  withName("DynamicDoneBlock")
 
 //    addTo (base) name ("==") param(base) returns(boolean)
     addTo (base) name ("≠") param(base) returns(boolean)
@@ -1481,9 +1497,9 @@ def anObjectType: ObjectTypeFactory is public = object {
     addTo(doneBlock) name("apply") returns(doneType)
 
 
-    addTo (prelude) name("print") param(base) returns(doneType)
-    addTo (prelude) names(list["while", "do"]) parts(list[list[boolBlock], list[doneBlock] ]) returns(doneType)
-    addTo (prelude) names(list["for", "do"]) parts(list[list[listTp], list[dynamicDoneBlock] ]) returns(doneType)
+    //addTo (prelude) name("print") param(base) returns(doneType)
+    //addTo (prelude) names(list["while", "do"]) parts(list[list[boolBlock], list[doneBlock] ]) returns(doneType)
+    //addTo (prelude) names(list["for", "do"]) parts(list[list[listTp], list[dynamicDoneBlock] ]) returns(doneType)
 
     scope.types.at("Unknown") put(dynamic)
     scope.types.at("Done") put(doneType)
@@ -1527,7 +1543,7 @@ def anObjectType: ObjectTypeFactory is public = object {
     addVar("done") ofType(self.doneType)
     addVar("true") ofType(boolean)
     addVar("false") ofType(boolean)
-    addVar("prelude") ofType (prelude)
+    //addVar("prelude") ofType (prelude)
 }
 
 // Adds name to variables and as parameterless method (really def, not var!)

@@ -577,7 +577,7 @@ def astVisitor: ast.AstVisitor is public = object {
     // returns false so don't recurse into object
     method visitObject (obj :AstNode) → Boolean {
         def pcType: PublicConfidential = scope.enter {
-            processBody (obj, obj.superclass)
+            processBody (list (obj.value), obj.superclass)
         }
         cache.at(obj) put (pcType.publicType)
         allCache.at(obj) put (pcType.inheritableType)
@@ -881,7 +881,7 @@ def astVisitor: ast.AstVisitor is public = object {
 
         // Create the ObjectType and MethodType of import
         def impOType: ObjectType = anObjectType.fromMethods(importMethods)
-                                                                  withNode (imp)
+
         def sig: List⟦MixPart⟧ = list[ot.aMixPartWithName(impName)
                                                   parameters (emptyList⟦Param⟧)]
         def impMType: MethodType = aMethodType.signature(sig)
@@ -913,8 +913,7 @@ def astVisitor: ast.AstVisitor is public = object {
         }
         io.error.write "\n 2413: looking for {typeName} defined as {typeDefs.at(typeName)}"
 
-        //Holds the type literals that make up 'typeName'
-        def typeLiterals: Dictionary⟦String,ObjectType⟧ = emptyDictionary
+        def typeLiterals : Dictionary⟦String, ObjectType⟧ = emptyDictionary
 
         //Holds all methods belonging to 'typeName'
         def typeMeths: Set⟦MethodType⟧ = emptySet
@@ -927,9 +926,10 @@ def astVisitor: ast.AstVisitor is public = object {
 
             if (typeLiterals.containsKey(methPrefix).not) then {
                 def oType : ObjectType = anObjectType.fromMethods(emptySet)
-                                                        withNode (ast.baseNode)
+
                 typeLiterals.at(methPrefix) put (oType)
             }
+
             typeLiterals.at(methPrefix).methods.add(
                           aMethodType.fromGctLine(typeDef.removeFirst, impName))
         }
@@ -943,7 +943,7 @@ def astVisitor: ast.AstVisitor is public = object {
         def myType : ObjectType = if (typeDef.size == 0) then {
             //type is defined by a type literal
             if (typeLiterals.size == 0) then {
-                anObjectType.fromMethods(emptySet) withNode (ast.baseNode)
+                anObjectType.fromMethods(emptySet)
             } else {
                 typeLiterals.values.first
             }
@@ -1000,12 +1000,20 @@ def astVisitor: ast.AstVisitor is public = object {
                                             impName, unresolvedTypes, typeDefs)
             def rightSide : ObjectType = importOpHelper(typeDef, typeLits, elt,
                                             impName, unresolvedTypes, typeDefs)
+            def op : share.TypeOp = ot.typeOp("&", leftSide, rightSide)
+            def tempOType : ObjectType = anObjectType.fromMethods(emptySet)
+            tempOType.setOpNode(op)
+            scope.types.at("{impName}.{typeName}") put (tempOType)
             leftSide & rightSide
         } elseif {elt == "|"} then {
             def leftSide  : ObjectType = importOpHelper(typeDef, typeLits, elt,
                                             impName, unresolvedTypes, typeDefs)
             def rightSide : ObjectType = importOpHelper(typeDef, typeLits, elt,
                                             impName, unresolvedTypes, typeDefs)
+            def op : share.TypeOp = ot.typeOp("|", leftSide, rightSide)
+            def tempOType : ObjectType = anObjectType.fromMethods(emptySet)
+            tempOType.setOpNode(op)
+            scope.types.at("{impName}.{typeName}") put (tempOType)
             leftSide | rightSide
         //elt refers to an already-processed type literal
         } elseif {elt.startsWithDigit} then {
@@ -1071,9 +1079,8 @@ method outerAt(i : Number) → ObjectType is confidential {
         def vars: Dictionary⟦String, ObjectType⟧ = vStack.at(i - 1)
         def meths: Set⟦MethodType⟧ = mStack.at(i - 1).values
 
-        //Joe - maybe do outer.types
         def oType: ObjectType = anObjectType.fromMethods(meths)
-                                                        withNode (ast.baseNode)
+
         def mType: MethodType = aMethodType.member("outer") ofType(oType)
 
         curr.at("outer") put(oType)
@@ -1085,10 +1092,8 @@ method outerAt(i : Number) → ObjectType is confidential {
 
 // Typing methods.
 // Type check body of object definition
-method processBody (obj : AstNode, superclass: AstNode | false)
+method processBody (body : List⟦AstNode⟧, superclass: AstNode | false)
                                                 → ObjectType is confidential {
-
-    def body : List⟦AstNode⟧ = list (obj.value)
     io.error.write "\n1958: superclass: {superclass}\n"
 
     var inheritedMethods: Set⟦MethodType⟧ := emptySet
@@ -1178,8 +1183,8 @@ method processBody (obj : AstNode, superclass: AstNode | false)
         inheritedMethods.addAll(aliasMethods)
 
         //Node of inheritedType could be inheriting.value or inheriting
-        inheritedType := anObjectType.fromMethods(inheritedMethods) withNode (inheriting.value)
-        publicSuperType := anObjectType.fromMethods(pubInheritedMethods) withNode (inheriting.value)
+        inheritedType := anObjectType.fromMethods(inheritedMethods)
+        publicSuperType := anObjectType.fromMethods(pubInheritedMethods)
 
         io.error.write "\1144: public super type: {publicSuperType}"
         io.error.write "\n1145: inherited type: {inheritedType}"
@@ -1284,10 +1289,10 @@ method processBody (obj : AstNode, superclass: AstNode | false)
             } case { _ → io.error.write"\n2617 ignored {stmt}"}
         }
         io.error.write "\n1201 allMethods: {allMethods}"
-        internalType := anObjectType.fromMethods(allMethods) withNode(obj)
+        internalType := anObjectType.fromMethods(allMethods)
         scope.variables.at("$elf") put (internalType)
         io.error.write "\n1204: Internal type is {internalType}"
-        anObjectType.fromMethods(publicMethods) withNode(obj)
+        anObjectType.fromMethods(publicMethods)
     }
 
     scope.variables.at("self") put(publicType)

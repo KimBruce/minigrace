@@ -439,21 +439,32 @@ method gctAsString(gctDict) {
     return ret
 }
 
-var opTree : List⟦String⟧ := list[]
-var methodtypes : List⟦String⟧ := list[]
+//var opTree : List⟦String⟧ := list[]
+//var methodtypes : String := ""
 def typeVisitor = object {
     inherit ast.baseVisitor
     var literalCount := 1
 
+    method visitTypeDec(typeDec) {
+        //methodTypes := typeDec.toGrace
+    }
+
+    method visitMethod(meth) {
+        //var s := ""
+        //signature.do { part -> s:= s ++ part.toGrace(depth + 1) }
+        //s
+        //methodTypes := meth.toGrace
+    }
+
     method visitIdentifier(ident) {
-        opTree.push("{ident.value}")
+        //opTree.push("{ident.value}")
         return false
     }
 
     method visitMember(member) {
         var receiver : String := member.receiver.nameString
 
-        opTree.push("{receiver}.{member.value}")
+        //opTree.push("{receiver}.{member.value}")
         return false
     }
 
@@ -494,7 +505,7 @@ def typeVisitor = object {
             if (meth.rtype != false) then {
                 mtstr := mtstr ++ " → " ++ meth.rtype.toGrace(1)
             }
-            methodtypes.push(mtstr)
+            //methodtypes.push(mtstr)
         }
         return false
     }
@@ -503,24 +514,24 @@ def typeVisitor = object {
             def leftkind = op.left.kind
             def rightkind = op.right.kind
 
-            opTree.push(op.value)
+            //opTree.push(op.value)
 
             if ((leftkind=="identifier") || (leftkind=="member")) then {
                 var typeIdent := op.left.toGrace(0)
-                opTree.push("{typeIdent}")
+                //opTree.push("{typeIdent}")
             } elseif { leftkind=="typeliteral" } then {
                 literalCount := literalCount + 1
-                opTree.push("{literalCount}")
+                //opTree.push("{literalCount}")
                 visitTypeLiteral(op.left)
             } elseif { leftkind=="op" } then {
                 visitOp(op.left)
             }
             if ((rightkind=="identifier") || (rightkind=="member")) then {
                 var typeIdent := op.right.toGrace(0)
-                opTree.push("{typeIdent}")
+                //opTree.push("{typeIdent}")
             } elseif { rightkind=="typeliteral" } then {
                 literalCount := literalCount + 1
-                opTree.push("{literalCount}")
+                //opTree.push("{literalCount}")
                 visitTypeLiteral(op.right)
             } elseif { rightkind=="op" } then {
                 visitOp(op.right)
@@ -769,11 +780,12 @@ method buildGctFor(module) {
                 }
                 types.push(typename)
 
-                methodtypes := list[]
-                opTree := list[]
-                v.value.accept(typeVisitor)
-                gct.at ("methodtypes-of:{typename}")
-                                                put(methodtypes.sort ++ opTree)
+                //methodtypes := list[]
+                //opTree := list[]
+                //v.value.accept(typeVisitor)
+                //gct.at ("methodtypes-of:{typename}")
+                //                                put(methodtypes.sort ++ opTree)
+                gct.at ("methodtypes-of:{typename}") put(list[v.value.toGrace(0)])
             } else {
                 confidentials.push(v.nameString)
             }

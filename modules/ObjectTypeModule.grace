@@ -453,8 +453,7 @@ def aMethodType: MethodTypeFactory is public = object {
                     var paramName: String := mstr.substringFrom(fst)to(lst - 1)
                     io.error.write "paramName: {paramName}"
                     fst := lst + 1
-                    while {((mstr.at (lst) != ")") && (mstr.at (lst) != ","))
-                                                   && (mstr.at(lst) != "⟦")} do{
+                    while {(mstr.at (lst) != ")") && (mstr.at (lst) != ",") && (mstr.at(lst) != "⟦")} do{
                         lst := lst + 1
                     }
 
@@ -1310,7 +1309,7 @@ def anObjectType: ObjectTypeFactory is public = object {
 
     //Currently only accept ast.genericNodes and will return the name of the
     //type if it was stored in the types scope
-    method typesScopeName(node : share.Generic) → String is confidential{
+    method typesScopeName(generic : share.Generic) → String is confidential{
         var genName : String := generic.nameString
         for (generic.args) do { arg : AstNode →
             def argName : String = if (arg.kind == "typeliteral") then {
@@ -1361,10 +1360,8 @@ def anObjectType: ObjectTypeFactory is public = object {
     //Find ObjectType corresponding to the identifier in the scope. If not
     //already there, adds it to the scope.
     method fromIdentifier(ident : share.Identifier) → ObjectType {
-        if (debug) then{
-            io.error.write "\n1249 fromIdentifier - looking for {ident.value}"++
+        io.error.write "\n1249 fromIdentifier - looking for {ident.value}"++
                                                         " inside {scope.types}"
-        }
         //check if identifier is generic, and if so, turn it into a
         //generic node and recurse so the generic case can handle it.
         if(ident.generics ≠ false) then {
@@ -1801,7 +1798,7 @@ method continue'(e, bl) → Done is confidential {
 //Takes a non-empty list of objectTypes and combines them into a variant type
 method fromObjectTypeList(oList : List⟦ObjectType⟧) → ObjectType{
       if (oList.size == 0) then {
-          CheckerFailuer.raise("\nTried to construct a variant type from" ++
+          TypeError.raise("\nTried to construct a variant type from" ++
               "an empty list of variant types")
       }
       var varType: ObjectType := oList.at(1)

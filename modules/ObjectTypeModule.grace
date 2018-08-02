@@ -145,7 +145,7 @@ def noSuchType: outer.Pattern = object {
 //This type is used for checking subtyping
 type TypePair = share.TypePair
 
-class typePair(first':ObjectType, second':ObjectType) → TypePair is confidential{
+class typePair(first':ObjectType, second':ObjectType)→ TypePair is confidential{
     method first → ObjectType {first'}
 
     method second → ObjectType {second'}
@@ -170,6 +170,7 @@ class answerConstructor(ans':Boolean, trials':List⟦TypePair⟧) → Answer {
 
 type TypeOp = share.TypeOp
 
+//Stores needed information used when type-checking a type defined by an opNode
 class typeOp(op' : String, left' : ObjectType, right' : ObjectType) → TypeOp {
     method op → String {
         op'
@@ -318,7 +319,8 @@ def aMethodType: MethodTypeFactory is public = object {
             }
 
             // Determines if this method is a specialisation of the given one.
-            method isSpecialisationOf (trials : List⟦TypePair⟧, other : MethodType) → Answer {
+            method isSpecialisationOf (trials: List⟦TypePair⟧, other: MethodType)
+                                                                      → Answer {
                 //Check part names and number of parameters
                 if (nameString != other.nameString) then {
                     return answerConstructor(false, trials)
@@ -350,12 +352,15 @@ def aMethodType: MethodTypeFactory is public = object {
                 return retType.isSubtypeHelper (trials, other.retType)
             }
 
-            method replaceGenericsWith(replacements:Dictionary⟦String, ObjectType⟧)
-                                                                  → MethodType {
+            // Takes a mapping of generic-to-ObjectType and returns a copy of
+            // self with all of the generics replaced with their corresponding
+            // ObjectType
+            method replaceGenericsWith (replacements :
+                                  Dictionary⟦String, ObjectType⟧) → MethodType {
+                //Interate through each mixPart to find param types to replace
                 def mixParts : List⟦MixPart⟧ = emptyList⟦MixPart⟧
                 for (signature) do { mPart : MixPart →
                     def params : List⟦Param⟧ = emptyList⟦Param⟧
-
                     for (mPart.parameters) do { param : Param →
                         //Since generic type parameters are all identifierNodes
                         //and the params inside this method that use those
@@ -369,10 +374,11 @@ def aMethodType: MethodTypeFactory is public = object {
                                           ofType (param.typeAnnotation))
                         }
                     }
-
                     mixParts.add(aMixPartWithName(mPart.name)parameters(params))
                 }
 
+                //Check to see if the return type needs to be replaced
+                //Return with new MethodType
                 def rtypeString : String = retType.asString
                 if (replacements.containsKey(rtypeString)) then {
                     signature(mixParts) returnType(replacements.at(rtypeString))
@@ -447,7 +453,8 @@ def aMethodType: MethodTypeFactory is public = object {
                     var paramName: String := mstr.substringFrom(fst)to(lst - 1)
                     io.error.write "paramName: {paramName}"
                     fst := lst + 1
-                    while {(mstr.at (lst) != ")") && (mstr.at (lst) != ",") && (mstr.at(lst) != "⟦")} do {
+                    while {((mstr.at (lst) != ")") && (mstr.at (lst) != ","))
+                                                   && (mstr.at(lst) != "⟦")} do{
                         lst := lst + 1
                     }
 
@@ -569,7 +576,7 @@ def aMethodType: MethodTypeFactory is public = object {
     // if node is a method, class, method signature,
     // def, or var, create appropriate method type
     method fromNode (node: AstNode) → MethodType {
-        match (node) case { meth : share.Method | share.Class | share.MethodSignature →
+        match(node) case{ meth :share.Method|share.Class|share.MethodSignature →
             io.error.write "\n573: node matched as method: {meth}"
 
             def signature: List⟦MixPart⟧ = list[]
@@ -614,15 +621,20 @@ type GenericTypeFactory = share.GenericTypeFactory
 
 def aGenericType : GenericTypeFactory is public = object{
 
+    //Create a GenericType from
     class fromName(name' : String) parameters(typeParams' : List⟦String⟧)
-                                  objectType(oType' : ObjectType) → GenericType{
-
+                                objectType(oType' : ObjectType) → GenericType {
+        //May be unnecessary since we already store 'name' as the key in scope
         def name : String is public = name'
 
+        //The generic type names used within this type
         def typeParams : List⟦String⟧ is public = typeParams'
 
+        //The ObjectType belonging to this generic type
         var oType : ObjectType is public:= oType'
 
+        //Takes a list of replacement ObjectTypes and replaces references to the
+        //typeParms stored in oType with their counterpart in the list
         method apply(replacementTypes : List⟦ObjectType⟧) → ObjectType {
             if(replacementTypes.size ≠ typeParams.size) then {
                 TypeError.raise("Wrong number of type parameters given when " ++
@@ -630,29 +642,30 @@ def aGenericType : GenericTypeFactory is public = object{
                               " replace {typeParams} with {replacementTypes}.")
             }
 
-            if(oType.isResolved.not) then {
-                oType := oType.resolve
-            }
+            //First, resolve the oType if needed
+            oType := oType.resolve
 
-            def replacements : Dictionary⟦String, ObjectType⟧ = emptyDictionary
-            def appliedMethods : Set⟦MethodType⟧ = emptySet⟦MethodType⟧
-
+            //Create a mapping of GenericTypes-to-ObjectTypes
+            def replacements : Dictionary⟦String, ObjectType⟧ =
+                                            emptyDictionary⟦String, ObjectType⟧
             for (1..replacementTypes.size) do { index : Number →
-                replacements.at(typeParams.at(index)) put (replacementTypes.at(index))
+                replacements.at(typeParams.at(index))
+                                                put (replacementTypes.at(index))
             }
 
+            //Tells each method to replace references to any of the typeParams
+            def appliedMethods : Set⟦MethodType⟧ = emptySet⟦MethodType⟧
             for (oType.methods) do { meth : MethodType →
                 appliedMethods.add(meth.replaceGenericsWith(replacements))
             }
 
+            //Returns an ObjectType with the generics replaced
             anObjectType.fromMethods(appliedMethods)
         }
-
-
     }
+
+    //Create a GenericType from a typeDecNode
     method fromTypeDec(typeDec : AstNode) → GenericType {
-
-
         def name : String = typeDec.nameString
 
         def typeParams : List⟦String⟧ = emptyList
@@ -675,6 +688,9 @@ def anObjectType: ObjectTypeFactory is public = object {
     class definedByNode (node': AstNode) -> ObjectType{
         //io.error.write ("\nIn definedByNode with {node'} representing type" ++
         //    self.asString)
+
+        // ObjectTypes that are defined by an opNode can store a TypeOp with
+        // relevant information for type checking
         var storedOp : TypeOp
 
         method methods -> Set⟦MethodType⟧ {
@@ -822,6 +838,8 @@ def anObjectType: ObjectTypeFactory is public = object {
             // List of variant types (A | B | ... )
             var variantTypes : List⟦ObjectType⟧ := list[]
 
+            // ObjectTypes that are defined by an opNode can store a TypeOp with
+            // relevant information for type checking
             var storedOp : TypeOp
 
             def methods : Set⟦MethodType⟧ is public = (if (base == dynamic)then {
@@ -1251,60 +1269,38 @@ def anObjectType: ObjectTypeFactory is public = object {
         } case { ident : share.Identifier →
             io.error.write "\n984: processing {ident}"
 
-            if(ident.generics ≠ false) then {
-                return fromDType(ast.genericNode.new(ident, ident.generics))
-            }
-
-            def oType : ObjectType = scope.types.findType(ident.value)
-                butIfMissing{ScopingError.raise("Failed to find {ident.value}")}
-
-            //If the type we are referencing is unresolved and not an opNode,
-            //then resolve it and update the types scope
-            if (oType.isResolved || {oType.isOp}) then{
-                return oType
-            } else {
-                def resolvedOType : ObjectType = oType.resolve
-                scope.types.addToTopAt(ident.value) put (resolvedOType)
-                resolvedOType
-            }
+            //look for identifier in the scope. Add/update it in the scope if
+            //not already there.
+            fromIdentifier(ident)
 
         } case { generic : share.Generic →
-            var genName : String := generic.nameString
-            for (generic.args) do { arg : AstNode →
-                def argName : String = if (arg.kind == "typeliteral") then {
-                    arg.asString
-                } else {
-                    arg.nameString
-                }
-                genName := "{genName}${argName}"
-            }
-            scope.types.findType (genName) butIfMissing {
-                def appliedGeneric : ObjectType = fromGeneric(generic)
-                scope.types.addToTopAt(genName) put(appliedGeneric)
-                appliedGeneric
-            }
+            //get the objecttype from instantiating the generic type and
+            //add it to the types scope.
+            fromGeneric(generic)
 
         } case { member : share.Member →
+            //name of the receiver
             def recName : String = member.receiver.nameString
             var memberCall : String := "{recName}.{member.value}"
 
-
-
             //all members processed here are references to types, so we can ignore
             //these receivers since types are always at the top level of the scope
+            //Should be changed to check "contains" in case these receivers are
+            //chained together -Joe
             if ((recName == "module()object") || (recName == "self")
                                               || (recName == "prelude")) then {
                 memberCall := member.value
             }
 
+            //checks if the member is generic
             if(member.generics ≠ false) then {
-                fromDType(ast.genericNode.new(ast.identifierNode.new(memberCall, false), member.generics))
+                //recursively process the member repackaged as a genericNode
+                fromDType(ast.genericNode.new(ast.identifierNode.new(
+                                          memberCall, false), member.generics))
             } else {
                 scope.types.findType(memberCall) butIfMissing {
                               ScopingError.raise("Failed to find {memberCall}")}
-
             }
-
 
         } case { _ →
             ProgrammingError.raise "No case for node of kind {dtype.kind}"
@@ -1312,25 +1308,81 @@ def anObjectType: ObjectTypeFactory is public = object {
         }
     }
 
+    //Currently only accept ast.genericNodes and will return the name of the
+    //type if it was stored in the types scope
+    method typesScopeName(node : share.Generic) → String is confidential{
+        var genName : String := generic.nameString
+        for (generic.args) do { arg : AstNode →
+            def argName : String = if (arg.kind == "typeliteral") then {
+                arg.asString
+            } else {
+                arg.nameString
+            }
+            genName := "{genName}${argName}"
+        }
+        genName
+    }
+
+    //Create an ObjectType from a GenericNode; the type used in the GenericNode
+    //must have already been declared and put into the generics scope. The types
+    //scope will also contain the returned ObjectType after this method is done.
     method fromGeneric(node : share.Generic) → ObjectType {
-        def genType : GenericType = scope.generics.findType(node.nameString)
+        //Search the ObjectType types scope to see if this type was already
+        //processed. If not, find the corresponding GenericType in the generic
+        //types scope and initialize its type parameters.
+        def genName : String = typesScopeName(node)
+        scope.types.findType (genName) butIfMissing {
+
+            //Raise error if the type used does not exist in the generic scope
+            def genType : GenericType = scope.generics.findType(node.nameString)
                                                                   butIfMissing {
-            ProgrammingError.raise("Attempting to use an undefined generic " ++
-                                          "type {node.nameString}.") with(node)
+                ProgrammingError.raise("Attempting to use an undefined " ++
+                                  "generic type {node.nameString}.") with(node)
+            }
+
+            //Turn arguments in the genericNode to ObjectTypes that will replace
+            //the type parameters
+            def replacementTypes : List⟦ObjectType⟧ = emptyList⟦ObjectType⟧
+            for (node.args) do { arg: AstNode →
+                replacementTypes.add(fromDType(arg))
+            }
+
+            //Replace the typeParameters with replacementTypes
+            def instantiated : ObjectType = genType.apply(replacementTypes)
+
+            //Update the types scope and return
+            scope.types.addToTopAt(genName) put(instantiated)
+            instantiated
         }
-        def typeParams : List⟦ObjectType⟧ = emptyList⟦ObjectType⟧
-        for (node.args) do { arg: AstNode →
-            typeParams.add(fromDType(arg))
-        }
-        genType.apply(typeParams)
     }
 
 
-    //Find ObjectType corresponding to the identifier in the scope
+
+    //Find ObjectType corresponding to the identifier in the scope. If not
+    //already there, adds it to the scope.
     method fromIdentifier(ident : share.Identifier) → ObjectType {
-        io.error.write "\n1249 fromIdentifier - looking for {ident.value} " ++
+        if (debug) then{
+            io.error.write "\n1249 fromIdentifier - looking for {ident.value}"++
                                                         " inside {scope.types}"
-        scope.types.findType(ident.value) butIfMissing { dynamic }
+        }
+        //check if identifier is generic, and if so, turn it into a
+        //generic node and recurse so the generic case can handle it.
+        if(ident.generics ≠ false) then {
+            return fromDType(ast.genericNode.new(ident, ident.generics))
+        }
+
+        def oType : ObjectType = scope.types.findType(ident.value)
+            butIfMissing{ScopingError.raise("Failed to find {ident.value}")}
+
+        //If the type we are referencing is unresolved and not an opNode,
+        //then resolve it and update the types scope
+        if (oType.isResolved || {oType.isOp}) then{
+            return oType
+        } else {
+            def resolvedOType : ObjectType = oType.resolve
+            scope.types.addToTopAt(ident.value) put (resolvedOType)
+            resolvedOType
+        }
     }
 
 
@@ -1748,6 +1800,10 @@ method continue'(e, bl) → Done is confidential {
 
 //Takes a non-empty list of objectTypes and combines them into a variant type
 method fromObjectTypeList(oList : List⟦ObjectType⟧) → ObjectType{
+      if (oList.size == 0) then {
+          CheckerFailuer.raise("\nTried to construct a variant type from" ++
+              "an empty list of variant types")
+      }
       var varType: ObjectType := oList.at(1)
       var index:Number := 2
       while {index <= oList.size} do {

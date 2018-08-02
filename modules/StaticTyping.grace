@@ -328,6 +328,9 @@ def astVisitor: ast.AstVisitor is public = object {
         false
     }
 
+    //type checks match-case statements. Makes sure that the types of the
+    //matchee and the params match, and puts the return type of the match-case
+    //in the cache.
     method visitMatchCase (node: share.MatchCase) → Boolean {
         // expression being matched and its type
         def matchee = node.value
@@ -631,7 +634,8 @@ def astVisitor: ast.AstVisitor is public = object {
             io.error.write "\n1701: callType: {callType}"
         }
         cache.at(req) put (callType)
-        true  // request to type check arguments.  IS THIS REDUNDANT?
+        // tells the callNode to typecheck its receiver, arguments, and generics
+        true
     }
 
     // Type check an object.  Must get both public and confidential types
@@ -691,7 +695,7 @@ def astVisitor: ast.AstVisitor is public = object {
         if (debug) then {
             io.error.write "\n2186 Types scope after collecting types is {scope.types}"
         }
-        // type check the remaining object (without imports)
+        // type check the remaining object (without import statements)
         visitObject (withoutImport)
     }
 
@@ -738,10 +742,14 @@ def astVisitor: ast.AstVisitor is public = object {
         if (debug) then {
             io.error.write "visit type dec for {node}"
         }
+
+        //check if the typedec is generic (type T⟦K,V⟧ = ...)
         if (false ≠ node.typeParams) then {
+            //create GenericType to later be instantiated with real types
             def genType : GenericType = aGenericType.fromTypeDec(node)
             cache.at(node) put (genType.oType)
         } else {
+            //get the type of the right-hand side of the equals sign
             def vType : ObjectType = anObjectType.fromDType(node.value)
             cache.at(node) put (vType)
         }
@@ -788,7 +796,7 @@ def astVisitor: ast.AstVisitor is public = object {
 
     method visitTypeLiteral(node: share.TypeLiteral) → Boolean {
         cache.at(node) put(anObjectType.fromDType(node))
-        true
+        false
     }
 
     method visitBind (bind: AstNode) → Boolean {
@@ -871,7 +879,7 @@ def astVisitor: ast.AstVisitor is public = object {
         // initial value
         def value = defd.value
 
-        if(false != value) then {  // initial value provided
+        if(false ≠ value) then {  // initial value provided
             def vType: ObjectType = typeOf(value)
             // infer type based on initial value if definition given w/out type
             if(defType.isDynamic && (defd.kind == "defdec")) then {
@@ -1090,9 +1098,12 @@ def astVisitor: ast.AstVisitor is public = object {
 
             io.error.write "\n2483 trying to remove {typeName} from {unresolvedTypes}"
         }
+
+        //type typeName has been resolved, so remove it from unresolvedTypes
         unresolvedTypes.remove(typeName)
 
         //check for and handle generic types
+        //needs to be updated to work with more complicated types, like T⟦U,V⟦W⟧⟧
         def bracket : Number = typeName.indexOf("⟦")
         if(bracket == 0) then {
             scope.types.addToTopAt("{impName}.{typeName}") put (myType)
@@ -1105,8 +1116,6 @@ def astVisitor: ast.AstVisitor is public = object {
                                       parameters(typeParams) objectType(myType)
             scope.generics.addToTopAt("{impName}.{name}") put (genType)
         }
-
-
 
     }
 
@@ -1437,7 +1446,8 @@ method processBody (body : List⟦AstNode⟧, superclass: AstNode | false)
                 }
 
             } case { td : share.TypeDeclaration →
-                //Now does nothing if given type declaration; might make this raise an error later
+                //Now does nothing if given type declaration; might make this
+                //raise an error as embedded types are disallowed.
             } case { _ →
                     if (debug) then {
                         io.error.write"\n2617 ignored {stmt}"
@@ -1531,6 +1541,7 @@ method collectTypes(nodes : Collection⟦AstNode⟧) → Done is confidential {
 
             names.push(node.nameString)
 
+            //check whether the typeDec is a GenericType and process accordingly
             if(false ≠ node.typeParams) then {
                 scope.generics.addToTopAt(node.nameString)
                                             put (aGenericType.fromTypeDec(node))

@@ -48,7 +48,7 @@ type Answer = {
     asString → String
 }
 
-//Type is
+//Stores needed information used when type-checking a type defined by an opNode
 type TypeOp = {
     op → String
     left → ObjectType
@@ -76,11 +76,10 @@ type MixPart = {
 type GenericMethod = {
     name → String
     typeParams → List⟦String⟧
-    
+
 
 
 }
-
 
 // Method signature information.
 // isSpecialisation and restriction are used for type-checking
@@ -107,6 +106,8 @@ type MethodType = {
     // Does it extend other
     isSpecialisationOf (trials : List⟦TypePair⟧, other : MethodType) → Answer
 
+    // Takes a mapping of generic-to-ObjectType and returns a copy of self
+    // with all of the generics replaced with their corresponding ObjectType
     replaceGenericsWith(replacements:Dictionary⟦String, ObjectType⟧) → MethodType
 }
 
@@ -120,12 +121,14 @@ type MethodTypeFactory = {
 
 type GenericType = {
     name → String
-    typeParams → List⟦AstNode⟧
+    typeParams → List⟦String⟧
     oType → ObjectType
-    apply (appliedTypes : List⟦ObjectType⟧) → ObjectType
+    apply (replacementTypes : List⟦ObjectType⟧) → ObjectType
 }
 
 type GenericTypeFactory = {
+    fromName (name' : String) parameters (typeParams' : List⟦String⟧)
+                                  objectType (oType' : ObjectType) → GenericType
     fromTypeDec (node : AstNode) → GenericType
 }
 

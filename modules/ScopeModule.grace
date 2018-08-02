@@ -23,21 +23,21 @@ def allCache: Dictionary is readable = emptyDictionary
 // Will be used for defs/vars, methods, and types
 type StackOfKind⟦V⟧ = {
     stack → List⟦Dictionary⟧
-    // push <name,value> into current level of stack
+    // push <name,value> into most recent level of stack
     at (name : String) put (value:V) → Done
 
-    // add <name,value> to base level of stack
+    // add <name,value> to least recent level of stack
     addToTopAt(name : String) put (value : V) → Done
 
-    // Find name in stack of current scopes & return its value
-    // If not there perform action in bl. Starts looking from lowest level
+    // Starting from the most recent level of the scope, find name & return its
+    // value. If it is not there perform action in bl.
     findFromBottom (name : String) butIfMissing (bl: Function0⟦V⟧) → V
 
-    // Find name in stack of current scopes & return its value
-    // If not there perform action in bl. Starts looking from global level
+    // Starting from the least recent level of the scope, find name & return its
+    // value. If it is not there perform action in bl.
     findFromTop (name : String) butIfMissing (bl: Function0⟦V⟧) → V
 
-    // Find name in the single highest level of scope & return its value
+    // Find name in the least recent level of scope & return its value.
     // If not there perform action in bl. Should only be used to find types
     findType (name : String) butIfMissing (bl: Function0⟦V⟧) → V
 
@@ -49,18 +49,18 @@ class stackOfKind⟦V⟧(kind : String) → StackOfKind⟦V⟧ is confidential {
     // represented as stack of dictionaries
     def stack: List⟦Dictionary⟧ is public = list[emptyDictionary]
 
-    // add <name,value> to current scope
+    // add <name,value> to most recent level of the scope
     method at (name : String) put (value:V) → Done {
         stack.last.at(name) put(value)
     }
 
-    //adds to the first layer of the scope
+    // adds to the least recent level of the scope
     method addToTopAt(name : String) put (value:V) → Done {
         stack.first.at(name) put(value)
     }
 
-    // Find name in stack of current scopes & return its value
-    // If not there perform action in bl
+    // Starting from the most recent level of the scope, find name & return its
+    // value. If it is not there perform action in bl.
     method findFromBottom (name : String) butIfMissing (bl: Function0⟦V⟧) → V {
         var i: Number := stack.size
         while { i > 0 } do {
@@ -78,8 +78,8 @@ class stackOfKind⟦V⟧(kind : String) → StackOfKind⟦V⟧ is confidential {
         return bl.apply
     }
 
-    // Find name in stack of current scopes & return its value
-    // If not there perform action in bl
+    // Starting from the least recent level of the scope, find name & return its
+    // value. If it is not there perform action in bl.
     method findFromTop (name : String) butIfMissing (bl: Function0⟦V⟧) → V {
         var i: Number := 1
         while { i <= stack.size } do {
@@ -97,7 +97,7 @@ class stackOfKind⟦V⟧(kind : String) → StackOfKind⟦V⟧ is confidential {
         return bl.apply
     }
 
-    //specifically used to find types saved in the highest level of the scope
+    // Find types saved in the least recent level of the scope
     method findType (name : String) butIfMissing (bl: Function0⟦V⟧) → V {
         var found: Boolean := true
         def val = stack.at(1).at(name) ifAbsent {

@@ -13,22 +13,25 @@ import "ObjectTypeModule" as ot
 inherit sg.methods
 
 type MethodType = share.MethodType
+type MethodTypeFactory = share.MethodTypeFactory
+type GenericType = share.GenericType
+type GenericTypeFactory = share.GenericTypeFactory
 type ObjectType = share.ObjectType
 type ObjectTypeFactory = share.ObjectTypeFactory
-type MethodTypeFactory = share.MethodTypeFactory
 type AstNode = share.AstNode
 type MixPart = share.MixPart
 type Param = share.Param
 type Parameter = share.Parameter
 
-def cache: Dictionary = sc.cache
-def allCache: Dictionary = sc.allCache
-def anObjectType: share.ObjectTypeFactory = ot.anObjectType
-def scope: share.Scope = sc.scope
-def aParam: Param = ot.aParam
-def aMethodType:MethodTypeFactory = ot.aMethodType
+def cache : Dictionary = sc.cache
+def allCache : Dictionary = sc.allCache
+def aMethodType : MethodTypeFactory = ot.aMethodType
+def aGenericType : GenericTypeFactory = ot.aGenericType
+def anObjectType : share.ObjectTypeFactory = ot.anObjectType
+def scope : share.Scope = sc.scope
+def aParam : Param = ot.aParam
 
-def debug: Boolean = false
+def debug: Boolean = true
 
 // Checker error
 
@@ -53,7 +56,7 @@ method objectTypeFromBlock(block: AstNode) → ObjectType {
             TypeError.raise ("1000: the expression `{share.stripNewLines(block.toGrace(0))}` of " ++
                 "type '{bType}' does not satisfy the type 'Block'") with(block)
         } case { meth : MethodType →
-            return meth.returnType
+            return meth.retType
         }
 }
 
@@ -161,7 +164,7 @@ method check (req : share.Request)
             }
         }
     }
-    meth.returnType
+    meth.retType
 }
 
 // Check the type of node to make sure it matches eType.
@@ -281,8 +284,8 @@ def astVisitor: ast.AstVisitor is public = object {
         scope.enter {
             // add parameters & their types to new scope
             for(block.params) do { param →
-                if ((param.dtype.kind ≠ "string")
-                                      && {param.dtype.kind ≠ "num"}) then {
+                if (("string" ≠ param.dtype.kind)
+                                      && {"num" ≠ param.dtype.kind}) then {
                     if (debug) then {
                         io.error.write("\n1517: {param.value} has {param.dtype}")
                     }
@@ -330,7 +333,7 @@ def astVisitor: ast.AstVisitor is public = object {
         def matchee = node.value
         var matcheeType: ObjectType := typeOf(matchee)
         //Note: currently only one matchee is supported
-        
+
         // Keep track of parameter types in case as well as return types
         def paramTypesList: List⟦ObjectType⟧ = emptyList⟦ObjectType⟧
         def returnTypesList: List⟦ObjectType⟧ = emptyList⟦ObjectType⟧
@@ -350,8 +353,8 @@ def astVisitor: ast.AstVisitor is public = object {
             if (debug) then {
                 io.error.write"\nMy dtype is {blockParam.dtype}"
             }
-            if ((blockParam.dtype.kind ≠ "string")
-                                  && {blockParam.dtype.kind ≠ "num"}) then {
+            if (("string" ≠ blockParam.dtype.kind)
+                                  && {"num" ≠ blockParam.dtype.kind}) then {
                 def typeOfParam = anObjectType.fromDType(blockParam.dtype)
 
                 if (paramTypesList.contains(typeOfParam).not) then {
@@ -367,7 +370,7 @@ def astVisitor: ast.AstVisitor is public = object {
         }
         // Type covered by parameters in case (types are variants)
         def paramType: ObjectType = ot.fromObjectTypeList(paramTypesList)
-        
+
         // Type returned by variant of all return types in cases
         def returnType: ObjectType = ot.fromObjectTypeList(returnTypesList)
 
@@ -375,7 +378,7 @@ def astVisitor: ast.AstVisitor is public = object {
             io.error.write "\nparamType now equals: {paramType}"
             io.error.write "\nreturnType now equals: {returnType}"
         }
-        
+
         // If matchee not covered by cases then raise a type error
         if (matcheeType.isSubtypeOf(paramType).not) then {
             outer.TypeError.raise("1519: the matchee `{stripNewLines(matchee.toGrace(0))}`"++
@@ -426,7 +429,8 @@ def astVisitor: ast.AstVisitor is public = object {
         // ensure all parameters have known types and method has return type
         for (meth.signature) do {s: AstNode →
             for (s.params) do {p: AstNode →
-                if ((p.kind == "identifier") && {p.wildcard.not} && {p.decType.value=="Unknown"}) then {
+                if (((p.kind == "identifier") && {p.wildcard.not})
+                                         && {p.decType.value=="Unknown"}) then {
                     CheckerFailure.raise("no type given to declaration"
                         ++ " of parameter '{p.value}'") with (p)
                 }
@@ -441,8 +445,7 @@ def astVisitor: ast.AstVisitor is public = object {
         def name: String = meth.value.value
         // declared type of the method being introduced
         def mType: MethodType = aMethodType.fromNode(meth)
-        // declared return type of the method
-        def returnType: ObjectType = mType.returnType
+        def returnType: ObjectType = mType.retType
 
         // Enter new scope with parameters to type-check body of method
         if (debug) then {
@@ -462,7 +465,7 @@ def astVisitor: ast.AstVisitor is public = object {
             if (debug) then {
                 io.error.write "\n1595: collected types for {list(meth.body)}\n"
             }
-            
+
             // Check types of all methods in the body.  Special case for returns
             for(meth.body) do { stmt: AstNode →
                 checkTypes(stmt)
@@ -548,7 +551,7 @@ def astVisitor: ast.AstVisitor is public = object {
 //        // Look up (internal) type of self.  NO LONGER USED
 //        var tempDef := scope.variables.findFromBottom("$elf")
 //                                              butIfMissing{anObjectType.dynamic}
- 
+
         // type of receiver of request
         def rType: ObjectType = if (rec.nameString == "self") then {
             if (debug) then {
@@ -596,7 +599,7 @@ def astVisitor: ast.AstVisitor is public = object {
                 io.error.write "\n2154: {completeCall}"
                 io.error.write "\n2155: {req.nameString}"
                 io.error.write "\nrequest on {name}"
-            
+
                 io.error.write "\n2000: rType.methods is: {rType.methods}"
             }
             // look for method name in type of receiver
@@ -615,7 +618,7 @@ def astVisitor: ast.AstVisitor is public = object {
                         "    '{rType}' \nin type \n  '{rType.methods}'")
                             with(req)
                 }
-            } case { meth : MethodType →  
+            } case { meth : MethodType →
                 // found the method, make sure arguments match parameter types
                 if (debug) then {
                     io.error.write "\nchecking request {req} against {meth}"
@@ -735,12 +738,14 @@ def astVisitor: ast.AstVisitor is public = object {
         if (debug) then {
             io.error.write "visit type dec for {node}"
         }
-        // Add meaning of type to cache
-        // TODO: Why not add to scope??
-        cache.at(node) put (anObjectType.fromDType(node.value))
-        if (debug) then {
-            io.error.write "\n656: type dec for node has in cache {cache.at(node)}"
+        if (false ≠ node.typeParams) then {
+            def genType : GenericType = aGenericType.fromTypeDec(node)
+            cache.at(node) put (genType.oType)
+        } else {
+            def vType : ObjectType = anObjectType.fromDType(node.value)
+            cache.at(node) put (vType)
         }
+        io.error.write "\n656: type dec for node has in cache {cache.at(node)}"
         false
     }
 
@@ -866,7 +871,7 @@ def astVisitor: ast.AstVisitor is public = object {
         // initial value
         def value = defd.value
 
-        if(value != false) then {  // initial value provided
+        if(false != value) then {  // initial value provided
             def vType: ObjectType = typeOf(value)
             // infer type based on initial value if definition given w/out type
             if(defType.isDynamic && (defd.kind == "defdec")) then {
@@ -1082,11 +1087,27 @@ def astVisitor: ast.AstVisitor is public = object {
         if (debug) then {
             io.error.write ("\nThe type {impName}.{typeName} was put in the scope as" ++
                                       " {impName}.{typeName}::{myType}")
-        
+
             io.error.write "\n2483 trying to remove {typeName} from {unresolvedTypes}"
         }
         unresolvedTypes.remove(typeName)
-        scope.types.at("{impName}.{typeName}") put (myType)
+
+        //check for and handle generic types
+        def bracket : Number = typeName.indexOf("⟦")
+        if(bracket == 0) then {
+            scope.types.addToTopAt("{impName}.{typeName}") put (myType)
+        } else {
+            def typeParamsStr: String = typeName.substringFrom(bracket + 1)
+                                                          to (typeName.size - 1)
+            def typeParams : List⟦String⟧ = split(typeParamsStr, ",")
+            def name : String = typeName.substringFrom(1) to (bracket - 1)
+            def genType : GenericType = aGenericType.fromName(name)
+                                      parameters(typeParams) objectType(myType)
+            scope.generics.addToTopAt("{impName}.{name}") put (genType)
+        }
+
+
+
     }
 
     //recursively parse pre-ordered type definitions from GCT file
@@ -1115,7 +1136,7 @@ def astVisitor: ast.AstVisitor is public = object {
             def op : share.TypeOp = ot.typeOp("&", leftSide, rightSide)
             def tempOType : ObjectType = anObjectType.fromMethods(emptySet)
             tempOType.setOpNode(op)
-            scope.types.at("{impName}.{typeName}") put (tempOType)
+            scope.types.addToTopAt("{impName}.{typeName}") put (tempOType)
             leftSide & rightSide
         } elseif {elt == "|"} then {
             def leftSide  : ObjectType = importOpHelper(typeDef, typeLits, elt,
@@ -1125,7 +1146,7 @@ def astVisitor: ast.AstVisitor is public = object {
             def op : share.TypeOp = ot.typeOp("|", leftSide, rightSide)
             def tempOType : ObjectType = anObjectType.fromMethods(emptySet)
             tempOType.setOpNode(op)
-            scope.types.at("{impName}.{typeName}") put (tempOType)
+            scope.types.addToTopAt("{impName}.{typeName}") put (tempOType)
             leftSide | rightSide
         //elt refers to an already-processed type literal
         } elseif {elt.startsWithDigit} then {
@@ -1247,7 +1268,7 @@ method processBody (body : List⟦AstNode⟧, superclass: AstNode | false)
         publicSuperType := typeOf(inheriting.value)
         // All public methods from supre type
         var pubInheritedMethods := publicSuperType.methods.copy
-        
+
         // Throw away methods being excluded
         for (superclass.exclusions) do {ex →
             // First throw away from list of all inherited methods
@@ -1266,11 +1287,11 @@ method processBody (body : List⟦AstNode⟧, superclass: AstNode | false)
                 }
             }
         }
-        
+
         if (debug) then {
             io.error.write "aliases: {superclass.aliases}"
         }
-        
+
         // Add new confidential method for each alias given with super class
         def aliasMethods: List⟦MethodType⟧ = emptyList
         for (superclass.aliases) do {aliasPair →
@@ -1285,7 +1306,7 @@ method processBody (body : List⟦AstNode⟧, superclass: AstNode | false)
                     var aliasNm: String := aliasPair.newName.value
                     // unfortunately name has parens at end -- drop them
                     def firstParen: String = aliasNm.indexOf("(")
-                    if (firstParen > 0) then { 
+                    if (firstParen > 0) then {
                         aliasNm := aliasNm.substringFrom(1) to (firstParen)
                     }
                     def newFirst: MixPart = ot.aMixPartWithName(aliasNm)
@@ -1351,13 +1372,15 @@ method processBody (body : List⟦AstNode⟧, superclass: AstNode | false)
         for(body) do { stmt: AstNode →
             if (debug) then {
                 io.error.write "\n2009: processing {stmt}"
+                io.error.write "\n1375: stmt's toGrace is: {stmt.toGrace(0)}"
             }
+
             match(stmt) case { meth : share.Method →
                 // ensure any method overriding one from super class is
                 // compatible
                 def mType: MethodType = aMethodType.fromNode(meth)
                 checkOverride(mType,allMethods,publicMethods)
-                
+
                 // add new method to the collection of methods
                 allMethods.add(mType)
                 if (debug) then {
@@ -1373,7 +1396,7 @@ method processBody (body : List⟦AstNode⟧, superclass: AstNode | false)
                 //A method that is a Member has no parameter and is identical to
                 //a variable, so we also store it inside the variables scope
                 if(isMember(mType)) then {
-                    scope.variables.at(mType.name) put(mType.returnType)
+                    scope.variables.at(mType.name) put(mType.retType)
                 }
 
             } case { defd : share.Def | share.Var →
@@ -1381,7 +1404,7 @@ method processBody (body : List⟦AstNode⟧, superclass: AstNode | false)
                 def mType: MethodType = aMethodType.fromNode(defd)
                 if (allMethods.contains(mType)) then {
                     MethodError.raise ("A var or def {mType} may not override "
-                        ++ "an existing method from the superclass}") 
+                        ++ "an existing method from the superclass}")
                         with (mType)
                 }
                 allMethods.add(mType)
@@ -1395,7 +1418,7 @@ method processBody (body : List⟦AstNode⟧, superclass: AstNode | false)
 
                 //update scope with reference to def/var
                 scope.methods.at(mType.name) put(mType)
-                scope.variables.at(mType.name) put(mType.returnType)
+                scope.variables.at(mType.name) put(mType.retType)
 
                 //constructs setter method for writable vars
                 if(defd.isWritable) then {
@@ -1415,7 +1438,7 @@ method processBody (body : List⟦AstNode⟧, superclass: AstNode | false)
 
             } case { td : share.TypeDeclaration →
                 //Now does nothing if given type declaration; might make this raise an error later
-            } case { _ → 
+            } case { _ →
                     if (debug) then {
                         io.error.write"\n2617 ignored {stmt}"
                     }
@@ -1497,21 +1520,27 @@ method collectTypes(nodes : Collection⟦AstNode⟧) → Done is confidential {
     def names: List⟦String⟧ = list[]
 
     for(nodes) do { node →
-        match(node) case { td : share.TypeDeclaration →
+        if(node.kind == "typedec") then {
             if (debug) then {
                 io.error.write"\nmatched as typeDec"
             }
-            if(names.contains(td.nameString)) then {
-                TypeDeclarationError.raise("the type {td.nameString} uses " ++
-                    "the same name as another type in the same scope") with(td)
+            if(names.contains(node.nameString)) then {
+                TypeDeclarationError.raise("the type {node.nameString} uses " ++
+                    "the same name as another type in the same scope")with(node)
             }
 
-            names.push(td.nameString)
-            scope.types.at(td.nameString)
-                                    put(anObjectType.definedByNode (td.value))
-        } case { _ →
+            names.push(node.nameString)
+
+            if(false ≠ node.typeParams) then {
+                scope.generics.addToTopAt(node.nameString)
+                                            put (aGenericType.fromTypeDec(node))
+            } else {
+                scope.types.addToTopAt(node.nameString)
+                                    put(anObjectType.definedByNode(node.value))
+            }
         }
     }
+    io.error.write "\nGenerics scope is: {scope.generics}"
     // io.error.write "1881: done collecting types"
 }
 

@@ -33,6 +33,102 @@ method stripNewLines(str) → String is confidential {
     str.replace("\n")with(" ")
 }
 
+//This type is used for checking subtyping
+type TypePair = {
+    first → ObjectType
+    second → ObjectType
+    == (other:Object)→ Boolean
+    asString → String
+}
+
+//This type is used for checking subtyping
+type Answer = {
+    ans → Boolean
+    trials → List⟦TypePair⟧
+    asString → String
+}
+
+//Type is
+type TypeOp = {
+    op → String
+    left → ObjectType
+    right → ObjectType
+}
+
+// type of a parameter
+type Param = {
+    name → String
+    typeAnnotation → ObjectType
+}
+
+type ParamFactory = {
+    withName (name' : String) ofType (type' : ObjectType) → Param
+    ofType (type' : ObjectType) → Param
+}
+
+// MixPart is a "segment" of a method:
+// Ex. for (param1) do (param2), for(param1) and do(param2) are separate "MixParts."
+type MixPart = {
+    name → String
+    parameters → List⟦Param⟧
+}
+
+type GenericMethod = {
+    name → String
+    typeParams → List⟦String⟧
+    
+
+
+}
+
+
+// Method signature information.
+// isSpecialisation and restriction are used for type-checking
+type MethodType = {
+    // name of the method
+    name → String
+
+    // name of the method with number of parameters for each part
+    nameString → String
+
+    // parameters and their types for each part
+    signature → List⟦MixPart⟧
+
+    // return type
+    retType → ObjectType
+
+    // check equivalence of part names, param types, and return type;
+    // does not check if param names are the same
+    == (other: MethodType) → Boolean
+
+    // create restriction of method type using other
+    restriction (other : MethodType) → MethodType
+
+    // Does it extend other
+    isSpecialisationOf (trials : List⟦TypePair⟧, other : MethodType) → Answer
+
+    replaceGenericsWith(replacements:Dictionary⟦String, ObjectType⟧) → MethodType
+}
+
+type MethodTypeFactory = {
+    signature (signature' : List⟦MixPart⟧)
+            returnType (rType : ObjectType)→ MethodType
+    member (name : String) ofType (rType : ObjectType) → MethodType
+    fromGctLine (line : String, importName: String) → MethodType
+    fromNode (node: AstNode) → MethodType
+}
+
+type GenericType = {
+    name → String
+    typeParams → List⟦AstNode⟧
+    oType → ObjectType
+    apply (appliedTypes : List⟦ObjectType⟧) → ObjectType
+}
+
+type GenericTypeFactory = {
+    fromTypeDec (node : AstNode) → GenericType
+}
+
 type ObjectType = {
     methods → Set⟦MethodType⟧
     getMethod (name : String) → MethodType | noSuchMethod
@@ -59,6 +155,7 @@ type ObjectTypeFactory = {
     fromMethods (methods' : Set⟦MethodType⟧) → ObjectType
     fromMethods(methods' : Set⟦MethodType⟧) withName(name : String) → ObjectType
     fromDType (dtype) → ObjectType
+    fromGeneric (node : Generic) → ObjectType
     fromIdentifier(ident : Identifier) → ObjectType
     dynamic → ObjectType
     bottom → ObjectType
@@ -80,80 +177,6 @@ type ObjectTypeFactory = {
     binding → ObjectType
     collection → ObjectType
     enumerable → ObjectType
-}
-
-// Method signature information.
-// isSpecialisation and restriction are used for type-checking
-type MethodType = {
-    // name of the method
-    name → String
-
-    // name of the method with number of parameters for each part
-    nameString → String
-
-    // parameters and their types for each part
-    signature → List⟦MixPart⟧
-
-    // return type
-    returnType → ObjectType
-
-    // check equivalence of part names, param types, and return type;
-    // does not check if param names are the same
-    == (other: MethodType) → Boolean
-
-    // create restriction of method type using other
-    restriction (other : MethodType) → MethodType
-
-    // Does it extend other
-    isSpecialisationOf (trials : List⟦TypePair⟧, other : MethodType) → Answer
-}
-
-type MethodTypeFactory = {
-    signature (signature' : List⟦MixPart⟧)
-            returnType (rType : ObjectType)→ MethodType
-    member (name : String) ofType (rType : ObjectType) → MethodType
-    fromGctLine (line : String, importName: String) → MethodType
-    fromNode (node: AstNode) → MethodType
-}
-
-//This type is used for checking subtyping
-type TypePair = {
-    first → ObjectType
-    second → ObjectType
-    == (other:Object)→ Boolean
-    asString → String
-}
-
-//This type is used for checking subtyping
-type Answer = {
-    ans → Boolean
-    trials → List⟦TypePair⟧
-    asString → String
-}
-
-//Type is
-type TypeOp = {
-    op → String
-    left → ObjectType
-    right → ObjectType
-}
-
-// MixPart is a "segment" of a method:
-// Ex. for (param1) do (param2), for(param1) and do(param2) are separate "MixParts."
-type MixPart = {
-    name → String
-    parameters → List⟦Param⟧
-}
-
-// type of a parameter
-type Param = {
-    name → String
-    typeAnnotation → ObjectType
-}
-
-type ParamFactory = {
-    withName (name' : String) ofType (type' : ObjectType) → Param
-    ofType (type' : ObjectType) → Param
 }
 
 type AstNode = { kind → String }

@@ -760,11 +760,14 @@ method buildGctFor(module) {
         } elseif {v.kind == "typedec"} then {
             if (v.isPublic) then {
                 meths.push(v.nameString)
-                types.push(v.name.value)
+                //types.push(v.name.value)
                 var typename := v.name.toGrace(0)
                 if (v.typeParams != false) then {
                     typename := typename ++ v.typeParams
+                } else {
+                    typename := v.name.value
                 }
+                types.push(typename)
 
                 methodtypes := list[]
                 opTree := list[]

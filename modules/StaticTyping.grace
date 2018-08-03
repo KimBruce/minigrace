@@ -8,6 +8,7 @@ import "lexer" as lex
 import "parser" as parser
 import "xmodule" as xmodule
 import "io" as io
+import "sys" as sys
 import "SharedTypes" as share
 import "ScopeModule" as sc
 import "ObjectTypeModule" as ot
@@ -27,20 +28,21 @@ type MixPart = share.MixPart
 type Param = share.Param
 type Parameter = share.Parameter
 
-def cache : Dictionary = sc.cache
-def allCache : Dictionary = sc.allCache
+def DialectError = xmodule.DialectError
+def cache: Dictionary = sc.cache
+def allCache: Dictionary = sc.allCache
 def aGenericMethod : GenericMethodFactory = ot.aGenericMethod
 def aMethodType : MethodTypeFactory = ot.aMethodType
 def aGenericType : GenericTypeFactory = ot.aGenericType
 def anObjectType : share.ObjectTypeFactory = ot.anObjectType
-def scope : share.Scope = sc.scope
-def aParam : Param = ot.aParam
+def scope: share.Scope = sc.scope
+def aParam: Param = ot.aParam
 
 def debug: Boolean = true
 
 // Checker error
 
-def CheckerFailure is public = Exception.refine "CheckerFailure"
+//def CheckerFailure is public = Exception.refine "CheckerFailure"
 
 // return the return type of the block (as declared)
 method objectTypeFromBlock(block: AstNode) → ObjectType {
@@ -58,8 +60,9 @@ method objectTypeFromBlock(block: AstNode) → ObjectType {
 
         match(apply) case { (ot.noSuchMethod) →
             def strip = {x → x.nameString}
-            TypeError.raise ("1000: the expression `{share.stripNewLines(block.toGrace(0))}` of " ++
-                "type '{bType}' does not satisfy the type 'Block'") with(block)
+            DialectError.raise ("1000: the expression " ++
+                "`{share.stripNewLines(block.toGrace(0))}` of type '{bType}' " ++
+                "on line {block.line} does not satisfy the type 'Block'") with(block)
         } case { meth : MethodType →
             return meth.retType
         }
@@ -93,32 +96,34 @@ method checkTypes (node: AstNode) → Done {
 method typeOf (node: AstNode) → ObjectType {
     checkTypes (node)
     cache.at (node) ifAbsent {
-        CheckerFailure.raise "cannot type non-expression {node}" with (node)
+        DialectError.raise "cannot type non-expression {node} on line {node.line}" 
+                with (node)
     }
 }
 
 // retrieve from cache the inheritable type of an object
 method inheritableTypeOf (node: AstNode) → ObjectType {
     allCache.at (node) ifAbsent {
-        CheckerFailure.raise "cannot find confidential type of {node}" with (node)
+        DialectError.raise "cannot find confidential type of {node} on line {node.line}"
+                with (node)
     }
 }
 
 // Exceptions while type-checking. (Currently not used)
-def ObjectError: outer.ExceptionKind = TypeError.refine("ObjectError")
+//def ObjectError: outer.ExceptionKind = TypeError.refine("ObjectError")
 
 // Class declaration error. (Currently not used)
-def ClassError: outer.ExceptionKind = TypeError.refine("Class TypeError")
+//def ClassError: outer.ExceptionKind = TypeError.refine("Class TypeError")
 
 // Declaration of method does not correspond to actual type
-def MethodError = TypeError.refine("Method TypeError")
+// def MethodError = TypeError.refine("Method TypeError")
 
 // Def and var declarations.  Type of def or var declaration does not
 // correspond to value associated with it
-def DefError: outer.ExceptionKind is public = TypeError.refine("Def TypeError")
+//def DialectError: outer.ExceptionKind = TypeError.refine("Def TypeError")
 
 // Scoping error declaration with imports
-def ScopingError: outer.ExceptionKind = TypeError.refine("ScopingError")
+//def ScopingError: outer.ExceptionKind = TypeError.refine("ScopingError")
 
 // type of part of method request (actual call, not declaration)
 type RequestPart = {
@@ -148,9 +153,9 @@ method check (req : share.Request)
                 req.value
             }
 
-            outer.RequestError
+            DialectError
                 .raise("too {which} arguments to method part " ++
-                    "'{sigPart.name}', expected {pSize} but got {aSize}")
+                    "'{sigPart.name}' on line {req.line}, expected {pSize} but got {aSize}")
                     with(where)
         }
 
@@ -162,8 +167,11 @@ method check (req : share.Request)
                     "\nwhile checking {req} against {meth}")
             }
             if (aType.isConsistentSubtypeOf (pType).not) then {
-                outer.RequestError.raise("the expression " ++
-                    "`{stripNewLines(arg.toGrace(0))}` of type '{aType}' does not " ++
+                io.error.write(arg.asString ++ " at {arg.line}:{arg.linePos}")
+                DialectError.raise("the expression " ++
+ //               DialectError("the expression " ++
+                    "`{stripNewLines(arg.toGrace(0))}` of type '{aType}' on "++
+                    " line {args.at(1).line} does not " ++
                     "satisfy the type of parameter '{param}' in the " ++
                     "method '{name}'") with(arg)
             }
@@ -172,13 +180,18 @@ method check (req : share.Request)
     meth.retType
 }
 
+method DialectError(message: String) with (node) → Done {
+    io.error.write(message)
+    sys.exit(2)
+}
+
 // Check the type of node to make sure it matches eType.
 // Throw error only if type of node is not consistent subtype of eType
 method check (node: AstNode) matches (eType : ObjectType)
         inMethod (name : String) → Done is confidential {
     def aType: ObjectType = typeOf(node)
     if (aType.isConsistentSubtypeOf (eType).not) then {
-        MethodError.raise("the method '{name}' declares a result of " ++
+        DialectError.raise("the method '{name}' on line {node.line} declares a result of " ++
             "type '{eType}', but returns an expression of type " ++
             "'{aType}'") with (node)
     }
@@ -239,7 +252,8 @@ def astVisitor: ast.AstVisitor is public = object {
         def cond: AstNode = ifnode.value
         // make sure condition is compatible with Boolean
         if (typeOf (cond).isConsistentSubtypeOf (anObjectType.boolean).not) then {
-            outer.RequestError.raise ("1366: the expression `{stripNewLines (cond.toGrace (0))}` does not " ++
+            DialectError.raise ("1366: the expression "++
+                "`{stripNewLines (cond.toGrace (0))}` on line {cond.line} does not " ++
                 "satisfy the type 'Boolean' for an 'if' condition'") with (cond)
         }
 
@@ -276,8 +290,8 @@ def astVisitor: ast.AstVisitor is public = object {
         // Raise exception if block parameters not given types
         for (block.params) do {p→
             if (((p.kind == "identifier") || {p.wildcard.not}) && {p.decType.value=="Unknown"}) then {
-                CheckerFailure.raise("no type given to declaration"
-                    ++ " of parameter '{p.value}'") with (p)
+                DialectError.raise("no type given to declaration"
+                    ++ " of parameter '{p.value}' on line {p.line}") with (p)
             }
         }
 
@@ -350,8 +364,8 @@ def astVisitor: ast.AstVisitor is public = object {
         for(node.cases) do{block →
 
             if(block.isMatchingBlock.not) then{
-              outer.RequestError.raise("1518: The case you are matching to, " ++
-                "{stripNewLines(block.toGrace(0))}, has more than one argument "++
+              DialectError.raise("1518: The case you are matching to, " ++
+                "{stripNewLines(block.toGrace(0))} on line {block.line}, has more than one argument "++
                 "on the left side. This is not currently supported.") with (matchee)
             }
 
@@ -389,8 +403,8 @@ def astVisitor: ast.AstVisitor is public = object {
 
         // If matchee not covered by cases then raise a type error
         if (matcheeType.isSubtypeOf(paramType).not) then {
-            outer.TypeError.raise("1519: the matchee `{stripNewLines(matchee.toGrace(0))}`"++
-                " of type {matcheeType} does not " ++
+            DialectError.raise("1519: the matchee `{stripNewLines(matchee.toGrace(0))}`"++
+                " of type {matcheeType} on line {matchee.line} does not " ++
                 "match the type(s) {paramTypesList} of the case(s)") with (matchee)
         }
 
@@ -437,16 +451,15 @@ def astVisitor: ast.AstVisitor is public = object {
         // ensure all parameters have known types and method has return type
         for (meth.signature) do {s: AstNode →
             for (s.params) do {p: AstNode →
-                if (((p.kind == "identifier") && {p.wildcard.not})
-                                         && {p.decType.value=="Unknown"}) then {
-                    CheckerFailure.raise("no type given to declaration"
-                        ++ " of parameter '{p.value}'") with (p)
+                if ((p.kind == "identifier") && {p.wildcard.not} && {p.decType.value=="Unknown"}) then {
+                    DialectError.raise("no type given to declaration"
+                        ++ " of parameter '{p.value}' on line {p.line}") with (p)
                 }
             }
         }
         if (meth.decType.value=="Unknown") then {
-            CheckerFailure.raise ("no return type given to declaration"
-                ++ " of method '{meth.value.value}'") with (meth.value)
+            DialectError.raise ("no return type given to declaration"
+                ++ " of method '{meth.value.value}' on line {meth.line}") with (meth.value)
         }
 
         // meth.value is Identifier Node
@@ -501,7 +514,7 @@ def astVisitor: ast.AstVisitor is public = object {
             // If no body then the method must return type Done
             if(meth.body.size == 0) then {
                 if(anObjectType.doneType.isConsistentSubtypeOf(returnType).not) then {
-                    MethodError.raise("the method '{name}' declares a " ++
+                    DialectError.raise("the method '{name}' on line {meth.line} declares a " ++
                         "result of type '{returnType}', but has no body") with (meth)
                 }
             } else {
@@ -511,7 +524,7 @@ def astVisitor: ast.AstVisitor is public = object {
                 if (share.Return.match(lastNode).not) then {
                     def lastType = typeOf(lastNode)
                     if(lastType.isConsistentSubtypeOf(returnType).not) then {
-                        MethodError.raise("the method '{name}' declares a " ++
+                        DialectError.raise("the method '{name}' on line {meth.line} declares a " ++
                             "result of type '{returnType}', but returns an " ++
                             "expression of type '{lastType}'") with (lastNode)
                     }
@@ -566,7 +579,7 @@ def astVisitor: ast.AstVisitor is public = object {
                 io.error.write "\n1675: looking for type of self"
             }
             scope.variables.findFromBottom("$elf") butIfMissing {
-                CheckerFailure.raise "type of self missing" with(rec)
+                DialectError.raise "type of self missing" with(rec)
             }
         } elseif {rec.nameString == "module()object"} then {
             // item from prelude
@@ -574,7 +587,7 @@ def astVisitor: ast.AstVisitor is public = object {
                 io.error.write "\n1676: looking for type of module"
             }
             scope.variables.findFromTop("$elf") butIfMissing {
-                CheckerFailure.raise "type of self missing" with(rec)
+                DialectError.raise "type of self missing" with(rec)
             }
         } else {  // general case returns type of the receiver
             if (debug) then {
@@ -621,9 +634,10 @@ def astVisitor: ast.AstVisitor is public = object {
                     //Joe - possibly come back and change error msg maybe
                     //less informative, but less confusing msg
 
-                    outer.RequestError.raise("no such method or type'{name}' in " ++
+                    DialectError.raise("no such method or type'{name}' in " ++
                         "`{stripNewLines(rec.toGrace(0))}` of type\n" ++
-                        "    '{rType}' \nin type \n  '{rType.methods}'")
+                        "    '{rType}' \nin type \n  '{rType.methods}' used " ++
+                        "on line {rec.line}")
                             with(req)
                 }
             } case { meth : MethodType →
@@ -836,8 +850,9 @@ def astVisitor: ast.AstVisitor is public = object {
                 // look up type of the method in the receiver
                 match(rType.getMethod(nm))
                   case { (ot.noSuchMethod) →
-                    outer.RequestError.raise("no such method '{nm}' in " ++
-                        "`{stripNewLines(rec.toGrace(0))}` of type '{rType}'") with (bind)
+                    DialectError.raise("no such method '{nm}' in " ++
+                        "`{stripNewLines(rec.toGrace(0))}` of type '{rType}'"++
+                        " on line {bind.line}") with (bind)
                 } case { meth : MethodType →
                     // create a new call node (instead of bind) and type check
                     def req = ast.callNode.new(dest,
@@ -856,8 +871,8 @@ def astVisitor: ast.AstVisitor is public = object {
 
             // make sure value consistent with destination
             if(vType.isConsistentSubtypeOf(dType).not) then {
-                DefError.raise("the expression `{stripNewLines(value.toGrace(0))}` of type " ++
-                    "'{vType}' does not satisfy the type '{dType}' of " ++
+                DialectError.raise("the expression `{stripNewLines(value.toGrace(0))}` of type " ++
+                    "'{vType}' on line {value.line} does not satisfy the type '{dType}' of " ++
                     "`{stripNewLines(dest.toGrace(0))}`") with (value)
             }
         }
@@ -873,8 +888,8 @@ def astVisitor: ast.AstVisitor is public = object {
             // raise error if not type in declaration
             var typ: String := "def"
             if (share.Var.match(defd)) then { typ := "var" }
-            CheckerFailure.raise("no type given to declaration"
-                ++ " of {typ} '{defd.name.value}'") with (defd.name)
+            DialectError.raise("no type given to declaration"
+                ++ " of {typ} '{defd.name.value}' on line {defd.line}") with (defd.name)
         }
         // Declared type of feature
         var defType: ObjectType := anObjectType.fromDType(defd.dtype)
@@ -891,8 +906,8 @@ def astVisitor: ast.AstVisitor is public = object {
                 defType := vType
             } elseif {vType.isConsistentSubtypeOf(defType).not} then {
                 // initial value not consistent with declared type
-                DefError.raise("the expression `{stripNewLines(value.toGrace(0))}` of type " ++
-                    "'{vType}' does not have type {defd.kind} " ++
+                DialectError.raise("the expression `{stripNewLines(value.toGrace(0))}` of type " ++
+                    "'{vType}'  on line {value.line} does not have type {defd.kind} " ++
                     "annotation '{defType}'") with (value)
             }
         }
@@ -1278,8 +1293,8 @@ method processBody (body : List⟦AstNode⟧, superclass: AstNode | false)
                 // ensure any method overriding one from super class is
                 // compatible
                 def mType: MethodType = updateMethScope(meth)
-                checkOverride(mType,allMethods,publicMethods)
-
+                checkOverride(mType,allMethods,publicMethods,meth)
+                
                 // add new method to the collection of methods
                 allMethods.add(mType)
                 if (debug) then {
@@ -1300,8 +1315,8 @@ method processBody (body : List⟦AstNode⟧, superclass: AstNode | false)
                 // Create type of method giving access to def or var value
                 def mType: MethodType = aMethodType.fromNode(defd)
                 if (allMethods.contains(mType)) then {
-                    MethodError.raise ("A var or def {mType} may not override "
-                        ++ "an existing method from the superclass}")
+                    DialectError.raise ("A var or def {mType}  on line {defd.line} "
+                        ++ "may not override an existing method from the superclass}") 
                         with (mType)
                 }
                 allMethods.add(mType)
@@ -1390,7 +1405,7 @@ method processBody (body : List⟦AstNode⟧, superclass: AstNode | false)
 // and number of parameters as mType then make sure mType is a specialization,
 // and remove the old one from allMethods and publicMethods
 method checkOverride(mType: MethodType, allMethods: Set⟦MethodType⟧,
-                                        publicMethods: Set⟦MethodType⟧) → Done {
+                            publicMethods: Set⟦MethodType⟧, meth: AstNode) → Done {
     def oldMethType: MethodType = allMethods.find{m:MethodType →
         mType.nameString == m.nameString
     } ifNone {return}  // Nothing to be done if corresponding method not there
@@ -1398,8 +1413,8 @@ method checkOverride(mType: MethodType, allMethods: Set⟦MethodType⟧,
         io.error.write "\n1233 Found new method {mType} while old was {oldMethType}"
     }
     if(mType.isSpecialisationOf(emptyList⟦TypePair⟧, oldMethType).ans.not) then {
-        MethodError.raise ("Type of overriding method {mType} is not"
-            ++ " a specialization of existing method {oldMethType}") with (mType)
+        DialectError.raise ("Type of overriding method {mType} on line {meth.line} is not"
+            ++ " a specialization of existing method {oldMethType}") with (meth)
     }
     // remove the old method type
     allMethods.remove(oldMethType)
@@ -1423,8 +1438,8 @@ method collectTypes(nodes : Collection⟦AstNode⟧) → Done is confidential {
                 io.error.write"\nmatched as typeDec"
             }
             if(names.contains(node.nameString)) then {
-                TypeDeclarationError.raise("the type {node.nameString} uses " ++
-                    "the same name as another type in the same scope")with(node)
+                DialectError.raise("The type {node.nameString} on line {node.line} uses " ++
+                    "the same name as another type in the same scope") with (node)
             }
 
             names.push(node.nameString)

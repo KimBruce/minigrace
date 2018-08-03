@@ -1091,7 +1091,7 @@ def anObjectType: ObjectTypeFactory is public = object {
                 def op : TypeOp = typeOp("|", self, other)
 
                 return object {
-                    //Joe - save types in common | ignore
+
                     inherit anObjectType.fromMethods(combine)
 
                     // Set the new object type's variant types to equal
@@ -1360,8 +1360,8 @@ def anObjectType: ObjectTypeFactory is public = object {
     //Find ObjectType corresponding to the identifier in the scope. If not
     //already there, adds it to the scope.
     method fromIdentifier(ident : share.Identifier) → ObjectType {
-        io.error.write "\n1249 fromIdentifier - looking for {ident.value}"++
-                                                        " inside {scope.types}"
+        io.error.write("\n1249 fromIdentifier - looking for {ident.value}"++
+                                                        " inside {scope.types}")
         //check if identifier is generic, and if so, turn it into a
         //generic node and recurse so the generic case can handle it.
         if(ident.generics ≠ false) then {

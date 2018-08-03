@@ -4,6 +4,8 @@ dialect "none"
 import "standardGrace" as sg
 
 import "ast" as ast
+import "lexer" as lex
+import "parser" as parser
 import "xmodule" as xmodule
 import "io" as io
 import "SharedTypes" as share
@@ -951,11 +953,18 @@ def astVisitor: ast.AstVisitor is public = object {
         }
 
         //Loops until all imported types are resolved and stored in the types scope
-        while{unresolvedTypes.size > 0} do {
-            //To resolve its given type, importHelper recursively resolves other
-            //unresolved types that its given type's type definition depends on.
-            importHelper(unresolvedTypes.at(1), impName, unresolvedTypes,
-                                                                      typeDefs)
+        //while{unresolvedTypes.size > 0} do {
+        //    //To resolve its given type, importHelper recursively resolves other
+        //    //unresolved types that its given type's type definition depends on.
+        //    importHelper(unresolvedTypes.at(1), impName, unresolvedTypes,
+        //                                                              typeDefs)
+        //}
+
+        for(typeDefs.keys) do {typeName: String →
+            typeDefs.at(typeName).at(1) put ("type {typeName} = {typeDefs.at(typeName).at(1)}")
+            def tokens = lex.lexLines(typeDefs.at(typeName))
+            def typeDecNode = parser.typedec(tokens)
+            scope.types.addToTopAt("{impName}.{typeName}") put (anObjectType.definedByNode(typeDecNode.value))
         }
 
         //retrieves the names of public methods from imported module
@@ -1014,6 +1023,31 @@ def astVisitor: ast.AstVisitor is public = object {
         }
         false
     }
+
+    //Goes through a node and prepends impName to all type references, as long
+    //as they are not prelude types.
+    method importHelper(impName, node) → node{
+        match (node)
+          case {
+
+
+        } case {
+
+
+        }
+
+
+
+    }
+
+
+
+
+
+
+
+
+
 
     //Resolve the imported type,'typeName', and store it in the types scope
     //

@@ -2767,6 +2767,17 @@ method interfaceLiteral {
     }
 }
 
+method typedec(toks) {
+    if(toks.size == 0) then {
+        //treat this edge case later
+    }
+    tokens := toks
+    next
+    typedec
+
+    values.pop
+}
+
 method typedec {
     // Accept a declaration: 'type = <type expression>'
     if (acceptKeyword "type") then {

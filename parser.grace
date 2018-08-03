@@ -2696,6 +2696,14 @@ method doreturn {
     }
 }
 
+method methodInInterface(toks) {
+    tokens := toks
+    next
+    methodInInterface
+
+    values.pop
+}
+
 method methodInInterface {
     // parses a method signature in an interface literal
     def methodTypeTok = sym
@@ -2768,9 +2776,6 @@ method interfaceLiteral {
 }
 
 method typedec(toks) {
-    if(toks.size == 0) then {
-        //treat this edge case later
-    }
     tokens := toks
     next
     typedec

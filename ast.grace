@@ -877,10 +877,10 @@ def typeDecNode is public = object {
     var name is public := name'
     var value is public := typeValue
     var parentKind is public := "unset"
-    def nameString is public = name.value
     var annotations is public := [ ]
     var typeParams is public := false
 
+    method nameString → String { name.value }
     method end -> Position { value.end }
     method isLegalInTrait { true }
     method isTypeDec { true }

@@ -76,9 +76,12 @@ type MixPart = {
 type GenericMethod = {
     name → String
     typeParams → List⟦String⟧
+    mType → MethodType
+    apply (replacementTypes : List⟦ObjectType⟧) → MethodType
+}
 
-
-
+type GenericMethodFactory  = {
+    fromMethNode(meth : AstNode) → GenericMethod
 }
 
 // Method signature information.

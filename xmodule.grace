@@ -578,12 +578,12 @@ method buildGctFor(module) {
     def gct = emptyDictionary
     def classes = emptyList
     def confidentials = emptyList
-    def meths = emptyList
+    def publics = emptyList
     def types = emptyList
     def publicMethodTypes = emptyList
     def theDialect = module.theDialect.moduleName
     module.parentsDo { p ->
-        meths.addAll(p.providedNames)
+        publics.addAll(p.providedNames)
     }
 
     //Set of prelude types; used when writing the type definition of imported
@@ -603,7 +603,7 @@ method buildGctFor(module) {
                                         parseGCT(v.path) sourceDir(util.outDir)
 
               if (v.isPublic) then {
-                  meths.push("{v.nameString}")
+                  publics.push("{v.nameString}")
                   publicMethodTypes.push("{v.nameString} → ${v.nameString}")
                   types.push("${v.nameString}")
 
@@ -681,7 +681,7 @@ method buildGctFor(module) {
               for (unresolvedTypes) do { typeName : String →
                   if (impGct.containsKey("methodtypes-of:{typeName}")) then {
 
-                      meths.push("{v.nameString}.{typeName}")
+                      publics.push("{v.nameString}.{typeName}")
                       types.push("{v.nameString}.{typeName}")
 
                       def typeDef = impGct.at("methodtypes-of:{typeName}")
@@ -749,29 +749,29 @@ method buildGctFor(module) {
             def gctType = if (false != v.dtype) then {v.dtype.toGrace(0)} else {"Unknown"}
             def varRead: String = "{v.name.value} → {gctType}"
             if (v.isReadable) then {
-                meths.push(v.name.value)
+                publics.push(v.name.value)
                 publicMethodTypes.push(varRead)
             } else {
                 confidentials.push(v.name.value)
             }
             def varWrite: String = "{v.name.value}:=({v.name.value}': {gctType}) → Done"
             if (v.isWritable) then {
-                meths.push(v.name.value ++ ":=(1)")
+                publics.push(v.name.value ++ ":=(1)")
                 publicMethodTypes.push(varWrite)
             } else {
                 confidentials.push(varWrite)
             }
         } elseif {v.kind == "method"} then {
             if (v.isPublic) then {
-                meths.push(v.nameString)
-                publicMethodTypes.push(generateMethodHeader(v))
+                publics.push(v.nameString)
+                def methType = ast.methodTypeNode.new(v.signature, v.dtype).toGrace(0)
+                gct.at("publicMethod:{v.nameString}") put(list[methType])
             } else {
                 confidentials.push(v.nameString)
             }
         } elseif {v.kind == "typedec"} then {
             if (v.isPublic) then {
-                meths.push(v.nameString)
-                //types.push(v.name.value)
+                publics.push(v.nameString)
                 var typename := v.name.toGrace(0)
                 if (v.typeParams != false) then {
                     typename := typename ++ v.typeParams
@@ -780,25 +780,20 @@ method buildGctFor(module) {
                 }
                 types.push(typename)
 
-                //methodtypes := list[]
-                //opTree := list[]
-                //v.value.accept(typeVisitor)
-                //gct.at ("methodtypes-of:{typename}")
-                //                                put(methodtypes.sort ++ opTree)
                 gct.at ("methodtypes-of:{typename}") put(list[v.value.toGrace(0)])
             } else {
                 confidentials.push(v.nameString)
             }
         } elseif {v.kind == "defdec"} then {
             if (v.isPublic) then {
-                meths.push(v.nameString)
+                publics.push(v.nameString)
                 def gctType = if (false != v.dtype) then {v.dtype.toGrace(0)} else {"Unknown"}
                 publicMethodTypes.push("{v.name.value} → {gctType}")
             } else {
                 confidentials.push(v.nameString)
             }
             if (ast.findAnnotation(v, "parent")) then {
-                v.scope.elements.keysDo { m -> meths.push(m) }
+                v.scope.elements.keysDo { m -> publics.push(m) }
             }
             if (v.returnsObject) then {
                 def ob = v.returnedObjectScope.node
@@ -836,7 +831,7 @@ method buildGctFor(module) {
     } else {
         io.realpath(p)
     } ]
-    gct.at "public" put(meths.sort)
+    gct.at "public" put(publics.sort)
     gct.at "publicMethodTypes" put(publicMethodTypes.sort)
     gct.at "types" put(types.sort)
     gct.at "dialect" put (

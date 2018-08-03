@@ -14,7 +14,10 @@ var myVar : String is public := "Grace"
 
 method myMeth -> Number { 47 }
 
-method myMethWithParam(myParam : Number) -> Number { myParam }
+method myMethWithParam(myParam : interface{
+    m(param : MyType) -> Number
+    n -> String
+}) -> String { myParam.n }
 
 method myConfidentialMeth -> Number is confidential { 47 }
 

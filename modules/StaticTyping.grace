@@ -14,6 +14,8 @@ import "ObjectTypeModule" as ot
 
 inherit sg.methods
 
+type GenericMethod = share.GenericMethod
+type GenericMethodFactory = share.GenericMethodFactory
 type MethodType = share.MethodType
 type MethodTypeFactory = share.MethodTypeFactory
 type GenericType = share.GenericType
@@ -27,6 +29,7 @@ type Parameter = share.Parameter
 
 def cache : Dictionary = sc.cache
 def allCache : Dictionary = sc.allCache
+def aGenericMethod : GenericMethodFactory = ot.aGenericMethod
 def aMethodType : MethodTypeFactory = ot.aMethodType
 def aGenericType : GenericTypeFactory = ot.aGenericType
 def anObjectType : share.ObjectTypeFactory = ot.anObjectType
@@ -940,6 +943,9 @@ def astVisitor: ast.AstVisitor is public = object {
             }
         }
 
+        //retrieves the names of public methods from imported module
+        def importMethods : Set⟦MethodType⟧ = emptySet
+
         // Collect the type definition associated with each type
         def typeDefs : Dictionary⟦String, List⟦String⟧⟧ = emptyDictionary
         gct.keys.do { key : String →
@@ -947,8 +953,22 @@ def astVisitor: ast.AstVisitor is public = object {
             if (key.startsWith("methodtypes-of:")) then {
                 //gets the name of the type
                 def typeName: String = split(key, ":").at(2)
+                gct.at(key).at(1) put ("type {typeName} = {gct.at(key).at(1)}")
+                def tokens = lex.lexLines(gct.at(key))
+                def typeDecNode = parser.typedec(tokens)
+                typeDecNode.accept(importVisitor(impName))
 
-                typeDefs.at(typeName) put(gct.at(key))
+                updateTypeScope(typeDecNode)
+
+            } elseif {key.startsWith("publicMethod:")} then {
+                //worry about import of import later
+                def tokens = lex.lexLines(gct.at(key))
+                def methTypeNode = parser.methodInInterface(tokens)
+                methTypeNode.accept(importVisitor(impName))
+                //io.error.write"\n1010 Method is {methTypeNode.pretty(0)}"
+                importMethods.add(aMethodType.fromNode(methTypeNode))
+                //importMethods.add(aMethodType.fromGctLine(methSig, impName))
+
             }
         }
 
@@ -961,14 +981,10 @@ def astVisitor: ast.AstVisitor is public = object {
         //}
 
         for(typeDefs.keys) do {typeName: String →
-            typeDefs.at(typeName).at(1) put ("type {typeName} = {typeDefs.at(typeName).at(1)}")
-            def tokens = lex.lexLines(typeDefs.at(typeName))
-            def typeDecNode = parser.typedec(tokens)
-            scope.types.addToTopAt("{impName}.{typeName}") put (anObjectType.definedByNode(typeDecNode.value))
+
         }
 
-        //retrieves the names of public methods from imported module
-        def importMethods : Set⟦MethodType⟧ = emptySet
+
 
         def importedMethodTypes: List⟦String⟧ = gct.at("publicMethodTypes")
                                                   ifAbsent { emptyList⟦String⟧ }
@@ -1001,8 +1017,6 @@ def astVisitor: ast.AstVisitor is public = object {
 
                 //remove the type belonging to '$nickname' from the types scope
                 scope.types.stack.at(1).removeKey("{impName}.{name}")
-            } else {
-                importMethods.add(aMethodType.fromGctLine(methSig, impName))
             }
         }
 
@@ -1022,192 +1036,6 @@ def astVisitor: ast.AstVisitor is public = object {
             io.error.write"\n2421: ObjectType of the import {impName} is: {impOType}"
         }
         false
-    }
-
-    //Goes through a node and prepends impName to all type references, as long
-    //as they are not prelude types.
-    method importHelper(impName, node) → node{
-        match (node)
-          case {
-
-
-        } case {
-
-
-        }
-
-
-
-    }
-
-
-
-
-
-
-
-
-
-
-    //Resolve the imported type,'typeName', and store it in the types scope
-    //
-    //Param typeName - name of the imported type to be resolved
-    //      impName  - nickname of the imported file containing 'typeName'
-    //      unresolvedTypes - list of unresolved types
-    //      typeDefs - maps all imported types from 'impName' to their type
-    //                 definitions
-    method importHelper(typeName : String, impName : String,
-                        unresolvedTypes : List⟦String⟧,
-                        typeDefs : Dictionary⟦String, List⟦String⟧⟧) → Done {
-
-        if (typeDefs.containsKey(typeName).not) then {
-            Exception.raise ("\nCannot find type {typeName}. It is not " ++
-                "defined in the {impName} GCT file. Likely a problem with " ++
-                "writing the GCT file.")
-        }
-        if (debug) then {
-            io.error.write "\n 2413: looking for {typeName} defined as {typeDefs.at(typeName)}"
-        }
-        def typeLiterals : Dictionary⟦String, ObjectType⟧ = emptyDictionary
-
-        //Holds all methods belonging to 'typeName'
-        def typeMeths: Set⟦MethodType⟧ = emptySet
-
-        def typeDef : List⟦String⟧ = typeDefs.at(typeName)
-
-        //populates typeLiterals with all the type literals declared in the type
-        while {(typeDef.size > 0) && {typeDef.at(1).startsWithDigit}} do {
-            def methPrefix : String = split(typeDef.at(1), " ").at(1)
-
-            if (typeLiterals.containsKey(methPrefix).not) then {
-                def oType : ObjectType = anObjectType.fromMethods(emptySet)
-
-                typeLiterals.at(methPrefix) put (oType)
-            }
-
-            typeLiterals.at(methPrefix).methods.add(
-                          aMethodType.fromGctLine(typeDef.removeFirst, impName))
-        }
-
-        //*******************************************************
-        //At this point in the method, typeDef only contains the
-        //lines that come after the type literal definitions
-        //*******************************************************
-
-        //This will hold the resulting ObjectType of the type being evaluated
-        def myType : ObjectType = if (typeDef.size == 0) then {
-            //type is defined by a type literal
-            if (typeLiterals.size == 0) then {
-                anObjectType.fromMethods(emptySet)
-            } else {
-                typeLiterals.values.first
-            }
-        } else {
-            def fstLine : String = typeDef.at(1)
-            if ((fstLine.at(1) == "&") || {fstLine.at(1) == "|"}) then {
-                //type is defined by operations on other types
-                importOpHelper(typeDef, typeLiterals, typeName, impName,
-                                                      unresolvedTypes, typeDefs)
-            } elseif {anObjectType.preludeTypes.contains(fstLine)} then {
-                //type is defined by a prelude type
-                scope.types.findType("{fstLine}") butIfMissing{
-                    Exception.raise ("\nCannot find type {fstLine}. "++
-                        "Likely a problem with writing the GCT file.")
-                }
-            } else {
-                //type is defined by an imported type
-                if (unresolvedTypes.contains(fstLine)) then {
-                    importHelper(fstLine, impName, unresolvedTypes, typeDefs)
-                }
-                scope.types.findType("{impName}.{fstLine}") butIfMissing{
-                    Exception.raise ("\nCannot find type {impName}.{fstLine}."++
-                        " Likely a problem with writing the GCT file.")
-                }
-            }
-        }
-
-        if (debug) then {
-            io.error.write ("\nThe type {impName}.{typeName} was put in the scope as" ++
-                                      " {impName}.{typeName}::{myType}")
-
-            io.error.write "\n2483 trying to remove {typeName} from {unresolvedTypes}"
-        }
-
-        //type typeName has been resolved, so remove it from unresolvedTypes
-        unresolvedTypes.remove(typeName)
-
-        //check for and handle generic types
-        //needs to be updated to work with more complicated types, like T⟦U,V⟦W⟧⟧
-        def bracket : Number = typeName.indexOf("⟦")
-        if(bracket == 0) then {
-            scope.types.addToTopAt("{impName}.{typeName}") put (myType)
-        } else {
-            def typeParamsStr: String = typeName.substringFrom(bracket + 1)
-                                                          to (typeName.size - 1)
-            def typeParams : List⟦String⟧ = split(typeParamsStr, ",")
-            def name : String = typeName.substringFrom(1) to (bracket - 1)
-            def genType : GenericType = aGenericType.fromName(name)
-                                      parameters(typeParams) objectType(myType)
-            scope.generics.addToTopAt("{impName}.{name}") put (genType)
-        }
-
-    }
-
-    //recursively parse pre-ordered type definitions from GCT file
-    //
-    //Param list - the list of strings from the GCT file that represents the pre-order
-    //                traversal of the AstNode tree
-    //Param typeLits - Holds all the pre-processed type literals from the type definition
-    //                    mapped to digits as temporary type names
-    //The other parameters are just so this method can recursively call importHelper
-    method importOpHelper (typeDef : List⟦String⟧,
-                typeLits : Dictionary⟦String,ObjectType⟧, typeName : String,
-                impName : String, unresolvedTypes : List⟦String⟧,
-                typeDefs : Dictionary⟦String, List⟦String⟧⟧) → ObjectType {
-
-        if (debug) then {
-            io.error.write("\nCalled importOpHelper on {typeName} with the " ++
-                                                          "typeDef of {list}")
-        }
-        def elt : String = typeDef.removeFirst
-        //elt is an op, and what comes after it is its left side and right side
-        if (elt == "&") then {
-            def leftSide  : ObjectType = importOpHelper(typeDef, typeLits, elt,
-                                            impName, unresolvedTypes, typeDefs)
-            def rightSide : ObjectType = importOpHelper(typeDef, typeLits, elt,
-                                            impName, unresolvedTypes, typeDefs)
-            def op : share.TypeOp = ot.typeOp("&", leftSide, rightSide)
-            def tempOType : ObjectType = anObjectType.fromMethods(emptySet)
-            tempOType.setOpNode(op)
-            scope.types.addToTopAt("{impName}.{typeName}") put (tempOType)
-            leftSide & rightSide
-        } elseif {elt == "|"} then {
-            def leftSide  : ObjectType = importOpHelper(typeDef, typeLits, elt,
-                                            impName, unresolvedTypes, typeDefs)
-            def rightSide : ObjectType = importOpHelper(typeDef, typeLits, elt,
-                                            impName, unresolvedTypes, typeDefs)
-            def op : share.TypeOp = ot.typeOp("|", leftSide, rightSide)
-            def tempOType : ObjectType = anObjectType.fromMethods(emptySet)
-            tempOType.setOpNode(op)
-            scope.types.addToTopAt("{impName}.{typeName}") put (tempOType)
-            leftSide | rightSide
-        //elt refers to an already-processed type literal
-        } elseif {elt.startsWithDigit} then {
-            typeLits.at(elt)
-        //elt is an identifier, which must be resolved then found in the scope
-        } else {
-            if (unresolvedTypes.contains(elt)) then {
-                importHelper (elt, impName, unresolvedTypes, typeDefs)
-            }
-            if (debug) then {
-                io.error.write ("\n2470 scope before search in import is" ++
-                                                            "{scope.types}")
-            }
-            scope.types.findType("{impName}.{elt}") butIfMissing {
-                                  ScopingError.raise("Could not " ++
-                                        "find type {elt} from import in scope")
-            }
-        }
     }
 
     // type check expression being returned via return statement
@@ -1276,6 +1104,34 @@ method outerAt(i : Number) → ObjectType is confidential {
 
         oType
     }
+}
+
+method updateTypeScope(typeDec : share.TypeDeclaration) → ObjectType {
+    //check whether the typeDec is a GenericType and process accordingly
+    var oType : ObjectType
+    if(false ≠ typeDec.typeParams) then {
+        def genType : GenericType = aGenericType.fromTypeDec(typeDec)
+        oType := genType.oType
+        scope.genericTypes.addToTopAt(typeDec.nameString) put (genType)
+    } else {
+        oType := anObjectType.definedByNode(typeDec.value)
+        scope.types.addToTopAt(typeDec.nameString) put(oType)
+    }
+    oType
+}
+
+method updateMethScope(meth : AstNode) → MethodType {
+    var mType : MethodType
+
+    if(false ≠ meth.typeParams) then {
+        def genMeth : GenericMethod = aGenericMethod.fromMethNode(meth)
+        mType := genMeth.mType
+        scope.genericMethods.at(mType.nameString) put (genMeth)
+    } else {
+        mType := aMethodType.fromNode(meth)
+        scope.methods.at(mType.nameString) put (mType)
+    }
+    mType
 }
 
 // Type check body of object definition
@@ -1421,7 +1277,7 @@ method processBody (body : List⟦AstNode⟧, superclass: AstNode | false)
             match(stmt) case { meth : share.Method →
                 // ensure any method overriding one from super class is
                 // compatible
-                def mType: MethodType = aMethodType.fromNode(meth)
+                def mType: MethodType = updateMethScope(meth)
                 checkOverride(mType,allMethods,publicMethods)
 
                 // add new method to the collection of methods
@@ -1433,8 +1289,6 @@ method processBody (body : List⟦AstNode⟧, superclass: AstNode | false)
                 if(isPublic(meth)) then {
                     publicMethods.add(mType)
                 }
-
-                scope.methods.at(meth.nameString) put(mType)
 
                 //A method that is a Member has no parameter and is identical to
                 //a variable, so we also store it inside the variables scope
@@ -1575,17 +1429,10 @@ method collectTypes(nodes : Collection⟦AstNode⟧) → Done is confidential {
 
             names.push(node.nameString)
 
-            //check whether the typeDec is a GenericType and process accordingly
-            if(false ≠ node.typeParams) then {
-                scope.generics.addToTopAt(node.nameString)
-                                            put (aGenericType.fromTypeDec(node))
-            } else {
-                scope.types.addToTopAt(node.nameString)
-                                    put(anObjectType.definedByNode(node.value))
-            }
+            updateTypeScope(node)
         }
     }
-    io.error.write "\nGenerics scope is: {scope.generics}"
+    io.error.write "\nGenerics scope is: {scope.genericTypes}"
     // io.error.write "1881: done collecting types"
 }
 
@@ -1661,4 +1508,55 @@ method stripNewLines(str) → String is confidential {
 
 def thisDialect is public = object {
     method astChecker (moduleObj) { moduleObj.accept(astVisitor) }
+}
+
+
+class importVisitor(impName : String) → ast.AstVisitor {
+    inherit ast.baseVisitor
+
+    method visitTypeDec(typeDec:AstNode) → Boolean {
+        io.error.write("\n Checking typeDec {typeDec.name}")
+        //typeDec.name is a identifierBinding
+        typeDec.name.name := "{impName}.{typeDec.nameString}"
+
+        if (false ≠ typeDec.typeParams) then {
+            for (typeDec.typeParams.params) do { tp : share.Identifier →
+                io.error.write("\nChanging name to {impName}.{tp.name}")
+                tp.name := "{impName}.{tp.name}"
+            }
+        }
+        true
+    }
+
+    method visitIdentifier(ident:AstNode) → Boolean {
+        io.error.write("\n Checking ident {ident.name}")
+        if ((anObjectType.preludeTypes.contains(ident.name).not) &&
+                                        (ident.isBindingOccurrence.not)) then {
+            io.error.write("\nChanging name to {impName}.{ident.name}")
+            ident.name := "{impName}.{ident.name}"
+        }
+
+        if (false ≠ ident.generics) then {
+            Exception.raise("\n need to handle generics in visitIdentifier")
+        }
+        true
+    }
+
+    method visitMember(member:AstNode) → Boolean {
+        if ((member.receiver == "self") || (member.receiver == "module()Object")) then {
+            member.receiver := ""
+        }
+        if (anObjectType.preludeTypes.contains(member.request).not) then {
+            member.receiver := "{impName}.{member.receiver}"
+        }
+        if (false ≠ member.generics) then {
+            Exception.raise("\n need to handle generics in visitMember")
+        }
+        false
+    }
+
+    //not sure about visitcall
+
+
+
 }

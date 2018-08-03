@@ -11,10 +11,14 @@ import "SharedTypes" as share
 
 inherit sg.methods
 
-type ObjectType = share.ObjectType
+type GenericMethod = share.GenericMethod
+type GenericMethodFactory = share.GenericMethodFactory
 type MethodType = share.MethodType
-type ObjectTypeFactory = share.ObjectTypeFactory
 type MethodTypeFactory = share.MethodTypeFactory
+type GenericType = share.GenericType
+type GenericTypeFactory = share.GenericTypeFactory
+type ObjectType = share.ObjectType
+type ObjectTypeFactory = share.ObjectTypeFactory
 type AstNode = share.AstNode
 type Parameter = share.Parameter
 
@@ -218,6 +222,37 @@ class aMixPartWithName(name' : String)
     def name : String is public = name'
     def parameters : List⟦Param⟧ is public = parameters'
 }
+
+def aGenericMethod: GenericMethodFactory is public = object {
+    class fromMethNode(meth : AstNode) → GenericMethod {
+        def typeParams : List⟦String⟧ is public = emptyList⟦String⟧
+
+        for (meth.typeParams.params) do { param : AstNode →
+            typeParams.add(param.nameString)
+        }
+
+        def mType : MethodType = aMethodType.fromNode(meth)
+
+        method apply(replacementTypes : List⟦ObjectType⟧) → MethodType {
+            if(replacementTypes.size ≠ typeParams.size) then {
+                TypeError.raise("Wrong number of type parameters given when " ++
+                    "instantiating generic method {meth.nameString}. "++
+                    "Attempted to replace {typeParams} with " ++
+                    "{replacementTypes}.")
+            }
+            //Create a mapping of GenericTypes-to-ObjectTypes
+            def replacements : Dictionary⟦String, ObjectType⟧ =
+                                            emptyDictionary⟦String, ObjectType⟧
+            for (1..replacementTypes.size) do { index : Number →
+                replacements.at(typeParams.at(index))
+                                                put (replacementTypes.at(index))
+            }
+
+            mType.replaceGenericsWith(replacements)
+        }
+    }
+}
+
 
 // factory for creating method types from various inputs
 def aMethodType: MethodTypeFactory is public = object {
@@ -610,13 +645,11 @@ def aMethodType: MethodTypeFactory is public = object {
             }
             return signature (signature) returnType (dtype)
         } case { _ →
+            io.error.write"\nmethod.kind is {node.kind}"
             Exception.raise "unrecognised method node" with(node)
         }
     }
 }
-
-type GenericType = share.GenericType
-type GenericTypeFactory = share.GenericTypeFactory
 
 def aGenericType : GenericTypeFactory is public = object{
 
@@ -1333,7 +1366,8 @@ def anObjectType: ObjectTypeFactory is public = object {
         scope.types.findType (genName) butIfMissing {
 
             //Raise error if the type used does not exist in the generic scope
-            def genType : GenericType = scope.generics.findType(node.nameString)
+            def genType : GenericType =
+                                    scope.genericTypes.findType(node.nameString)
                                                                   butIfMissing {
                 ProgrammingError.raise("Attempting to use an undefined " ++
                                   "generic type {node.nameString}.") with(node)

@@ -10,9 +10,11 @@ import "SharedTypes" as share
 
 inherit sg.methods
 
-type ObjectType = share.ObjectType
+
+type GenericMethod = share.GenericMethod
 type MethodType = share.MethodType
 type GenericType = share.GenericType
+type ObjectType = share.ObjectType
 
 // The cached public type assignments.
 def cache: Dictionary is readable = emptyDictionary
@@ -132,7 +134,8 @@ type Scope = {
     variables → StackOfKind⟦ObjectType⟧
     methods → StackOfKind⟦MethodType⟧
     types → StackOfKind⟦ObjectType⟧
-    generics → StackOfKind⟦GenericType⟧
+    genericTypes → StackOfKind⟦GenericType⟧
+    genericMethods → StackOfKind⟦GenericMethod⟧
 
     // number of levels on each stack (all the same)
     size → Number
@@ -147,7 +150,8 @@ def scope: Scope is public = object {
     def variables is public = stackOfKind⟦ObjectType⟧ ("variable")
     def methods is public = stackOfKind ⟦MethodType⟧("method")
     def types is public = stackOfKind ⟦ObjectType⟧("type")
-    def generics is public = stackOfKind ⟦GenericType⟧("generic")
+    def genericTypes is public = stackOfKind ⟦GenericType⟧("genericType")
+    def genericMethods is public = stackOfKind ⟦GenericType⟧("genericMethod")
 
     // number of items on stack
     method size → Number {

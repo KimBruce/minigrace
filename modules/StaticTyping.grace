@@ -112,7 +112,7 @@ def MethodError = TypeError.refine("Method TypeError")
 
 // Def and var declarations.  Type of def or var declaration does not
 // correspond to value associated with it
-def DefError: outer.ExceptionKind = TypeError.refine("Def TypeError")
+def DefError: outer.ExceptionKind is public = TypeError.refine("Def TypeError")
 
 // Scoping error declaration with imports
 def ScopingError: outer.ExceptionKind = TypeError.refine("ScopingError")

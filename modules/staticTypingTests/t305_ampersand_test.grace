@@ -23,7 +23,7 @@ def input : String =
     ""
 
 //Turns input into an abstract syntax tree (ast)
-def tokens = lexer.new.lexString(input)
+def tokens = lexer.lexString(input)
 def module = parser.parse(tokens)
 def inputTree = ir.resolve(module)
 

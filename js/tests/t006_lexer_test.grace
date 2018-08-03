@@ -121,18 +121,18 @@ def goodString = "and here is another"›
 testSuiteNamed "Single line" with {
     test "interface" by {
         def s = ‹interface { x -> Boolean ; y(arg:String) -> Done }›
-        def toks = lexer.lexLine(s)
+        def toks = lexer.lexLines(list[s])
         def first = toks.poll
         assert (first.kind) shouldBe "keyword"
         assert (first.value) shouldBe "interface"
     }
-    test "multiple lines" by {
-        def s = ‹interface {
-    x -> Boolean
-    y(arg:String) -> Done
-}›
-        assert { lexer.lexLine(s) }
-            shouldRaise (ProgrammingError)
-            mentioning "not a single line"
-    }
+//    test "multiple lines" by {
+//        def s = ‹interface {
+//    x -> Boolean
+//    y(arg:String) -> Done
+//}›
+//        assert { lexer.lexLines(list[s]) }
+//            shouldRaise (ProgrammingError)
+//            mentioning "not a single line"
+//    }
 }

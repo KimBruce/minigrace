@@ -401,9 +401,9 @@ def aMethodType: MethodTypeFactory is public = object {
                         //and the params inside this method that use those
                         //generic types are definedByNode(identifierNodes), we
                         //can compare their asString
-                        if (replacements.containsKey(param.name)) then {
+                        if (replacements.containsKey(param.typeAnnotation.asString)) then {
                             params.add(aParam.withName(param.name)
-                                          ofType (replacements.at(param.name)))
+                                          ofType (replacements.at(param.typeAnnotation.asString)))
                         } else {
                             params.add(aParam.withName(param.name)
                                           ofType (param.typeAnnotation))

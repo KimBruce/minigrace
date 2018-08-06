@@ -73,17 +73,6 @@ type MixPart = {
     parameters → List⟦Param⟧
 }
 
-type GenericMethod = {
-    name → String
-    typeParams → List⟦String⟧
-    mType → MethodType
-    apply (replacementTypes : List⟦ObjectType⟧) → MethodType
-}
-
-type GenericMethodFactory  = {
-    fromMethNode(meth : AstNode) → GenericMethod
-}
-
 // Method signature information.
 // isSpecialisation and restriction are used for type-checking
 type MethodType = {
@@ -99,6 +88,12 @@ type MethodType = {
     // return type
     retType → ObjectType
 
+    // optional type parameters
+    typeParams → List⟦String⟧
+
+    // checks if method has type parameters
+    hasTypeParams → Boolean
+
     // check equivalence of part names, param types, and return type;
     // does not check if param names are the same
     == (other: MethodType) → Boolean
@@ -108,6 +103,9 @@ type MethodType = {
 
     // Does it extend other
     isSpecialisationOf (trials : List⟦TypePair⟧, other : MethodType) → Answer
+
+    // pre-condition: This MethodType has type parameters
+    apply(replacementTypes : List⟦ObjectType⟧) → MethodType
 
     // Takes a mapping of generic-to-ObjectType and returns a copy of self
     // with all of the generics replaced with their corresponding ObjectType

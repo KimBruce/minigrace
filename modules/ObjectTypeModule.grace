@@ -11,8 +11,6 @@ import "SharedTypes" as share
 
 inherit sg.methods
 
-type GenericMethod = share.GenericMethod
-type GenericMethodFactory = share.GenericMethodFactory
 type MethodType = share.MethodType
 type MethodTypeFactory = share.MethodTypeFactory
 type GenericType = share.GenericType
@@ -223,48 +221,18 @@ class aMixPartWithName(name' : String)
     def parameters : List⟦Param⟧ is public = parameters'
 }
 
-def aGenericMethod: GenericMethodFactory is public = object {
-    class fromMethNode(meth : AstNode) → GenericMethod {
-        def typeParams : List⟦String⟧ is public = emptyList⟦String⟧
-
-        for (meth.typeParams.params) do { param : AstNode →
-            typeParams.add(param.nameString)
-        }
-
-        def mType : MethodType = aMethodType.fromNode(meth)
-
-        method apply(replacementTypes : List⟦ObjectType⟧) → MethodType {
-            if(replacementTypes.size ≠ typeParams.size) then {
-                TypeError.raise("Wrong number of type parameters given when " ++
-                    "instantiating generic method {meth.nameString}. "++
-                    "Attempted to replace {typeParams} with " ++
-                    "{replacementTypes}.")
-            }
-            //Create a mapping of GenericTypes-to-ObjectTypes
-            def replacements : Dictionary⟦String, ObjectType⟧ =
-                                            emptyDictionary⟦String, ObjectType⟧
-            for (1..replacementTypes.size) do { index : Number →
-                replacements.at(typeParams.at(index))
-                                                put (replacementTypes.at(index))
-            }
-
-            mType.replaceGenericsWith(replacements)
-        }
-    }
-}
-
-
 // factory for creating method types from various inputs
 def aMethodType: MethodTypeFactory is public = object {
     // create method type from list of mixparts and return type
     method signature (signature' : List⟦MixPart⟧)
-            returnType (retType' : ObjectType) → MethodType {
+                              returnType (retType' : ObjectType) → MethodType {
         object {
             //Readable variables
             var name : String is readable := ""
             var nameString : String is readable := ""
             def signature : List⟦MixPart⟧ is public = signature'
             def retType : ObjectType is public = retType'
+            def typeParams : List⟦String⟧ is public = emptyList⟦String⟧
 
             //Initialize name, nameString, and show(for the method asString)
             var show : String := ""
@@ -294,6 +262,10 @@ def aMethodType: MethodTypeFactory is public = object {
             show := "{show} → {retType}"
 
             method hash → Number is override {name.hash}
+
+            method hasTypeParams → Boolean {
+                typeParams.size > 0
+            }
 
             //Two method types are considered equal if they have the same
             //nameString, parameter types, and return type
@@ -387,6 +359,19 @@ def aMethodType: MethodTypeFactory is public = object {
                 return retType.isSubtypeHelper (trials, other.retType)
             }
 
+            method apply(replacementTypes : List⟦ObjectType⟧) → MethodType {
+                if(replacementTypes.size ≠ typeParams.size) then {
+                    TypeError.raise("Wrong number of type parameters given when " ++
+                        "instantiating generic method {nameString}. "++
+                        "Attempted to replace {typeParams} with " ++
+                        "{replacementTypes}.")
+                }
+                //Create a mapping of GenericTypes-to-ObjectTypes
+                def replacements : Dictionary⟦String, ObjectType⟧ =
+                                    makeDictionary(typeParams,replacementTypes)
+                replaceGenericsWith(replacements)
+            }
+
             // Takes a mapping of generic-to-ObjectType and returns a copy of
             // self with all of the generics replaced with their corresponding
             // ObjectType
@@ -401,12 +386,13 @@ def aMethodType: MethodTypeFactory is public = object {
                         //and the params inside this method that use those
                         //generic types are definedByNode(identifierNodes), we
                         //can compare their asString
-                        if (replacements.containsKey(param.typeAnnotation.asString)) then {
+                        def typeAn : String = param.typeAnnotation.asString
+                        if (replacements.containsKey(typeAn)) then {
                             params.add(aParam.withName(param.name)
-                                          ofType (replacements.at(param.typeAnnotation.asString)))
+                                              ofType (replacements.at(typeAn)))
                         } else {
                             params.add(aParam.withName(param.name)
-                                          ofType (param.typeAnnotation))
+                                              ofType (param.typeAnnotation))
                         }
                     }
                     mixParts.add(aMixPartWithName(mPart.name)parameters(params))
@@ -631,8 +617,16 @@ def aMethodType: MethodTypeFactory is public = object {
                 case { m : share.Method | share.Class → m.dtype}
                 case { m : share.MethodSignature → m.rtype}
             io.error.write "\nfound rType {rType} on {meth}"
-            return signature (signature)
-                returnType (anObjectType.definedByNode (rType))
+
+            def mType : MethodType = signature (signature)
+                                returnType (anObjectType.definedByNode (rType))
+            if (false ≠ meth.typeParams) then {
+                for (meth.typeParams.params) do { ident : share.Identifier →
+                    mType.typeParams.add(ident.nameString)
+                }
+            }
+            mType
+
         } case { defd : share.Def | share.Var →
             io.error.write "\n574: defd: {defd}"
             io.error.write "\n575: defd.dtype {defd.dtype}"
@@ -679,11 +673,7 @@ def aGenericType : GenericTypeFactory is public = object{
 
             //Create a mapping of GenericTypes-to-ObjectTypes
             def replacements : Dictionary⟦String, ObjectType⟧ =
-                                            emptyDictionary⟦String, ObjectType⟧
-            for (1..replacementTypes.size) do { index : Number →
-                replacements.at(typeParams.at(index))
-                                                put (replacementTypes.at(index))
-            }
+                                    makeDictionary(typeParams, replacementTypes)
 
             //Tells each method to replace references to any of the typeParams
             def appliedMethods : Set⟦MethodType⟧ = emptySet⟦MethodType⟧
@@ -1849,4 +1839,19 @@ method fromObjectTypeList(oList : List⟦ObjectType⟧) → ObjectType{
         index := index +1
       }
       varType
+}
+
+//Creates a Dictionary mapping elements of keys to elements of vals
+method makeDictionary⟦K,V⟧(keys: List⟦K⟧, vals: List⟦V⟧) → Dictionary⟦K,V⟧ {
+    //Make sure keys and vals are of the same size
+    if(keys.size ≠ vals.size) then {
+        ProgrammingError.raise("Attempted to create a dictionary from two " ++
+                                                      "lists of unequal size.")
+    }
+    //Populate the dictionary
+    def dict : Dictionary⟦K,V⟧ = emptyDictionary⟦K,V⟧
+    for (keys.indices) do { index : Number →
+        dict.at(keys.at(index)) put (vals.at(index))
+    }
+    dict
 }

@@ -15,8 +15,6 @@ import "ObjectTypeModule" as ot
 
 inherit sg.methods
 
-type GenericMethod = share.GenericMethod
-type GenericMethodFactory = share.GenericMethodFactory
 type MethodType = share.MethodType
 type MethodTypeFactory = share.MethodTypeFactory
 type GenericType = share.GenericType
@@ -31,7 +29,6 @@ type Parameter = share.Parameter
 def DialectError is public = xmodule.DialectError
 def cache: Dictionary = sc.cache
 def allCache: Dictionary = sc.allCache
-def aGenericMethod : GenericMethodFactory = ot.aGenericMethod
 def aMethodType : MethodTypeFactory = ot.aMethodType
 def aGenericType : GenericTypeFactory = ot.aGenericType
 def anObjectType : share.ObjectTypeFactory = ot.anObjectType
@@ -1136,16 +1133,8 @@ method updateTypeScope(typeDec : share.TypeDeclaration) → ObjectType {
 }
 
 method updateMethScope(meth : AstNode) → MethodType {
-    var mType : MethodType
-
-    if(false ≠ meth.typeParams) then {
-        def genMeth : GenericMethod = aGenericMethod.fromMethNode(meth)
-        mType := genMeth.mType
-        scope.genericMethods.at(mType.nameString) put (genMeth)
-    } else {
-        mType := aMethodType.fromNode(meth)
-        scope.methods.at(mType.nameString) put (mType)
-    }
+    def mType : MethodType = aMethodType.fromNode(meth)
+    scope.methods.at(mType.nameString) put (mType)
     mType
 }
 
@@ -1447,7 +1436,7 @@ method collectTypes(nodes : Collection⟦AstNode⟧) → Done is confidential {
             updateTypeScope(node)
         }
     }
-    io.error.write "\nGenerics scope is: {scope.genericTypes}"
+    io.error.write "\nGenerics scope is: {scope.generics}"
     // io.error.write "1881: done collecting types"
 }
 

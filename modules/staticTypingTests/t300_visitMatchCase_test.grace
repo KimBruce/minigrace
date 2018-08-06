@@ -118,12 +118,12 @@ testSuiteNamed "visitMatchCase tests" with {
 
   test "matchee and param type-mismatch error" by {
     def blk2 = nodes.filter{n -> n.name.name == "testBlock2"}.first
-    assert ({blk2.accept(st.astVisitor)}) shouldRaise (TypeError)
+    assert ({blk2.accept(st.astVisitor)}) shouldRaise (st.DialectError)
   }
 
   test "multiple params error" by {
     def blk3 = nodes.filter{n -> n.name.name == "testBlock3"}.first
-    assert ({blk3.accept(st.astVisitor)}) shouldRaise (RequestError)
+    assert ({blk3.accept(st.astVisitor)}) shouldRaise (st.DialectError)
   }
 
   test "variant type matchee and params" by {
@@ -131,7 +131,7 @@ testSuiteNamed "visitMatchCase tests" with {
     assert({blk4.accept(st.astVisitor)}) shouldntRaise (Exception)
 
     def blk5 = nodes.filter{n -> n.name.name == "testBlock5"}.first
-    assert ({blk5.accept(st.astVisitor)}) shouldRaise (TypeError)
+    assert ({blk5.accept(st.astVisitor)}) shouldRaise (st.DialectError)
   }
 
   test "variant return-type" by {
@@ -139,7 +139,7 @@ testSuiteNamed "visitMatchCase tests" with {
     assert ({blk6.accept(st.astVisitor)}) shouldntRaise (Exception)
 
     def blk7 = nodes.filter{n -> n.name.name == "testBlock7"}.first
-    assert ({blk7.accept(st.astVisitor)}) shouldRaise (TypeError)
+    assert ({blk7.accept(st.astVisitor)}) shouldRaise (st.DialectError)
   }
 
   test "return-type Done" by {

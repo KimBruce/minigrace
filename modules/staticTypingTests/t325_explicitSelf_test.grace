@@ -1,5 +1,4 @@
-dialect "gradualTypesND"
-//This test is broken. It only works if we write T instead of self.T 
+dialect "StaticTyping"
 type T = Number
 
 def x: self.T = 47

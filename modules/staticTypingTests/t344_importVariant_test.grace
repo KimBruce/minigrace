@@ -1,4 +1,4 @@
-dialect "gradualTypesND"
+dialect "StaticTyping"
 import "t335A_basicImportee_test" as im
 
 //This test does not currently work because variant types

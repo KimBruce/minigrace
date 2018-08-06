@@ -29,6 +29,6 @@ def inputTree = ir.resolve(module)
 
 testSuiteNamed "self-referential subtype test" with {
     test "self-referential not a subtype" by {
-        assert({inputTree.accept(st.astVisitor)}) shouldRaise (st.DefError)
+        assert({inputTree.accept(st.astVisitor)}) shouldRaise (st.DialectError)
     }
 }

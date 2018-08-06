@@ -28,7 +28,7 @@ type MixPart = share.MixPart
 type Param = share.Param
 type Parameter = share.Parameter
 
-def DialectError = xmodule.DialectError
+def DialectError is public = xmodule.DialectError
 def cache: Dictionary = sc.cache
 def allCache: Dictionary = sc.allCache
 def aGenericMethod : GenericMethodFactory = ot.aGenericMethod

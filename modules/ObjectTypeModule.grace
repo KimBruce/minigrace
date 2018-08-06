@@ -1320,7 +1320,7 @@ def anObjectType: ObjectTypeFactory is public = object {
                 fromDType(ast.genericNode.new(ast.identifierNode.new(
                                           memberCall, false), member.generics))
             } else {
-                scope.types.findType(memberCall) butIfMissing {
+                scope.types.find(memberCall) butIfMissing {
                               ScopingError.raise("Failed to find {memberCall}")}
             }
 
@@ -1353,11 +1353,10 @@ def anObjectType: ObjectTypeFactory is public = object {
         //processed. If not, find the corresponding GenericType in the generic
         //types scope and initialize its type parameters.
         def genName : String = typesScopeName(node)
-        scope.types.findType (genName) butIfMissing {
+        scope.types.find (genName) butIfMissing {
 
             //Raise error if the type used does not exist in the generic scope
-            def genType : GenericType =
-                                    scope.genericTypes.findType(node.nameString)
+            def genType : GenericType = scope.generics.find(node.nameString)
                                                                   butIfMissing {
                 ProgrammingError.raise("Attempting to use an undefined " ++
                                   "generic type {node.nameString}.") with(node)
@@ -1374,7 +1373,7 @@ def anObjectType: ObjectTypeFactory is public = object {
             def instantiated : ObjectType = genType.apply(replacementTypes)
 
             //Update the types scope and return
-            scope.types.addToTopAt(genName) put(instantiated)
+            scope.types.addToGlobalAt(genName) put(instantiated)
             instantiated
         }
     }
@@ -1392,7 +1391,7 @@ def anObjectType: ObjectTypeFactory is public = object {
             return fromDType(ast.genericNode.new(ident, ident.generics))
         }
 
-        def oType : ObjectType = scope.types.findType(ident.value)
+        def oType : ObjectType = scope.types.find(ident.value)
             butIfMissing{ScopingError.raise("Failed to find {ident.value}")}
 
         //If the type we are referencing is unresolved and not an opNode,
@@ -1401,7 +1400,7 @@ def anObjectType: ObjectTypeFactory is public = object {
             return oType
         } else {
             def resolvedOType : ObjectType = oType.resolve
-            scope.types.addToTopAt(ident.value) put (resolvedOType)
+            scope.types.addToGlobalAt(ident.value) put (resolvedOType)
             resolvedOType
         }
     }

@@ -567,7 +567,7 @@ def astVisitor: ast.AstVisitor is public = object {
             io.error.write "\n1673: visitCall's call is: {rec.nameString}.{req.nameString}"
         }
 //        // Look up (internal) type of self.  NO LONGER USED
-//        var tempDef := scope.variables.findFromBottom("$elf")
+//        var tempDef := scope.variables.find("$elf")
 //                                              butIfMissing{anObjectType.dynamic}
 
         // type of receiver of request
@@ -575,7 +575,7 @@ def astVisitor: ast.AstVisitor is public = object {
             if (debug) then {
                 io.error.write "\n1675: looking for type of self"
             }
-            scope.variables.findFromBottom("$elf") butIfMissing {
+            scope.variables.find("$elf") butIfMissing {
                 DialectError.raise "type of self missing" with(rec)
             }
         } elseif {rec.nameString == "module()object"} then {
@@ -583,7 +583,7 @@ def astVisitor: ast.AstVisitor is public = object {
             if (debug) then {
                 io.error.write "\n1676: looking for type of module"
             }
-            scope.variables.findFromTop("$elf") butIfMissing {
+            scope.variables.findFromLeastRecent("$elf") butIfMissing {
                 DialectError.raise "type of self missing" with(rec)
             }
         } else {  // general case returns type of the receiver
@@ -627,7 +627,7 @@ def astVisitor: ast.AstVisitor is public = object {
                     io.error.write "\n2001: got to case noSuchMethod"
                     io.error.write "\n2002: scope here is {scope.variables}"
                 }
-                scope.types.findType(completeCall) butIfMissing {
+                scope.types.find(completeCall) butIfMissing {
                     //Joe - possibly come back and change error msg maybe
                     //less informative, but less confusing msg
 
@@ -745,7 +745,7 @@ def astVisitor: ast.AstVisitor is public = object {
         def idType: ObjectType = if (ident.value == "outer") then {
             outerAt(scope.size)
         } else {
-            scope.variables.findFromBottom(ident.value)
+            scope.variables.find(ident.value)
                                           butIfMissing { anObjectType.dynamic }
         }
         cache.at (ident) put (idType)
@@ -834,7 +834,7 @@ def astVisitor: ast.AstVisitor is public = object {
             // if receiver is self then look it up, else type check it
             def rType: ObjectType = if(share.Identifier.match(rec)
                                                 && {rec.value == "self"}) then {
-                scope.variables.findFromBottom("$elf") butIfMissing {
+                scope.variables.find("$elf") butIfMissing {
                     Exception.raise "type of self missing" with(rec)
                 }
             } else {
@@ -1017,7 +1017,7 @@ def astVisitor: ast.AstVisitor is public = object {
                                                     parameters(emptyList⟦Param⟧)
 
                 def retType : ObjectType =
-                    scope.types.findType("{impName}.{name}")
+                    scope.types.find("{impName}.{name}")
                         butIfMissing { Exception.raise
                             ("\nCannot find type " ++
                                 "{impName}.{name}. It is not defined in the " ++
@@ -1124,10 +1124,10 @@ method updateTypeScope(typeDec : share.TypeDeclaration) → ObjectType {
     if(false ≠ typeDec.typeParams) then {
         def genType : GenericType = aGenericType.fromTypeDec(typeDec)
         oType := genType.oType
-        scope.genericTypes.addToTopAt(typeDec.nameString) put (genType)
+        scope.generics.addToGlobalAt(typeDec.nameString) put (genType)
     } else {
         oType := anObjectType.definedByNode(typeDec.value)
-        scope.types.addToTopAt(typeDec.nameString) put(oType)
+        scope.types.addToGlobalAt(typeDec.nameString) put(oType)
     }
     oType
 }

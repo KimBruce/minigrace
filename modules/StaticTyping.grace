@@ -131,7 +131,19 @@ type RequestPart = {
 // Check if the signature and parameters of a request match
 // the declaration, return the type of the result
 method check (req : share.Request)
-        against(meth : MethodType) → ObjectType is confidential {
+        against(meth' : MethodType) → ObjectType is confidential {
+
+    var meth : MethodType := meth'
+    if ((req.kind == "call") || (req.kind == "member")
+                                          || (req.kind == "identifier")) then {
+        if ((false ≠ req.generics) && (meth.hasTypeParams)) then {
+            def replacementTypes : List⟦ObjectType⟧ = emptyList⟦ObjectType⟧
+            for (req.generics) do { node : AstNode →
+                replacementTypes.add(anObjectType.fromDType(node))
+            }
+            meth := meth.apply(replacementTypes)
+        }
+    }
     def name: String = meth.nameString
 
     for(meth.signature) and(req.parts) do { sigPart: MixPart, reqPart: RequestPart →
@@ -470,10 +482,14 @@ def astVisitor: ast.AstVisitor is public = object {
             io.error.write "\n1585: Entering scope for {meth}\n"
         }
         scope.enter {
+            for (mType.typeParams) do { typeParamName : String →
+                scope.types.at(typeParamName) put (anObjectType.base)
+            }
+
             for(meth.signature) do { part: AstNode →
                 for(part.params) do { param: AstNode →
                     scope.variables.at(param.value)
-                        put(anObjectType.fromDType(param.dtype))
+                                      put(anObjectType.fromDType(param.dtype))
                 }
             }
 

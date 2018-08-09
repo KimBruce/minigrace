@@ -628,7 +628,7 @@ def astVisitor: ast.AstVisitor is public = object {
                 name := req.nameString
             }
             // String showing what call looks like
-            def completeCall : String = "{req.receiver.nameString}.{req.nameString}"
+            def completeCall : String = req.toGrace(0)
             if (debug) then {
                 io.error.write "\n2154: {completeCall}"
                 io.error.write "\n2155: {req.nameString}"

@@ -962,91 +962,9 @@ def astVisitor: ast.AstVisitor is public = object {
             io.error.write("\n1953 gct is {gct}")
             io.error.write("\n1954 keys are {gct.keys}\n")
         }
-        // Define a list of types that we have yet to resolve. All public types
-        // are placed in this list at the start
-        def unresolvedTypes: List⟦String⟧ = list[]
-        if (gct.containsKey("types")) then {
-            for(gct.at("types")) do { typ →
-                unresolvedTypes.push(typ)
-            }
-        }
 
         //retrieves the names of public methods from imported module
-        def importMethods : Set⟦MethodType⟧ = emptySet
-
-        // Collect the type definition associated with each type
-        def typeDefs : Dictionary⟦String, List⟦String⟧⟧ = emptyDictionary
-        gct.keys.do { key : String →
-            //example key: 'methodtypes-of:MyType:'
-            if (key.startsWith("methodtypes-of:")) then {
-                //gets the name of the type
-                def typeName: String = split(key, ":").at(2)
-                gct.at(key).at(1) put ("type {typeName} = {gct.at(key).at(1)}")
-                def tokens = lex.lexLines(gct.at(key))
-                def typeDecNode = parser.typedec(tokens)
-                typeDecNode.accept(importVisitor(impName))
-
-                updateTypeScope(typeDecNode)
-
-            } elseif {key.startsWith("publicMethod:")} then {
-                //worry about import of import later
-                def tokens = lex.lexLines(gct.at(key))
-                def methTypeNode = parser.methodInInterface(tokens)
-                methTypeNode.accept(importVisitor(impName))
-                //io.error.write"\n1010 Method is {methTypeNode.pretty(0)}"
-                importMethods.add(aMethodType.fromNode(methTypeNode))
-                //importMethods.add(aMethodType.fromGctLine(methSig, impName))
-
-            }
-        }
-
-        //Loops until all imported types are resolved and stored in the types scope
-        //while{unresolvedTypes.size > 0} do {
-        //    //To resolve its given type, importHelper recursively resolves other
-        //    //unresolved types that its given type's type definition depends on.
-        //    importHelper(unresolvedTypes.at(1), impName, unresolvedTypes,
-        //                                                              typeDefs)
-        //}
-
-        for(typeDefs.keys) do {typeName: String →
-
-        }
-
-
-
-        def importedMethodTypes: List⟦String⟧ = gct.at("publicMethodTypes")
-                                                  ifAbsent { emptyList⟦String⟧ }
-
-        //construct the MethodType corressponding to each method name
-        for (importedMethodTypes) do { methSig : String →
-            //if the method name begins with a '$', then it is a method that
-            //returns an object corresponding to a public module that was
-            //imported by our own import. We have already constructed the type
-            //that this '$nickname' method returns in the while-do above. Since
-            //that type is the type of an import and is not from a type-dec,
-            //we want to remove it from our types scope after we've used it to
-            //construct this '$nickname' method.
-            if (methSig.at(1) == "$") then{
-                def name : String = methSig.substringFrom(2) to
-                                                    (methSig.indexOf("→") - 2)
-                def mixPart : MixPart = ot.aMixPartWithName(name)
-                                                    parameters(emptyList⟦Param⟧)
-
-                def retType : ObjectType =
-                    scope.types.find("{impName}.{name}")
-                        butIfMissing { Exception.raise
-                            ("\nCannot find type " ++
-                                "{impName}.{name}. It is not defined in the " ++
-                                "{impName} GCT file. Likely a problem with " ++
-                                "writing the GCT file.")}
-
-                importMethods.add(aMethodType.signature(list[mixPart])
-                                                          returnType (retType))
-
-                //remove the type belonging to '$nickname' from the types scope
-                scope.types.stack.at(1).removeKey("{impName}.{name}")
-            }
-        }
+        def importMethods : Set⟦MethodType⟧ = processGct(gct, impName)
 
         // Create the ObjectType and MethodType of import
         def impOType: ObjectType = anObjectType.fromMethods(importMethods)
@@ -1065,6 +983,54 @@ def astVisitor: ast.AstVisitor is public = object {
         }
         false
     }
+
+    method processGct(gct: Dictionary⟦String, List⟦String⟧⟧, impName: String)
+                                                              → Set⟦MethodType⟧ {
+        def importMethods : Set⟦MethodType⟧ = emptySet
+
+        def basicImportVisitor : ast.AstVisitor = xmodule.importVisitor(impName)
+        gct.keys.do { key : String →
+            //example key: 'typedec-of:MyType:'
+            if (key.startsWith("typedec-of:")) then {
+                //gets the name of the type
+                def headerName : String = split(key, ":").at(2)
+                def typeName : String = split(headerName, ".").last
+                def prefx : String = headerName.substringFrom(1)
+                                        to(headerName.size - typeName.size - 1)
+
+                def tokens = lex.lexLines(gct.at(key))
+                def typeDec = parser.typedec(tokens)
+
+                if (prefx == "") then {
+                    typeDec.accept(basicImportVisitor)
+                } else {
+                    typeDec.accept(xmodule.importVisitor("{impName}.{prefx}"))
+                }
+
+                // If the type name begins with a '$', then it is a type that
+                // returns an object corresponding to a module that was publicly
+                // imported by our own import. We use this type to construct the
+                // method for accessing the imported module's public methods.
+                if (typeName.at(1) == "$") then {
+                    def importName : String = typeName.substringFrom (2)
+                    def mixPart : MixPart = ot.aMixPartWithName(importName)
+                                                    parameters(emptyList⟦Param⟧)
+
+                    importMethods.add(aMethodType.signature(list[mixPart])
+                        returnType (anObjectType.definedByNode(typeDec.value)))
+                } else {
+                    updateTypeScope(typeDec)
+                }
+            } elseif {key.startsWith("publicMethod:")} then {
+                def tokens = lex.lexLines(gct.at(key))
+                def methodType = parser.methodInInterface(tokens)
+                methodType.accept(basicImportVisitor)
+                importMethods.add(aMethodType.fromNode(methodType))
+            }
+        }
+        importMethods
+    }
+
 
     // type check expression being returned via return statement
     method visitReturn (node: AstNode) → Boolean {

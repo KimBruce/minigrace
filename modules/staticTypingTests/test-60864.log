@@ -1,0 +1,25 @@
+minigrace[.]: realisticTypesImporter_test: 0.23 (+0.23): starting compilation
+minigrace[.]: realisticTypesImporter_test: 0.25 (+0.02): lexing.
+minigrace[.]: realisticTypesImporter_test: 0.31 (+0.06): parsing.
+minigrace[.]: realisticTypesImporter_test: 0.4 (+0.09): 0: (17.9)rbrace } closes if opened by (15.9)identifier if
+minigrace[.]: realisticTypesImporter_test: 0.4 (+0): 1: (19.9)rbrace } closes if opened by (15.9)identifier if
+minigrace[.]: realisticTypesImporter_test: 0.48 (+0.08): 0: (44.9)rbrace } closes if opened by (37.9)identifier if
+minigrace[.]: realisticTypesImporter_test: 0.49 (+0.01): checking dialect standardGrace used by module realisticTypesImporter_test
+minigrace[.]: realisticTypesImporter_test: 0.56 (+0.07): no need to load dialect "standardGrace": it does not define `thisDialect`
+minigrace[.]: realisticTypesImporter_test: 0.56 (+0): rewriting tree.
+minigrace[.]: realisticTypesImporter_test: 1.39 (+0.83): symbol tables built.
+minigrace[.]: realisticTypesImporter_test: 1.43 (+0.04): generating JavaScript code.
+AST nodes compiled:
+    identifier	53
+    member	26
+    call	8
+    method	6
+    num	6
+    op	4
+    if	2
+    typedec	2
+    defdec	2
+    import	1
+    string	1
+    dialect	1
+minigrace[.]: realisticTypesImporter_test: 1.57 (+0.14): done.

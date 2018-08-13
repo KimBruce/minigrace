@@ -32,6 +32,9 @@ type StackOfKind⟦V⟧ = {
     // Starting from the most recent level of the scope, find name & return its
     // value. If it is not there perform action in bl.
     find (name : String) butIfMissing (bl: Function0⟦V⟧) → V
+    
+    findOuter (levels : Number) butIfMissing (bl: Function0⟦V⟧) → V
+
 
     // Starting from the least recent level of the scope, find name & return its
     // value. If it is not there perform action in bl.
@@ -39,7 +42,8 @@ type StackOfKind⟦V⟧ = {
 }
 
 // class creating stack of given kind (e.g., types) holding values of type V
-class stackOfKind⟦V⟧(kind : String) → StackOfKind⟦V⟧ is confidential {
+class stackOfKind⟦V⟧(kind : String) → StackOfKind⟦V⟧{
+
     // represented as stack of dictionaries
     def stack: List⟦Dictionary⟧ is public = list[emptyDictionary]
 
@@ -70,6 +74,34 @@ class stackOfKind⟦V⟧(kind : String) → StackOfKind⟦V⟧ is confidential {
         }
 
         return bl.apply
+    }
+    
+    // Starting from the current scope, go outside "level"
+    // number of nested objects and return the type of self there. 
+    // If it is not there perform action in bl before returning.
+    method findOuter (levels : Number) butIfMissing (bl: Function0⟦V⟧) → V {
+        var i: Number := stack.size
+        io.error.write "\n81 stack = {stack}"
+        for (1..levels) do {current: Number →
+            var found: Boolean := false
+            while { (i > 0) && !found} do {
+                io.error.write "looking for outer at level {i}"
+                io.error.write "stack.at(i) is {stack.at(i)}"
+                if (stack.at(i).containsKey("outer")) then {
+                    found := true
+                    io.error.write "\n86 Found outer at {i}"
+                }
+                i := i - 1
+            }
+            io.error.write("\n90: "++ asString)
+            if (!found) then {
+                return bl.apply
+            }
+        }
+        io.error.write "final at level {i+1}"
+        def outerType: V = stack.at(i+1).at("outer")
+        io.error.write "\n104: type of outer: {outerType}"
+        outerType
     }
 
     // Starting from the least recent level of the scope, find name & return its

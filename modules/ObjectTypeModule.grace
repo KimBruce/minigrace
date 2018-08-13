@@ -1262,7 +1262,7 @@ def anObjectType: ObjectTypeFactory is public = object {
 
         } case { member : share.Member →
             //name of the receiver
-            def recName : String = member.receiver.toGrace(0)
+            var recName : String := member.receiver.toGrace(0)
             var memberCall : String := "{recName}.{member.value}"
 
             //check if the receiver consists of multiple calls

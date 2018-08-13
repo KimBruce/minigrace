@@ -1302,7 +1302,7 @@ def anObjectType: ObjectTypeFactory is public = object {
 
         } case { member : share.Member →
             //name of the receiver
-            def recName : String = member.receiver.nameString
+            def recName : String = member.receiver.toGrace(0)
             var memberCall : String := "{recName}.{member.value}"
 
             //all members processed here are references to types, so we can ignore

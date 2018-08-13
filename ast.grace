@@ -777,7 +777,20 @@ def methodTypeNode is public = object {
     }
     method toGrace(depth : Number) -> String {
         var s := ""
-        signature.do { part -> s:= s ++ part.toGrace(depth + 2) }
+        var first := true
+        for(signature) do {part →
+            if ((first) && {false ≠ typeParams}) then {
+                s := s ++ part.name ++ typeParams.toGrace(depth)
+                if (part.params.size > 0) then {
+                    s := s ++ "("
+                    part.params.do { each → s := s ++ each.toGrace(depth + 1) }
+                    s := s ++ ")"
+                }
+                first := false
+            } else {
+                s:= s ++ part.toGrace(depth + 2)
+            }
+        }
         if (false != rtype) then {
             s := "{s} → {rtype.toGrace(depth + 2)}"
         }
@@ -939,9 +952,9 @@ def typeDecNode is public = object {
     method toGrace(depth : Number) -> String {
         def spc = "    " * depth
         var s := ""
-        s := "type {self.name}"
+        s := "type {self.name.nameString}"
         if (false != typeParams) then {
-            typeParams.toGrace(0)
+            s := s ++ typeParams.toGrace(0)
         }
         s ++ " = " ++ value.toGrace(depth + 2)
     }

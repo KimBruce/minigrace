@@ -45,7 +45,9 @@ def debug: Boolean = false
 // return the return type of the block (as declared)
 method objectTypeFromBlock(block: AstNode) → ObjectType {
     def bType = typeOf(block)
-
+    if (debug) then {
+        io.error.write "\n48: bType of block is {bType}"
+    } 
     if(bType.isDynamic) then { return anObjectType.dynamic }
 
     def numParams: Number = block.params.size
@@ -62,6 +64,7 @@ method objectTypeFromBlock(block: AstNode) → ObjectType {
             "`{share.stripNewLines(block.toGrace(0))}` of type '{bType}' " ++
             "on line {block.line} does not satisfy the type 'Block'")with(block)
     } case { meth : MethodType →
+        if (debug) then {io.error.write "\n66: look up method to get {meth} returning {meth.retType}"}   
         return meth.retType
     }
 }
@@ -432,12 +435,59 @@ def astVisitor: ast.AstVisitor is public = object {
         false
     }
 
-    // not implemented yet
-    method visitTryCatch (node: AstNode) → Boolean {
-        if (debug) then {
-            io.error.write "\n1544: TryCatch visit not implemented yet\n"
+    // Type check try-catch-finally clause.  If finally clause, then type of entire
+    // term is that of finally.  Otherwise disjunction of try and all case blocks.
+    // BUG: Return statements in try and cases should be ignored if there is a finally
+    // clause.  Currently they must match the return type of the method.
+    // Not sure if this is worth fixing or just put in type-checking rules.
+    method visitTryCatch (node: share.TryCatch) → Boolean {
+        // expression being matched and its type
+        def body = node.value
+        var bodyType: ObjectType := objectTypeFromBlock(body)
+        io.error.write "\n440: body with {node} with type {bodyType}"
+        // Keep track of return types of try and catch blocks
+        def returnTypesList: List⟦ObjectType⟧ = list⟦ObjectType⟧[bodyType]
+
+        //goes through each case and accumulates its parameter and return types
+        for(node.cases) do{block →
+
+            if(block.isMatchingBlock.not) then{
+              DialectError.raise("1518: The exception block you are matching to, " ++
+                "{stripNewLines(block.toGrace(0))} on line {block.line}, " ++
+                "has more than one parameter. This is not " ++
+                "allowed.") with (block)
+            }
+
+            //Build return type collection
+            def blockReturnType : ObjectType = objectTypeFromBlock(block)
+            if (debug) then {io.error.write "\n460: blockReturnType is {blockReturnType}"}
+            if (returnTypesList.contains(blockReturnType).not) then {
+               returnTypesList.add(blockReturnType)
+            }
         }
-        checkMatch (node)
+
+        // type of the try-catch
+        var returnType: ObjectType
+        // if there is a finally clause then try-catch returns that value, so use its type
+        if (false != node.finally) then {
+           returnType := objectTypeFromBlock(node.finally)
+           if (debug) then {io.error.write "\n470: using type of finally clause: {returnType}"}
+        } else {  // return type is variant of all block types.	   
+
+           // Type returned by variant of all return types in cases
+           returnType := ot.fromObjectTypeList(returnTypesList)
+           if (debug) then {io.error.write "\n475: no finally: using types from try catch: {returnType}"}
+        }
+
+        if (debug) then {
+            io.error.write "\nreturnType now equals: {returnType}\n"
+        }
+
+
+        // returnType is type of the match-case statement
+        cache.at(node) put (returnType)
+
+        false
     }
 
 //    method visitMethodType (node) → Boolean {
@@ -651,7 +701,6 @@ def astVisitor: ast.AstVisitor is public = object {
                 DialectError.raise "type of self missing" with(rec)
             }
         } elseif {rec.kind == "outer"} then {
-            // item from prelude
             if (debug) then {
                 io.error.write "\n610: looking for type of outer"
                 io.error.write "\n611: levels: {rec.numberOfLevels}"
@@ -681,7 +730,7 @@ def astVisitor: ast.AstVisitor is public = object {
                 io.error.write "\n2002: method scope here is {scope.methods}"
              }
              scope.types.find(completeCall) butIfMissing {
-                 DialectError.raise("no such method or type '{name}' in " ++
+                 DialectError.raise("no such method or type '{req.canonicalName}' in " ++
                      "`{stripNewLines(rec.toGrace(0))}` of type\n" ++
                      "    '{rType}' \nin type \n  '{rType.methods}' used " ++
                      "on line {rec.line}")
@@ -864,10 +913,10 @@ def astVisitor: ast.AstVisitor is public = object {
     }
 
     method visitBind (bind: AstNode) → Boolean {
-//        if (debug) then {
-        io.error.write "\n 1758: Visit Bind"
-        io.error.write ("\n"++bind.pretty(0))
-//        }
+        if (debug) then {
+           io.error.write "\n 1758: Visit Bind"
+           io.error.write ("\n"++bind.pretty(0))
+        }
         // target of assignment
         def dest: AstNode = bind.dest
 
@@ -1357,7 +1406,7 @@ method processBody (body : List⟦AstNode⟧, superclass: AstNode | false)
                 //update scope with reference to def/var
                 scope.methods.at(mType.name) put(mType)
                 scope.variables.at(mType.name) put(mType.retType)
-		// add setter methods if variable in defd
+                // add setter methods if variable in defd
                 addSetterMethodFor(defd, publicMethods, allMethods)
 
             } case { td : share.TypeDeclaration →
@@ -1400,7 +1449,7 @@ method processBody (body : List⟦AstNode⟧, superclass: AstNode | false)
     pubConf(publicType,internalType)
 }
 
- // Construct setter method for variable declared in defd.  Add to allMethods, and, if writeable, to publicMethods.
+// Construct setter method for variable declared in defd.  Add to allMethods, and, if writeable, to publicMethods.
 method addSetterMethodFor(defd: share.Def, publicMethods: Set⟦MethodType⟧, allMethods: Set⟦MethodType⟧) -> Done {
       if (defd.kind == "vardec") then {
            def name': String = defd.nameString ++ ":=" //(1)"  ?? is name right?

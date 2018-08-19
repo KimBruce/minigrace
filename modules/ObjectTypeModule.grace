@@ -911,9 +911,9 @@ def anObjectType: ObjectTypeFactory is public = object {
 
                 if((other.isDynamic)||{other == doneType}||{self == other})then{
                     return answerConstructor(true,trials)
-                } elseif {self == doneType} then {
-                    return answerConstructor(false, trials)
-                }
+                } //elseif {self == doneType} then {
+                //   // return answerConstructor(false, trials)
+                //}
 
                 if ((other.isResolved.not) && (other.isOp)) then {
                     def otherOp : TypeOp = other.getOpNode
@@ -1553,23 +1553,25 @@ def anObjectType: ObjectTypeFactory is public = object {
                                                   withName("Enumerable")
     def rangeTp : ObjectType is public = fromMethods(sg.emptySet)
                                                   withName("Range")
-    //def prelude: ObjectType is public = fromMethods(sg.emptySet)
-    //                                            withName("Prelude")
+    def preludeType: ObjectType is public = fromMethods(sg.emptySet)
+                                                withName("PreludeType")
     def boolBlock: ObjectType is public = fromMethods(sg.emptySet)
                                                   withName("BoolBlock")
     def doneBlock: ObjectType is public = fromMethods(sg.emptySet)
                                                   withName("DoneBlock")
     def dynamicDoneBlock: ObjectType is public = fromMethods(sg.emptySet)
                                                   withName("DynamicDoneBlock")
-
+    def exceptionKind: ObjectType is public = fromMethods(sg.emptySet)
+                                                  withName("ExceptionKind")
+ 
     // Add methods contained in all types
     addTo (base) name ("≠") param(base) returns(boolean)
-    addTo (base) name ("hash") returns(number)
+//    addTo (base) name ("hash") returns(number)
     addTo (base) name ("asString") returns(string)
-    addTo (base) name ("basicAsString") returns(string)
+//    addTo (base) name ("basicAsString") returns(string)
     addTo (base) name ("asDebugString") returns(string)
     addTo (base) name ("::") returns(binding)
-    addTo (base) name ("list") param(collection) returns(listTp)
+//    addTo (base) name ("list") param(collection) returns(listTp)
 
     // Add methods available on patterns (which include types)
     extend (pattern) with (base)
@@ -1633,7 +1635,7 @@ def anObjectType: ObjectTypeFactory is public = object {
     addTo (string) name("*") param(number) returns(string)
     addTo (string) name("&") param(pattern) returns(pattern)
     addTo (string) name("++") param(base) returns(string)
-    addTo (string) name ("==") param(string) returns(boolean)
+    addTo (string) name ("==") param(base) returns(boolean)
     addTo (string) name(">") param(string) returns(boolean)
     addTo (string) name(">=") param(string) returns(boolean)
     addTo (string) name("<") param(string) returns(boolean)
@@ -1691,7 +1693,7 @@ def anObjectType: ObjectTypeFactory is public = object {
     addTo(string) name("iter") returns(iterator)
 
     extend(point) with(base)
-    addTo (point) name ("==") param(point) returns(boolean)
+    addTo (point) name ("==") param (base) returns(boolean)
     addTo(point) name("x") returns(number)
     addTo(point) name("y") returns(number)
     addTo(point) name("distanceTo") param(point) returns(number)
@@ -1700,6 +1702,14 @@ def anObjectType: ObjectTypeFactory is public = object {
     addTo(point) name("*") param(point) returns(point)
     addTo(point) name("/") param(point) returns(point)
     addTo(point) name("length") returns(number)
+
+    extend (exceptionKind) with (pattern)
+    addTo (exceptionKind) name ("raise") param (string) returns (bottom)
+    addTo (exceptionKind) names (list["raise", "with"]) parts (list[ list[string],list[base] ]) returns (doneType)
+    addTo (exceptionKind) name ("refine") param (string) returns (exceptionKind)
+    addTo (exceptionKind) name ("name") returns (string)
+    addTo (exceptionKind) name ("==") param (base) returns (boolean)
+
 
     def fold: ObjectType =
               blockTaking(list[aParam.ofType(dynamic), aParam.ofType(dynamic)])
@@ -1745,11 +1755,15 @@ def anObjectType: ObjectTypeFactory is public = object {
     addTo(doneBlock) name("apply") returns(doneType)
 
 
-    //addTo (prelude) name("print") param(base) returns(doneType)
-    //addTo (prelude) names(list["while", "do"])
-              //parts(list[list[boolBlock], list[doneBlock] ]) returns(doneType)
-    //addTo (prelude) names(list["for", "do"])
-          //parts(list[list[listTp], list[dynamicDoneBlock] ]) returns(doneType)
+    addTo (preludeType) name("print") param(base) returns (doneType)
+    addTo (preludeType) name("Exception") returns (exceptionKind)
+    addTo (preludeType) name("ProgrammingError") returns (exceptionKind)
+    addTo (preludeType) name("EnvironmentException") returns (exceptionKind)
+    addTo (preludeType) name("ResourceException") returns (exceptionKind)
+    addTo (preludeType) names(list["while", "do"])
+              parts(list[list[boolBlock], list[doneBlock] ]) returns(doneType)
+    addTo (preludeType) names(list["for", "do"])
+              parts(list[list[listTp], list[dynamicDoneBlock] ]) returns(doneType)
 
     scope.types.at("Unknown") put(dynamic)
     scope.types.at("Done") put(doneType)
@@ -1768,6 +1782,13 @@ def anObjectType: ObjectTypeFactory is public = object {
     scope.types.at("Iterator") put (iterator)
     scope.types.at("Collection") put (collection)
     scope.types.at("Enumerable") put (enumerable)
+    scope.types.at("ExceptionKind") put (exceptionKind)
+    scope.types.at("Exception") put (exceptionKind)
+    scope.types.at("ProgrammingError") put (exceptionKind)
+    scope.types.at("EnvironmentException") put (exceptionKind)
+    scope.types.at("ResourceException") put (exceptionKind)
+    scope.types.at("PreludeType") put (preludeType)
+
 
     //Since the type 'Object' can be overwritten by the programmer, '$Object$'
     //is a dummy type used for saving the type definition of the prelude
@@ -1790,14 +1811,14 @@ def anObjectType: ObjectTypeFactory is public = object {
     addVar("Binding") ofType(pattern)
     addVar("Range") ofType(pattern)
 
-    addVar("Iterator") ofType(iterator)
-    addVar("Collection") ofType(collection)
-    addVar("Enumerable") ofType(enumerable)
+    addVar("Iterator") ofType(pattern)
+    addVar("Collection") ofType(pattern)
+    addVar("Enumerable") ofType(pattern)
 
     addVar("done") ofType(self.doneType)
     addVar("true") ofType(boolean)
     addVar("false") ofType(boolean)
-    //addVar("prelude") ofType (prelude)
+    addVar("prelude") ofType (preludeType)
 }
 
 // Adds name to variables and as parameterless method (really def, not var!)

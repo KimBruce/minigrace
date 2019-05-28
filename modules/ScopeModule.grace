@@ -81,26 +81,19 @@ class stackOfKind⟦V⟧(kind : String) → StackOfKind⟦V⟧{
     // If it is not there perform action in bl before returning.
     method findOuter (levels : Number) butIfMissing (bl: Function0⟦V⟧) → V {
         var i: Number := stack.size
-        io.error.write "\n81 stack = {stack}"
         for (1..levels) do {current: Number →
             var found: Boolean := false
             while { (i > 0) && !found} do {
-                io.error.write "looking for outer at level {i}"
-                io.error.write "stack.at(i) is {stack.at(i)}"
                 if (stack.at(i).containsKey("outer")) then {
                     found := true
-                    io.error.write "\n86 Found outer at {i}"
                 }
                 i := i - 1
             }
-            io.error.write("\n90: "++ asString)
             if (!found) then {
                 return bl.apply
             }
         }
-        io.error.write "final at level {i+1}"
         def outerType: V = stack.at(i+1).at("outer")
-        io.error.write "\n104: type of outer: {outerType}"
         outerType
     }
 

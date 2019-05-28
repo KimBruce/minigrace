@@ -1,0 +1,8 @@
+minigrace[.]: t347_ampersandPrelude_test: 0.29 (+0.29): starting compilation
+minigrace[.]: t347_ampersandPrelude_test: 0.32 (+0.03): lexing.
+minigrace[.]: t347_ampersandPrelude_test: 0.42 (+0.1): parsing.
+minigrace[.]: t347_ampersandPrelude_test: 0.64 (+0.22): checking dialect minitest used by module t347_ampersandPrelude_test
+minigrace[.]: t347_ampersandPrelude_test: 0.76 (+0.12): no need to load dialect "minitest": it does not define `thisDialect`
+minigrace[.]: t347_ampersandPrelude_test: 0.76 (+0): rewriting tree.
+minigrace[.]: t347_ampersandPrelude_test: 1.57 (+0.81): symbol tables built.
+minigrace[.]: t347_ampersandPrelude_test: 1.64 (+0.07): generating JavaScript code.

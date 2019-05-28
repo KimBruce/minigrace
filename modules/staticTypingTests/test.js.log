@@ -1,0 +1,3364 @@
+Beginning test run at Wed Oct 10 15:52:33 PDT 2018
+    in /Users/kim/minigrace/modules/staticTypingTests
+minigrace[.]: t305_ampersand_test: 0.33 (+0.33): starting compilation
+minigrace[.]: t305_ampersand_test: 0.36 (+0.03): lexing.
+minigrace[.]: t305_ampersand_test: 0.51 (+0.15): parsing.
+minigrace[.]: t305_ampersand_test: 0.83 (+0.32): checking dialect minitest used by module t305_ampersand_test
+minigrace[.]: t305_ampersand_test: 0.95 (+0.12): no need to load dialect "minitest": it does not define `thisDialect`
+minigrace[.]: t305_ampersand_test: 0.95 (+0): rewriting tree.
+minigrace[.]: t305_ampersand_test: 1.86 (+0.91): symbol tables built.
+minigrace[.]: t305_ampersand_test: 1.96 (+0.1): generating JavaScript code.
+AST nodes compiled:
+    identifier	122
+    op	42
+    call	40
+    member	31
+    string	24
+    defdec	21
+    block	9
+    import	8
+    method	8
+    num	7
+    dialect	1
+minigrace[.]: t305_ampersand_test: 3.24 (+1.28): done.
+
+1245: starting fromDType with typeliteral: methods = [methodtype a], types = []
+1255: case TypeLiteral: typeliteral: methods = [methodtype a], types = []
+1259 about to add methodtype a
+568 creating type for part: a
+579 finished with part: part: a
+587 creating returntype for identifier‹Boolean›
+1245: starting fromDType with identifier‹Boolean›
+1292: case identifier identifier‹Boolean›
+1269: Creating typeVble for identifier‹Boolean›
+1276: returnValue: Boolean
+1351: returning fromDType with Boolean
+588: created method type a → Boolean
+594: created method a → Boolean from method methodtype a
+1261 finished adding
+1351: returning fromDType with { 
+    a → Boolean; 
+  }
+1245: starting fromDType with typeliteral: methods = [methodtype b], types = []
+1255: case TypeLiteral: typeliteral: methods = [methodtype b], types = []
+1259 about to add methodtype b
+568 creating type for part: b
+579 finished with part: part: b
+587 creating returntype for identifier‹Boolean›
+1245: starting fromDType with identifier‹Boolean›
+1292: case identifier identifier‹Boolean›
+1269: Creating typeVble for identifier‹Boolean›
+1276: returnValue: Boolean
+1351: returning fromDType with Boolean
+588: created method type b → Boolean
+594: created method b → Boolean from method methodtype b
+1261 finished adding
+1351: returning fromDType with { 
+    b → Boolean; 
+  }
+1245: starting fromDType with typeliteral: methods = [methodtype c], types = []
+1255: case TypeLiteral: typeliteral: methods = [methodtype c], types = []
+1259 about to add methodtype c
+568 creating type for part: c
+579 finished with part: part: c
+587 creating returntype for identifier‹Boolean›
+1245: starting fromDType with identifier‹Boolean›
+1292: case identifier identifier‹Boolean›
+1269: Creating typeVble for identifier‹Boolean›
+1276: returnValue: Boolean
+1351: returning fromDType with Boolean
+588: created method type c → Boolean
+594: created method c → Boolean from method methodtype c
+1261 finished adding
+1351: returning fromDType with { 
+    c → Boolean; 
+  }
+1245: starting fromDType with typeliteral: methods = [methodtype d], types = []
+1255: case TypeLiteral: typeliteral: methods = [methodtype d], types = []
+1259 about to add methodtype d
+568 creating type for part: d
+579 finished with part: part: d
+587 creating returntype for identifier‹Boolean›
+1245: starting fromDType with identifier‹Boolean›
+1292: case identifier identifier‹Boolean›
+1269: Creating typeVble for identifier‹Boolean›
+1276: returnValue: Boolean
+1351: returning fromDType with Boolean
+588: created method type d → Boolean
+594: created method d → Boolean from method methodtype d
+1261 finished adding
+1351: returning fromDType with { 
+    d → Boolean; 
+  }
+1245: starting fromDType with typeliteral: methods = [methodtype a, methodtype b], types = []
+1255: case TypeLiteral: typeliteral: methods = [methodtype a, methodtype b], types = []
+1259 about to add methodtype a
+568 creating type for part: a
+579 finished with part: part: a
+587 creating returntype for identifier‹Boolean›
+1245: starting fromDType with identifier‹Boolean›
+1292: case identifier identifier‹Boolean›
+1269: Creating typeVble for identifier‹Boolean›
+1276: returnValue: Boolean
+1351: returning fromDType with Boolean
+588: created method type a → Boolean
+594: created method a → Boolean from method methodtype a
+1261 finished adding
+1259 about to add methodtype b
+568 creating type for part: b
+579 finished with part: part: b
+587 creating returntype for identifier‹Boolean›
+1245: starting fromDType with identifier‹Boolean›
+1292: case identifier identifier‹Boolean›
+1269: Creating typeVble for identifier‹Boolean›
+1276: returnValue: Boolean
+1351: returning fromDType with Boolean
+588: created method type b → Boolean
+594: created method b → Boolean from method methodtype b
+1261 finished adding
+1351: returning fromDType with { 
+    a → Boolean; 
+    b → Boolean; 
+  }
+1245: starting fromDType with typeliteral: methods = [methodtype a, methodtype c], types = []
+1255: case TypeLiteral: typeliteral: methods = [methodtype a, methodtype c], types = []
+1259 about to add methodtype a
+568 creating type for part: a
+579 finished with part: part: a
+587 creating returntype for identifier‹Boolean›
+1245: starting fromDType with identifier‹Boolean›
+1292: case identifier identifier‹Boolean›
+1269: Creating typeVble for identifier‹Boolean›
+1276: returnValue: Boolean
+1351: returning fromDType with Boolean
+588: created method type a → Boolean
+594: created method a → Boolean from method methodtype a
+1261 finished adding
+1259 about to add methodtype c
+568 creating type for part: c
+579 finished with part: part: c
+587 creating returntype for identifier‹Boolean›
+1245: starting fromDType with identifier‹Boolean›
+1292: case identifier identifier‹Boolean›
+1269: Creating typeVble for identifier‹Boolean›
+1276: returnValue: Boolean
+1351: returning fromDType with Boolean
+588: created method type c → Boolean
+594: created method c → Boolean from method methodtype c
+1261 finished adding
+1351: returning fromDType with { 
+    a → Boolean; 
+    c → Boolean; 
+  }ampersand with variant types: 6 run, 3 failed, 0 errors
+Failures:
+    non-variant self, variant other: Type A & (B|C) should equal (A&B)|(A&C)
+    variant self, non-variant other: Type A & (B|C) should equal (A&B)|(A&C)
+    variant self, variant other: (A|B) & (B|C) should equal (A&C)|(A&D)|(B&C)|(B&D)
+!FAIL t305_ampersand_test.grace: wrong output
+Errors:
+
+1245: starting fromDType with typeliteral: methods = [methodtype a], types = []
+1255: case TypeLiteral: typeliteral: methods = [methodtype a], types = []
+1259 about to add methodtype a
+568 creating type for part: a
+579 finished with part: part: a
+587 creating returntype for identifier‹Boolean›
+1245: starting fromDType with identifier‹Boolean›
+1292: case identifier identifier‹Boolean›
+1269: Creating typeVble for identifier‹Boolean›
+1276: returnValue: Boolean
+1351: returning fromDType with Boolean
+588: created method type a → Boolean
+594: created method a → Boolean from method methodtype a
+1261 finished adding
+1351: returning fromDType with { 
+    a → Boolean; 
+  }
+1245: starting fromDType with typeliteral: methods = [methodtype b], types = []
+1255: case TypeLiteral: typeliteral: methods = [methodtype b], types = []
+1259 about to add methodtype b
+568 creating type for part: b
+579 finished with part: part: b
+587 creating returntype for identifier‹Boolean›
+1245: starting fromDType with identifier‹Boolean›
+1292: case identifier identifier‹Boolean›
+1269: Creating typeVble for identifier‹Boolean›
+1276: returnValue: Boolean
+1351: returning fromDType with Boolean
+588: created method type b → Boolean
+594: created method b → Boolean from method methodtype b
+1261 finished adding
+1351: returning fromDType with { 
+    b → Boolean; 
+  }
+1245: starting fromDType with typeliteral: methods = [methodtype c], types = []
+1255: case TypeLiteral: typeliteral: methods = [methodtype c], types = []
+1259 about to add methodtype c
+568 creating type for part: c
+579 finished with part: part: c
+587 creating returntype for identifier‹Boolean›
+1245: starting fromDType with identifier‹Boolean›
+1292: case identifier identifier‹Boolean›
+1269: Creating typeVble for identifier‹Boolean›
+1276: returnValue: Boolean
+1351: returning fromDType with Boolean
+588: created method type c → Boolean
+594: created method c → Boolean from method methodtype c
+1261 finished adding
+1351: returning fromDType with { 
+    c → Boolean; 
+  }
+1245: starting fromDType with typeliteral: methods = [methodtype d], types = []
+1255: case TypeLiteral: typeliteral: methods = [methodtype d], types = []
+1259 about to add methodtype d
+568 creating type for part: d
+579 finished with part: part: d
+587 creating returntype for identifier‹Boolean›
+1245: starting fromDType with identifier‹Boolean›
+1292: case identifier identifier‹Boolean›
+1269: Creating typeVble for identifier‹Boolean›
+1276: returnValue: Boolean
+1351: returning fromDType with Boolean
+588: created method type d → Boolean
+594: created method d → Boolean from method methodtype d
+1261 finished adding
+1351: returning fromDType with { 
+    d → Boolean; 
+  }
+1245: starting fromDType with typeliteral: methods = [methodtype a, methodtype b], types = []
+1255: case TypeLiteral: typeliteral: methods = [methodtype a, methodtype b], types = []
+1259 about to add methodtype a
+568 creating type for part: a
+579 finished with part: part: a
+587 creating returntype for identifier‹Boolean›
+1245: starting fromDType with identifier‹Boolean›
+1292: case identifier identifier‹Boolean›
+1269: Creating typeVble for identifier‹Boolean›
+1276: returnValue: Boolean
+1351: returning fromDType with Boolean
+588: created method type a → Boolean
+594: created method a → Boolean from method methodtype a
+1261 finished adding
+1259 about to add methodtype b
+568 creating type for part: b
+579 finished with part: part: b
+587 creating returntype for identifier‹Boolean›
+1245: starting fromDType with identifier‹Boolean›
+1292: case identifier identifier‹Boolean›
+1269: Creating typeVble for identifier‹Boolean›
+1276: returnValue: Boolean
+1351: returning fromDType with Boolean
+588: created method type b → Boolean
+594: created method b → Boolean from method methodtype b
+1261 finished adding
+1351: returning fromDType with { 
+    a → Boolean; 
+    b → Boolean; 
+  }
+1245: starting fromDType with typeliteral: methods = [methodtype a, methodtype c], types = []
+1255: case TypeLiteral: typeliteral: methods = [methodtype a, methodtype c], types = []
+1259 about to add methodtype a
+568 creating type for part: a
+579 finished with part: part: a
+587 creating returntype for identifier‹Boolean›
+1245: starting fromDType with identifier‹Boolean›
+1292: case identifier identifier‹Boolean›
+1269: Creating typeVble for identifier‹Boolean›
+1276: returnValue: Boolean
+1351: returning fromDType with Boolean
+588: created method type a → Boolean
+594: created method a → Boolean from method methodtype a
+1261 finished adding
+1259 about to add methodtype c
+568 creating type for part: c
+579 finished with part: part: c
+587 creating returntype for identifier‹Boolean›
+1245: starting fromDType with identifier‹Boolean›
+1292: case identifier identifier‹Boolean›
+1269: Creating typeVble for identifier‹Boolean›
+1276: returnValue: Boolean
+1351: returning fromDType with Boolean
+588: created method type c → Boolean
+594: created method c → Boolean from method methodtype c
+1261 finished adding
+1351: returning fromDType with { 
+    a → Boolean; 
+    c → Boolean; 
+  }Got output:
+ampersand with variant types: 6 run, 3 failed, 0 errors
+Failures:
+    non-variant self, variant other: Type A & (B|C) should equal (A&B)|(A&C)
+    variant self, non-variant other: Type A & (B|C) should equal (A&B)|(A&C)
+    variant self, variant other: (A|B) & (B|C) should equal (A&C)|(A&D)|(B&C)|(B&D)
+Expected output:
+ampersand with variant types: 6 run, 0 failed, 0 errors
+minigrace[.]: t338_importMethWParam_test: 0.33 (+0.33): starting compilation
+minigrace[.]: t338_importMethWParam_test: 0.34 (+0.01): lexing.
+minigrace[.]: t338_importMethWParam_test: 0.39 (+0.05): parsing.
+minigrace[.]: t338_importMethWParam_test: 0.53 (+0.14): checking dialect StaticTyping used by module t338_importMethWParam_test
+minigrace[.]: t338_importMethWParam_test: 1.72 (+1.19): loading dialect "StaticTyping" for checkers.
+minigrace[.]: t338_importMethWParam_test: 2.23 (+0.51): rewriting tree.
+minigrace[.]: t338_importMethWParam_test: 2.35 (+0.12): symbol tables built.
+
+1698: visiting module module t338_importMethWParam_testminigrace[.]: t338_importMethWParam_test: 2.39 (+0.04): lexing.
+
+1243: creating oType from typedec im.SecondHalf
+1245: starting fromDType with typeliteral: methods = [methodtype secondMeth], types = []
+1255: case TypeLiteral: typeliteral: methods = [methodtype secondMeth], types = []
+1259 about to add methodtype secondMeth
+568 creating type for part: secondMeth
+579 finished with part: part: secondMeth
+587 creating returntype for identifier‹Number›
+1245: starting fromDType with identifier‹Number›
+1292: case identifier identifier‹Number›
+1269: Creating typeVble for identifier‹Number›
+1276: returnValue: Number
+1351: returning fromDType with Number
+588: created method type secondMeth → Number
+594: created method secondMeth → Number from method methodtype secondMeth
+1261 finished adding
+1351: returning fromDType with { 
+    secondMeth → Number; 
+  }
+1252: added to types: { 
+    secondMeth → Number; 
+  }minigrace[.]: t338_importMethWParam_test: 2.42 (+0.03): lexing.
+
+1243: creating oType from typedec im.AmpersandType
+1245: starting fromDType with op &(1)
+1264: case operator op &(1)
+1245: starting fromDType with identifier‹im.FirstHalf›
+1292: case identifier identifier‹im.FirstHalf›
+1269: Creating typeVble for identifier‹im.FirstHalf›
+1276: returnValue: Object
+1351: returning fromDType with Object
+1245: starting fromDType with identifier‹im.SecondHalf›
+1292: case identifier identifier‹im.SecondHalf›
+1269: Creating typeVble for identifier‹im.SecondHalf›
+1276: returnValue: { 
+    secondMeth → Number; 
+  }
+1351: returning fromDType with { 
+    secondMeth → Number; 
+  }
+1206:returnValue for
+ identifier‹im.FirstHalf› &
+ identifier‹im.SecondHalf› is
+ Object
+1351: returning fromDType with Object
+1252: added to types: Objectminigrace[.]: t338_importMethWParam_test: 2.44 (+0.02): lexing.
+
+1243: creating oType from typedec im.VariantType
+1245: starting fromDType with op |(1)
+1264: case operator op |(1)
+1245: starting fromDType with identifier‹im.FirstHalf›
+1292: case identifier identifier‹im.FirstHalf›
+1269: Creating typeVble for identifier‹im.FirstHalf›
+1276: returnValue: Object
+1351: returning fromDType with Object
+1245: starting fromDType with identifier‹im.SecondHalf›
+1292: case identifier identifier‹im.SecondHalf›
+1269: Creating typeVble for identifier‹im.SecondHalf›
+1276: returnValue: { 
+    secondMeth → Number; 
+  }
+1351: returning fromDType with { 
+    secondMeth → Number; 
+  }
+1351: returning fromDType with Object
+|
+{ 
+    secondMeth → Number; 
+  }
+1252: added to types: Object
+|
+{ 
+    secondMeth → Number; 
+  }minigrace[.]: t338_importMethWParam_test: 2.45 (+0.01): lexing.
+
+568 creating type for part: myVar:=(1)
+571 creating type for identifierBinding‹myVar'›
+1245: starting fromDType with identifier‹String›
+1292: case identifier identifier‹String›
+1269: Creating typeVble for identifier‹String›
+1276: returnValue: String
+1351: returning fromDType with String
+579 finished with part: part: myVar:=(1)
+587 creating returntype for identifier‹Done›
+1245: starting fromDType with identifier‹Done›
+1292: case identifier identifier‹Done›
+1269: Creating typeVble for identifier‹Done›
+1276: returnValue: Done
+1351: returning fromDType with Done
+588: created method type myVar:=(myVar' : String) → Done
+594: created method myVar:=(myVar' : String) → Done from method methodtype myVar:=(1)minigrace[.]: t338_importMethWParam_test: 2.46 (+0.01): lexing.
+
+568 creating type for part: myDef
+579 finished with part: part: myDef
+587 creating returntype for identifier‹String›
+1245: starting fromDType with identifier‹String›
+1292: case identifier identifier‹String›
+1269: Creating typeVble for identifier‹String›
+1276: returnValue: String
+1351: returning fromDType with String
+588: created method type myDef → String
+594: created method myDef → String from method methodtype myDefminigrace[.]: t338_importMethWParam_test: 2.48 (+0.02): lexing.
+
+568 creating type for part: myMeth
+579 finished with part: part: myMeth
+587 creating returntype for identifier‹Number›
+1245: starting fromDType with identifier‹Number›
+1292: case identifier identifier‹Number›
+1269: Creating typeVble for identifier‹Number›
+1276: returnValue: Number
+1351: returning fromDType with Number
+588: created method type myMeth → Number
+594: created method myMeth → Number from method methodtype myMethminigrace[.]: t338_importMethWParam_test: 2.49 (+0.01): lexing.
+
+1243: creating oType from typedec im.FirstHalf
+1245: starting fromDType with typeliteral: methods = [methodtype firstMeth], types = []
+1255: case TypeLiteral: typeliteral: methods = [methodtype firstMeth], types = []
+1259 about to add methodtype firstMeth
+568 creating type for part: firstMeth
+579 finished with part: part: firstMeth
+587 creating returntype for identifier‹Number›
+1245: starting fromDType with identifier‹Number›
+1292: case identifier identifier‹Number›
+1269: Creating typeVble for identifier‹Number›
+1276: returnValue: Number
+1351: returning fromDType with Number
+588: created method type firstMeth → Number
+594: created method firstMeth → Number from method methodtype firstMeth
+1261 finished adding
+1351: returning fromDType with { 
+    firstMeth → Number; 
+  }
+1252: added to types: { 
+    firstMeth → Number; 
+  }minigrace[.]: t338_importMethWParam_test: 2.5 (+0.01): lexing.
+
+1243: creating oType from typedec im.NumberCopy
+1245: starting fromDType with identifier‹Number›
+1292: case identifier identifier‹Number›
+1269: Creating typeVble for identifier‹Number›
+1276: returnValue: Number
+1351: returning fromDType with Number
+1252: added to types: Numberminigrace[.]: t338_importMethWParam_test: 2.5 (+0): lexing.
+
+568 creating type for part: myVar
+579 finished with part: part: myVar
+587 creating returntype for identifier‹String›
+1245: starting fromDType with identifier‹String›
+1292: case identifier identifier‹String›
+1269: Creating typeVble for identifier‹String›
+1276: returnValue: String
+1351: returning fromDType with String
+588: created method type myVar → String
+594: created method myVar → String from method methodtype myVarminigrace[.]: t338_importMethWParam_test: 2.51 (+0.01): lexing.
+
+568 creating type for part: myMethWithParam(1)
+571 creating type for identifierBinding‹myParam›
+1245: starting fromDType with typeliteral: methods = [methodtype m(1), methodtype n], types = []
+1255: case TypeLiteral: typeliteral: methods = [methodtype m(1), methodtype n], types = []
+1259 about to add methodtype m(1)
+568 creating type for part: m(1)
+571 creating type for identifierBinding‹param›
+1245: starting fromDType with identifier‹im.MyType›
+1292: case identifier identifier‹im.MyType›
+1269: Creating typeVble for identifier‹im.MyType›
+1276: returnValue: Object
+1351: returning fromDType with Object
+579 finished with part: part: m(1)
+587 creating returntype for identifier‹Number›
+1245: starting fromDType with identifier‹Number›
+1292: case identifier identifier‹Number›
+1269: Creating typeVble for identifier‹Number›
+1276: returnValue: Number
+1351: returning fromDType with Number
+588: created method type m(param : Object) → Number
+594: created method m(param : Object) → Number from method methodtype m(1)
+1261 finished adding
+1259 about to add methodtype n
+568 creating type for part: n
+579 finished with part: part: n
+587 creating returntype for identifier‹String›
+1245: starting fromDType with identifier‹String›
+1292: case identifier identifier‹String›
+1269: Creating typeVble for identifier‹String›
+1276: returnValue: String
+1351: returning fromDType with String
+588: created method type n → String
+594: created method n → String from method methodtype n
+1261 finished adding
+1351: returning fromDType with { 
+    m(param : Object) → Number; 
+    n → String; 
+  }
+579 finished with part: part: myMethWithParam(1)
+587 creating returntype for identifier‹String›
+1245: starting fromDType with identifier‹String›
+1292: case identifier identifier‹String›
+1269: Creating typeVble for identifier‹String›
+1276: returnValue: String
+1351: returning fromDType with String
+588: created method type myMethWithParam(myParam : { 
+    m(param : Object) → Number; 
+    n → String; 
+  }) → String
+594: created method myMethWithParam(myParam : { 
+    m(param : Object) → Number; 
+    n → String; 
+  }) → String from method methodtype myMethWithParam(1)minigrace[.]: t338_importMethWParam_test: 2.53 (+0.02): lexing.
+
+1243: creating oType from typedec im.MyType
+1245: starting fromDType with typeliteral: methods = [methodtype a], types = []
+1255: case TypeLiteral: typeliteral: methods = [methodtype a], types = []
+1259 about to add methodtype a
+568 creating type for part: a
+579 finished with part: part: a
+587 creating returntype for identifier‹Number›
+1245: starting fromDType with identifier‹Number›
+1292: case identifier identifier‹Number›
+1269: Creating typeVble for identifier‹Number›
+1276: returnValue: Number
+1351: returning fromDType with Number
+588: created method type a → Number
+594: created method a → Number from method methodtype a
+1261 finished adding
+1351: returning fromDType with { 
+    a → Number; 
+  }
+1252: added to types: { 
+    a → Number; 
+  }minigrace[.]: t338_importMethWParam_test: 2.55 (+0.02): lexing.
+
+568 creating type for part: myClass
+579 finished with part: part: myClass
+587 creating returntype for identifier‹im.MyType›
+1245: starting fromDType with identifier‹im.MyType›
+1292: case identifier identifier‹im.MyType›
+1269: Creating typeVble for identifier‹im.MyType›
+1276: returnValue: { 
+    a → Number; 
+  }
+1351: returning fromDType with { 
+    a → Number; 
+  }
+588: created method type myClass → { 
+    a → Number; 
+  }
+594: created method myClass → { 
+    a → Number; 
+  } from method methodtype myClass
+2186 Types scope before collecting types is 
+dict⟬
+  im.MyType::{ 
+    a → Number; 
+  }
+  im.FirstHalf::{ 
+    firstMeth → Number; 
+  }
+  Done::Done
+  im.VariantType::Object
+|
+{ 
+    secondMeth → Number; 
+  }
+  Boolean::Boolean
+  Set::Set
+  im.AmpersandType::Object
+  ResourceException::ExceptionKind
+  Object::Object
+  Exception::ExceptionKind
+  EnvironmentException::ExceptionKind
+  List::List
+  Pattern::Pattern
+  Number::Number
+  ExceptionKind::ExceptionKind
+  im.SecondHalf::{ 
+    secondMeth → Number; 
+  }
+  Binding::Binding
+  im.NumberCopy::Number
+  Point::Point
+  String::String
+  Dictionary::Dictionary
+  Range::Range
+  Sequence::Sequence
+  Unknown::Unknown
+  PreludeType::PreludeType
+  Enumerable::Enumerable
+  $Object$::Object
+  ProgrammingError::ExceptionKind
+  Iterator::Iterator
+⟭
+1576: matched as typeDec typedec T
+1243: creating oType from typedec T
+1245: starting fromDType with typeliteral: methods = [methodtype m(1), methodtype n], types = []
+1255: case TypeLiteral: typeliteral: methods = [methodtype m(1), methodtype n], types = []
+1259 about to add methodtype m(1)
+568 creating type for part: m(1)
+571 creating type for identifierBinding‹param›
+1245: starting fromDType with im.MyType
+1309: case member im.MyType
+1351: returning fromDType with { 
+    a → Number; 
+  }
+579 finished with part: part: m(1)
+587 creating returntype for identifier‹Number›
+1245: starting fromDType with identifier‹Number›
+1292: case identifier identifier‹Number›
+1269: Creating typeVble for identifier‹Number›
+1276: returnValue: Number
+1351: returning fromDType with Number
+588: created method type m(param : { 
+    a → Number; 
+  }) → Number
+594: created method m(param : { 
+    a → Number; 
+  }) → Number from method methodtype m(1)
+1261 finished adding
+1259 about to add methodtype n
+568 creating type for part: n
+579 finished with part: part: n
+587 creating returntype for identifier‹String›
+1245: starting fromDType with identifier‹String›
+1292: case identifier identifier‹String›
+1269: Creating typeVble for identifier‹String›
+1276: returnValue: String
+1351: returning fromDType with String
+588: created method type n → String
+594: created method n → String from method methodtype n
+1261 finished adding
+1351: returning fromDType with { 
+    m(param : { 
+    a → Number; 
+  }) → Number; 
+    n → String; 
+  }
+1252: added to types: { 
+    m(param : { 
+    a → Number; 
+  }) → Number; 
+    n → String; 
+  }
+Generics scope is: 
+dict⟬
+⟭
+2186 Types scope after collecting types is 
+dict⟬
+  im.MyType::{ 
+    a → Number; 
+  }
+  im.FirstHalf::{ 
+    firstMeth → Number; 
+  }
+  Done::Done
+  im.VariantType::Object
+|
+{ 
+    secondMeth → Number; 
+  }
+  Boolean::Boolean
+  Set::Set
+  im.AmpersandType::Object
+  ResourceException::ExceptionKind
+  Object::Object
+  Exception::ExceptionKind
+  EnvironmentException::ExceptionKind
+  List::List
+  Pattern::Pattern
+  Number::Number
+  ExceptionKind::ExceptionKind
+  im.SecondHalf::{ 
+    secondMeth → Number; 
+  }
+  Binding::Binding
+  im.NumberCopy::Number
+  Point::Point
+  String::String
+  Dictionary::Dictionary
+  Range::Range
+  Sequence::Sequence
+  Unknown::Unknown
+  PreludeType::PreludeType
+  Enumerable::Enumerable
+  $Object$::Object
+  ProgrammingError::ExceptionKind
+  T::{ 
+    m(param : { 
+    a → Number; 
+  }) → Number; 
+    n → String; 
+  }
+  Iterator::Iterator
+⟭
+568 creating type for part: t
+579 finished with part: part: t
+587 creating returntype for identifier‹T›
+1245: starting fromDType with identifier‹T›
+1292: case identifier identifier‹T›
+1269: Creating typeVble for identifier‹T›
+1276: returnValue: { 
+    m(param : { 
+    a → Number; 
+  }) → Number; 
+    n → String; 
+  }
+1351: returning fromDType with { 
+    m(param : { 
+    a → Number; 
+  }) → Number; 
+    n → String; 
+  }
+588: created method type t → { 
+    m(param : { 
+    a → Number; 
+  }) → Number; 
+    n → String; 
+  }
+594: created method t → { 
+    m(param : { 
+    a → Number; 
+  }) → Number; 
+    n → String; 
+  } from method method t
+875 visit type dec for typedec T
+1245: starting fromDType with typeliteral: methods = [methodtype m(1), methodtype n], types = []
+1255: case TypeLiteral: typeliteral: methods = [methodtype m(1), methodtype n], types = []
+1259 about to add methodtype m(1)
+568 creating type for part: m(1)
+571 creating type for identifierBinding‹param›
+1245: starting fromDType with im.MyType
+1309: case member im.MyType
+1351: returning fromDType with { 
+    a → Number; 
+  }
+579 finished with part: part: m(1)
+587 creating returntype for identifier‹Number›
+1245: starting fromDType with identifier‹Number›
+1292: case identifier identifier‹Number›
+1269: Creating typeVble for identifier‹Number›
+1276: returnValue: Number
+1351: returning fromDType with Number
+588: created method type m(param : { 
+    a → Number; 
+  }) → Number
+594: created method m(param : { 
+    a → Number; 
+  }) → Number from method methodtype m(1)
+1261 finished adding
+1259 about to add methodtype n
+568 creating type for part: n
+579 finished with part: part: n
+587 creating returntype for identifier‹String›
+1245: starting fromDType with identifier‹String›
+1292: case identifier identifier‹String›
+1269: Creating typeVble for identifier‹String›
+1276: returnValue: String
+1351: returning fromDType with String
+588: created method type n → String
+594: created method n → String from method methodtype n
+1261 finished adding
+1351: returning fromDType with { 
+    m(param : { 
+    a → Number; 
+  }) → Number; 
+    n → String; 
+  }
+568 creating type for part: t
+579 finished with part: part: t
+587 creating returntype for identifier‹T›
+1245: starting fromDType with identifier‹T›
+1292: case identifier identifier‹T›
+1269: Creating typeVble for identifier‹T›
+1276: returnValue: { 
+    m(param : { 
+    a → Number; 
+  }) → Number; 
+    n → String; 
+  }
+1351: returning fromDType with { 
+    m(param : { 
+    a → Number; 
+  }) → Number; 
+    n → String; 
+  }
+588: created method type t → { 
+    m(param : { 
+    a → Number; 
+  }) → Number; 
+    n → String; 
+  }
+594: created method t → { 
+    m(param : { 
+    a → Number; 
+  }) → Number; 
+    n → String; 
+  } from method method t
+568 creating type for part: m(1)
+571 creating type for identifierBinding‹param›
+1245: starting fromDType with im.MyType
+1309: case member im.MyType
+1351: returning fromDType with { 
+    a → Number; 
+  }
+579 finished with part: part: m(1)
+587 creating returntype for identifier‹Number›
+1245: starting fromDType with identifier‹Number›
+1292: case identifier identifier‹Number›
+1269: Creating typeVble for identifier‹Number›
+1276: returnValue: Number
+1351: returning fromDType with Number
+588: created method type m(param : { 
+    a → Number; 
+  }) → Number
+594: created method m(param : { 
+    a → Number; 
+  }) → Number from method method m(1)
+568 creating type for part: n
+579 finished with part: part: n
+587 creating returntype for identifier‹String›
+1245: starting fromDType with identifier‹String›
+1292: case identifier identifier‹String›
+1269: Creating typeVble for identifier‹String›
+1276: returnValue: String
+1351: returning fromDType with String
+588: created method type n → String
+594: created method n → String from method method n
+568 creating type for part: m(1)
+571 creating type for identifierBinding‹param›
+1245: starting fromDType with im.MyType
+1309: case member im.MyType
+1351: returning fromDType with { 
+    a → Number; 
+  }
+579 finished with part: part: m(1)
+587 creating returntype for identifier‹Number›
+1245: starting fromDType with identifier‹Number›
+1292: case identifier identifier‹Number›
+1269: Creating typeVble for identifier‹Number›
+1276: returnValue: Number
+1351: returning fromDType with Number
+588: created method type m(param : { 
+    a → Number; 
+  }) → Number
+594: created method m(param : { 
+    a → Number; 
+  }) → Number from method method m(1)
+1245: starting fromDType with im.MyType
+1309: case member im.MyType
+1351: returning fromDType with { 
+    a → Number; 
+  }
+568 creating type for part: n
+579 finished with part: part: n
+587 creating returntype for identifier‹String›
+1245: starting fromDType with identifier‹String›
+1292: case identifier identifier‹String›
+1269: Creating typeVble for identifier‹String›
+1276: returnValue: String
+1351: returning fromDType with String
+588: created method type n → String
+594: created method n → String from method method n
+568 creating type for part: m(1)
+571 creating type for identifierBinding‹param›
+1245: starting fromDType with im.MyType
+1309: case member im.MyType
+1351: returning fromDType with { 
+    a → Number; 
+  }
+579 finished with part: part: m(1)
+587 creating returntype for identifier‹Number›
+1245: starting fromDType with identifier‹Number›
+1292: case identifier identifier‹Number›
+1269: Creating typeVble for identifier‹Number›
+1276: returnValue: Number
+1351: returning fromDType with Number
+588: created method type m(param : { 
+    a → Number; 
+  }) → Number
+594: created method m(param : { 
+    a → Number; 
+  }) → Number from method method m(1)
+568 creating type for part: n
+579 finished with part: part: n
+587 creating returntype for identifier‹String›
+1245: starting fromDType with identifier‹String›
+1292: case identifier identifier‹String›
+1269: Creating typeVble for identifier‹String›
+1276: returnValue: String
+1351: returning fromDType with String
+588: created method type n → String
+594: created method n → String from method method n[.]t338_importMethWParam_test.grace[14:27-0:0]: Dialect StaticTyping: the expression `t` of type '{ 
+    m(param : { 
+    a → Number; 
+  }) → Number; 
+    n → String; 
+  }' on  line 14 does not satisfy the type of parameter 'myParam : { 
+    m(param : Object) → Number; 
+    n → String; 
+  }' in the method 'myMethWithParam(1)'.
+  13: 
+  14: print (im.myMethWithParam(t))
+--------------------------------
+!FAIL t338_importMethWParam_test.grace: compile error
+minigrace[.]: t343_importAmpersand_test: 0.34 (+0.34): starting compilation
+minigrace[.]: t343_importAmpersand_test: 0.35 (+0.01): lexing.
+minigrace[.]: t343_importAmpersand_test: 0.4 (+0.05): parsing.
+minigrace[.]: t343_importAmpersand_test: 0.56 (+0.16): checking dialect StaticTyping used by module t343_importAmpersand_test
+minigrace[.]: t343_importAmpersand_test: 1.83 (+1.27): loading dialect "StaticTyping" for checkers.
+minigrace[.]: t343_importAmpersand_test: 2.42 (+0.59): rewriting tree.
+minigrace[.]: t343_importAmpersand_test: 2.56 (+0.14): symbol tables built.
+
+1698: visiting module module t343_importAmpersand_testminigrace[.]: t343_importAmpersand_test: 2.6 (+0.04): lexing.
+
+1243: creating oType from typedec im.SecondHalf
+1245: starting fromDType with typeliteral: methods = [methodtype secondMeth], types = []
+1255: case TypeLiteral: typeliteral: methods = [methodtype secondMeth], types = []
+1259 about to add methodtype secondMeth
+568 creating type for part: secondMeth
+579 finished with part: part: secondMeth
+587 creating returntype for identifier‹Number›
+1245: starting fromDType with identifier‹Number›
+1292: case identifier identifier‹Number›
+1269: Creating typeVble for identifier‹Number›
+1276: returnValue: Number
+1351: returning fromDType with Number
+588: created method type secondMeth → Number
+594: created method secondMeth → Number from method methodtype secondMeth
+1261 finished adding
+1351: returning fromDType with { 
+    secondMeth → Number; 
+  }
+1252: added to types: { 
+    secondMeth → Number; 
+  }minigrace[.]: t343_importAmpersand_test: 2.62 (+0.02): lexing.
+
+1243: creating oType from typedec im.AmpersandType
+1245: starting fromDType with op &(1)
+1264: case operator op &(1)
+1245: starting fromDType with identifier‹im.FirstHalf›
+1292: case identifier identifier‹im.FirstHalf›
+1269: Creating typeVble for identifier‹im.FirstHalf›
+1276: returnValue: Object
+1351: returning fromDType with Object
+1245: starting fromDType with identifier‹im.SecondHalf›
+1292: case identifier identifier‹im.SecondHalf›
+1269: Creating typeVble for identifier‹im.SecondHalf›
+1276: returnValue: { 
+    secondMeth → Number; 
+  }
+1351: returning fromDType with { 
+    secondMeth → Number; 
+  }
+1206:returnValue for
+ identifier‹im.FirstHalf› &
+ identifier‹im.SecondHalf› is
+ Object
+1351: returning fromDType with Object
+1252: added to types: Objectminigrace[.]: t343_importAmpersand_test: 2.64 (+0.02): lexing.
+
+1243: creating oType from typedec im.VariantType
+1245: starting fromDType with op |(1)
+1264: case operator op |(1)
+1245: starting fromDType with identifier‹im.FirstHalf›
+1292: case identifier identifier‹im.FirstHalf›
+1269: Creating typeVble for identifier‹im.FirstHalf›
+1276: returnValue: Object
+1351: returning fromDType with Object
+1245: starting fromDType with identifier‹im.SecondHalf›
+1292: case identifier identifier‹im.SecondHalf›
+1269: Creating typeVble for identifier‹im.SecondHalf›
+1276: returnValue: { 
+    secondMeth → Number; 
+  }
+1351: returning fromDType with { 
+    secondMeth → Number; 
+  }
+1351: returning fromDType with Object
+|
+{ 
+    secondMeth → Number; 
+  }
+1252: added to types: Object
+|
+{ 
+    secondMeth → Number; 
+  }minigrace[.]: t343_importAmpersand_test: 2.66 (+0.02): lexing.
+
+568 creating type for part: myVar:=(1)
+571 creating type for identifierBinding‹myVar'›
+1245: starting fromDType with identifier‹String›
+1292: case identifier identifier‹String›
+1269: Creating typeVble for identifier‹String›
+1276: returnValue: String
+1351: returning fromDType with String
+579 finished with part: part: myVar:=(1)
+587 creating returntype for identifier‹Done›
+1245: starting fromDType with identifier‹Done›
+1292: case identifier identifier‹Done›
+1269: Creating typeVble for identifier‹Done›
+1276: returnValue: Done
+1351: returning fromDType with Done
+588: created method type myVar:=(myVar' : String) → Done
+594: created method myVar:=(myVar' : String) → Done from method methodtype myVar:=(1)minigrace[.]: t343_importAmpersand_test: 2.67 (+0.01): lexing.
+
+568 creating type for part: myDef
+579 finished with part: part: myDef
+587 creating returntype for identifier‹String›
+1245: starting fromDType with identifier‹String›
+1292: case identifier identifier‹String›
+1269: Creating typeVble for identifier‹String›
+1276: returnValue: String
+1351: returning fromDType with String
+588: created method type myDef → String
+594: created method myDef → String from method methodtype myDefminigrace[.]: t343_importAmpersand_test: 2.67 (+0): lexing.
+
+568 creating type for part: myMeth
+579 finished with part: part: myMeth
+587 creating returntype for identifier‹Number›
+1245: starting fromDType with identifier‹Number›
+1292: case identifier identifier‹Number›
+1269: Creating typeVble for identifier‹Number›
+1276: returnValue: Number
+1351: returning fromDType with Number
+588: created method type myMeth → Number
+594: created method myMeth → Number from method methodtype myMethminigrace[.]: t343_importAmpersand_test: 2.68 (+0.01): lexing.
+
+1243: creating oType from typedec im.FirstHalf
+1245: starting fromDType with typeliteral: methods = [methodtype firstMeth], types = []
+1255: case TypeLiteral: typeliteral: methods = [methodtype firstMeth], types = []
+1259 about to add methodtype firstMeth
+568 creating type for part: firstMeth
+579 finished with part: part: firstMeth
+587 creating returntype for identifier‹Number›
+1245: starting fromDType with identifier‹Number›
+1292: case identifier identifier‹Number›
+1269: Creating typeVble for identifier‹Number›
+1276: returnValue: Number
+1351: returning fromDType with Number
+588: created method type firstMeth → Number
+594: created method firstMeth → Number from method methodtype firstMeth
+1261 finished adding
+1351: returning fromDType with { 
+    firstMeth → Number; 
+  }
+1252: added to types: { 
+    firstMeth → Number; 
+  }minigrace[.]: t343_importAmpersand_test: 2.69 (+0.01): lexing.
+
+1243: creating oType from typedec im.NumberCopy
+1245: starting fromDType with identifier‹Number›
+1292: case identifier identifier‹Number›
+1269: Creating typeVble for identifier‹Number›
+1276: returnValue: Number
+1351: returning fromDType with Number
+1252: added to types: Numberminigrace[.]: t343_importAmpersand_test: 2.69 (+0): lexing.
+
+568 creating type for part: myVar
+579 finished with part: part: myVar
+587 creating returntype for identifier‹String›
+1245: starting fromDType with identifier‹String›
+1292: case identifier identifier‹String›
+1269: Creating typeVble for identifier‹String›
+1276: returnValue: String
+1351: returning fromDType with String
+588: created method type myVar → String
+594: created method myVar → String from method methodtype myVarminigrace[.]: t343_importAmpersand_test: 2.7 (+0.01): lexing.
+
+568 creating type for part: myMethWithParam(1)
+571 creating type for identifierBinding‹myParam›
+1245: starting fromDType with typeliteral: methods = [methodtype m(1), methodtype n], types = []
+1255: case TypeLiteral: typeliteral: methods = [methodtype m(1), methodtype n], types = []
+1259 about to add methodtype m(1)
+568 creating type for part: m(1)
+571 creating type for identifierBinding‹param›
+1245: starting fromDType with identifier‹im.MyType›
+1292: case identifier identifier‹im.MyType›
+1269: Creating typeVble for identifier‹im.MyType›
+1276: returnValue: Object
+1351: returning fromDType with Object
+579 finished with part: part: m(1)
+587 creating returntype for identifier‹Number›
+1245: starting fromDType with identifier‹Number›
+1292: case identifier identifier‹Number›
+1269: Creating typeVble for identifier‹Number›
+1276: returnValue: Number
+1351: returning fromDType with Number
+588: created method type m(param : Object) → Number
+594: created method m(param : Object) → Number from method methodtype m(1)
+1261 finished adding
+1259 about to add methodtype n
+568 creating type for part: n
+579 finished with part: part: n
+587 creating returntype for identifier‹String›
+1245: starting fromDType with identifier‹String›
+1292: case identifier identifier‹String›
+1269: Creating typeVble for identifier‹String›
+1276: returnValue: String
+1351: returning fromDType with String
+588: created method type n → String
+594: created method n → String from method methodtype n
+1261 finished adding
+1351: returning fromDType with { 
+    m(param : Object) → Number; 
+    n → String; 
+  }
+579 finished with part: part: myMethWithParam(1)
+587 creating returntype for identifier‹String›
+1245: starting fromDType with identifier‹String›
+1292: case identifier identifier‹String›
+1269: Creating typeVble for identifier‹String›
+1276: returnValue: String
+1351: returning fromDType with String
+588: created method type myMethWithParam(myParam : { 
+    m(param : Object) → Number; 
+    n → String; 
+  }) → String
+594: created method myMethWithParam(myParam : { 
+    m(param : Object) → Number; 
+    n → String; 
+  }) → String from method methodtype myMethWithParam(1)minigrace[.]: t343_importAmpersand_test: 2.73 (+0.03): lexing.
+
+1243: creating oType from typedec im.MyType
+1245: starting fromDType with typeliteral: methods = [methodtype a], types = []
+1255: case TypeLiteral: typeliteral: methods = [methodtype a], types = []
+1259 about to add methodtype a
+568 creating type for part: a
+579 finished with part: part: a
+587 creating returntype for identifier‹Number›
+1245: starting fromDType with identifier‹Number›
+1292: case identifier identifier‹Number›
+1269: Creating typeVble for identifier‹Number›
+1276: returnValue: Number
+1351: returning fromDType with Number
+588: created method type a → Number
+594: created method a → Number from method methodtype a
+1261 finished adding
+1351: returning fromDType with { 
+    a → Number; 
+  }
+1252: added to types: { 
+    a → Number; 
+  }minigrace[.]: t343_importAmpersand_test: 2.74 (+0.01): lexing.
+
+568 creating type for part: myClass
+579 finished with part: part: myClass
+587 creating returntype for identifier‹im.MyType›
+1245: starting fromDType with identifier‹im.MyType›
+1292: case identifier identifier‹im.MyType›
+1269: Creating typeVble for identifier‹im.MyType›
+1276: returnValue: { 
+    a → Number; 
+  }
+1351: returning fromDType with { 
+    a → Number; 
+  }
+588: created method type myClass → { 
+    a → Number; 
+  }
+594: created method myClass → { 
+    a → Number; 
+  } from method methodtype myClass
+2186 Types scope before collecting types is 
+dict⟬
+  im.MyType::{ 
+    a → Number; 
+  }
+  im.FirstHalf::{ 
+    firstMeth → Number; 
+  }
+  Done::Done
+  im.VariantType::Object
+|
+{ 
+    secondMeth → Number; 
+  }
+  Boolean::Boolean
+  Set::Set
+  im.AmpersandType::Object
+  ResourceException::ExceptionKind
+  Object::Object
+  Exception::ExceptionKind
+  EnvironmentException::ExceptionKind
+  List::List
+  Pattern::Pattern
+  Number::Number
+  ExceptionKind::ExceptionKind
+  im.SecondHalf::{ 
+    secondMeth → Number; 
+  }
+  Binding::Binding
+  im.NumberCopy::Number
+  Point::Point
+  String::String
+  Dictionary::Dictionary
+  Range::Range
+  Sequence::Sequence
+  Unknown::Unknown
+  PreludeType::PreludeType
+  Enumerable::Enumerable
+  $Object$::Object
+  ProgrammingError::ExceptionKind
+  Iterator::Iterator
+⟭
+1576: matched as typeDec typedec FirstHalf
+1243: creating oType from typedec FirstHalf
+1245: starting fromDType with typeliteral: methods = [methodtype firstMeth], types = []
+1255: case TypeLiteral: typeliteral: methods = [methodtype firstMeth], types = []
+1259 about to add methodtype firstMeth
+568 creating type for part: firstMeth
+579 finished with part: part: firstMeth
+587 creating returntype for identifier‹Number›
+1245: starting fromDType with identifier‹Number›
+1292: case identifier identifier‹Number›
+1269: Creating typeVble for identifier‹Number›
+1276: returnValue: Number
+1351: returning fromDType with Number
+588: created method type firstMeth → Number
+594: created method firstMeth → Number from method methodtype firstMeth
+1261 finished adding
+1351: returning fromDType with { 
+    firstMeth → Number; 
+  }
+1252: added to types: { 
+    firstMeth → Number; 
+  }
+1576: matched as typeDec typedec SecondHalf
+1243: creating oType from typedec SecondHalf
+1245: starting fromDType with typeliteral: methods = [methodtype secondMeth], types = []
+1255: case TypeLiteral: typeliteral: methods = [methodtype secondMeth], types = []
+1259 about to add methodtype secondMeth
+568 creating type for part: secondMeth
+579 finished with part: part: secondMeth
+587 creating returntype for identifier‹Number›
+1245: starting fromDType with identifier‹Number›
+1292: case identifier identifier‹Number›
+1269: Creating typeVble for identifier‹Number›
+1276: returnValue: Number
+1351: returning fromDType with Number
+588: created method type secondMeth → Number
+594: created method secondMeth → Number from method methodtype secondMeth
+1261 finished adding
+1351: returning fromDType with { 
+    secondMeth → Number; 
+  }
+1252: added to types: { 
+    secondMeth → Number; 
+  }
+Generics scope is: 
+dict⟬
+⟭
+2186 Types scope after collecting types is 
+dict⟬
+  im.MyType::{ 
+    a → Number; 
+  }
+  im.FirstHalf::{ 
+    firstMeth → Number; 
+  }
+  Done::Done
+  im.VariantType::Object
+|
+{ 
+    secondMeth → Number; 
+  }
+  Boolean::Boolean
+  Set::Set
+  im.AmpersandType::Object
+  ResourceException::ExceptionKind
+  Object::Object
+  Exception::ExceptionKind
+  EnvironmentException::ExceptionKind
+  List::List
+  Pattern::Pattern
+  Number::Number
+  ExceptionKind::ExceptionKind
+  im.SecondHalf::{ 
+    secondMeth → Number; 
+  }
+  Binding::Binding
+  im.NumberCopy::Number
+  Point::Point
+  String::String
+  Dictionary::Dictionary
+  Range::Range
+  Sequence::Sequence
+  Unknown::Unknown
+  PreludeType::PreludeType
+  SecondHalf::{ 
+    secondMeth → Number; 
+  }
+  Enumerable::Enumerable
+  $Object$::Object
+  ProgrammingError::ExceptionKind
+  FirstHalf::{ 
+    firstMeth → Number; 
+  }
+  Iterator::Iterator
+⟭
+568 creating type for part: ampersandClass
+579 finished with part: part: ampersandClass
+587 creating returntype for op &(1)
+1245: starting fromDType with op &(1)
+1264: case operator op &(1)
+1245: starting fromDType with identifier‹FirstHalf›
+1292: case identifier identifier‹FirstHalf›
+1269: Creating typeVble for identifier‹FirstHalf›
+1276: returnValue: { 
+    firstMeth → Number; 
+  }
+1351: returning fromDType with { 
+    firstMeth → Number; 
+  }
+1245: starting fromDType with identifier‹SecondHalf›
+1292: case identifier identifier‹SecondHalf›
+1269: Creating typeVble for identifier‹SecondHalf›
+1276: returnValue: { 
+    secondMeth → Number; 
+  }
+1351: returning fromDType with { 
+    secondMeth → Number; 
+  }
+1206:returnValue for
+ identifier‹FirstHalf› &
+ identifier‹SecondHalf› is
+ { 
+    firstMeth → Number; 
+    secondMeth → Number; 
+  }
+1351: returning fromDType with { 
+    firstMeth → Number; 
+    secondMeth → Number; 
+  }
+588: created method type ampersandClass → { 
+    firstMeth → Number; 
+    secondMeth → Number; 
+  }
+594: created method ampersandClass → { 
+    firstMeth → Number; 
+    secondMeth → Number; 
+  } from method method ampersandClass
+1245: starting fromDType with im.AmpersandType
+1309: case member im.AmpersandType
+1351: returning fromDType with Object
+607 created method type test → Object from def or var defdec test
+875 visit type dec for typedec FirstHalf
+1245: starting fromDType with typeliteral: methods = [methodtype firstMeth], types = []
+1255: case TypeLiteral: typeliteral: methods = [methodtype firstMeth], types = []
+1259 about to add methodtype firstMeth
+568 creating type for part: firstMeth
+579 finished with part: part: firstMeth
+587 creating returntype for identifier‹Number›
+1245: starting fromDType with identifier‹Number›
+1292: case identifier identifier‹Number›
+1269: Creating typeVble for identifier‹Number›
+1276: returnValue: Number
+1351: returning fromDType with Number
+588: created method type firstMeth → Number
+594: created method firstMeth → Number from method methodtype firstMeth
+1261 finished adding
+1351: returning fromDType with { 
+    firstMeth → Number; 
+  }
+875 visit type dec for typedec SecondHalf
+1245: starting fromDType with typeliteral: methods = [methodtype secondMeth], types = []
+1255: case TypeLiteral: typeliteral: methods = [methodtype secondMeth], types = []
+1259 about to add methodtype secondMeth
+568 creating type for part: secondMeth
+579 finished with part: part: secondMeth
+587 creating returntype for identifier‹Number›
+1245: starting fromDType with identifier‹Number›
+1292: case identifier identifier‹Number›
+1269: Creating typeVble for identifier‹Number›
+1276: returnValue: Number
+1351: returning fromDType with Number
+588: created method type secondMeth → Number
+594: created method secondMeth → Number from method methodtype secondMeth
+1261 finished adding
+1351: returning fromDType with { 
+    secondMeth → Number; 
+  }
+568 creating type for part: ampersandClass
+579 finished with part: part: ampersandClass
+587 creating returntype for op &(1)
+1245: starting fromDType with op &(1)
+1264: case operator op &(1)
+1245: starting fromDType with identifier‹FirstHalf›
+1292: case identifier identifier‹FirstHalf›
+1269: Creating typeVble for identifier‹FirstHalf›
+1276: returnValue: { 
+    firstMeth → Number; 
+  }
+1351: returning fromDType with { 
+    firstMeth → Number; 
+  }
+1245: starting fromDType with identifier‹SecondHalf›
+1292: case identifier identifier‹SecondHalf›
+1269: Creating typeVble for identifier‹SecondHalf›
+1276: returnValue: { 
+    secondMeth → Number; 
+  }
+1351: returning fromDType with { 
+    secondMeth → Number; 
+  }
+1206:returnValue for
+ identifier‹FirstHalf› &
+ identifier‹SecondHalf› is
+ { 
+    firstMeth → Number; 
+    secondMeth → Number; 
+  }
+1351: returning fromDType with { 
+    firstMeth → Number; 
+    secondMeth → Number; 
+  }
+588: created method type ampersandClass → { 
+    firstMeth → Number; 
+    secondMeth → Number; 
+  }
+594: created method ampersandClass → { 
+    firstMeth → Number; 
+    secondMeth → Number; 
+  } from method method ampersandClass
+568 creating type for part: firstMeth
+579 finished with part: part: firstMeth
+587 creating returntype for identifier‹Number›
+1245: starting fromDType with identifier‹Number›
+1292: case identifier identifier‹Number›
+1269: Creating typeVble for identifier‹Number›
+1276: returnValue: Number
+1351: returning fromDType with Number
+588: created method type firstMeth → Number
+594: created method firstMeth → Number from method method firstMeth
+568 creating type for part: secondMeth
+579 finished with part: part: secondMeth
+587 creating returntype for identifier‹Number›
+1245: starting fromDType with identifier‹Number›
+1292: case identifier identifier‹Number›
+1269: Creating typeVble for identifier‹Number›
+1276: returnValue: Number
+1351: returning fromDType with Number
+588: created method type secondMeth → Number
+594: created method secondMeth → Number from method method secondMeth
+568 creating type for part: firstMeth
+579 finished with part: part: firstMeth
+587 creating returntype for identifier‹Number›
+1245: starting fromDType with identifier‹Number›
+1292: case identifier identifier‹Number›
+1269: Creating typeVble for identifier‹Number›
+1276: returnValue: Number
+1351: returning fromDType with Number
+588: created method type firstMeth → Number
+594: created method firstMeth → Number from method method firstMeth
+568 creating type for part: secondMeth
+579 finished with part: part: secondMeth
+587 creating returntype for identifier‹Number›
+1245: starting fromDType with identifier‹Number›
+1292: case identifier identifier‹Number›
+1269: Creating typeVble for identifier‹Number›
+1276: returnValue: Number
+1351: returning fromDType with Number
+588: created method type secondMeth → Number
+594: created method secondMeth → Number from method method secondMeth
+568 creating type for part: firstMeth
+579 finished with part: part: firstMeth
+587 creating returntype for identifier‹Number›
+1245: starting fromDType with identifier‹Number›
+1292: case identifier identifier‹Number›
+1269: Creating typeVble for identifier‹Number›
+1276: returnValue: Number
+1351: returning fromDType with Number
+588: created method type firstMeth → Number
+594: created method firstMeth → Number from method method firstMeth
+568 creating type for part: secondMeth
+579 finished with part: part: secondMeth
+587 creating returntype for identifier‹Number›
+1245: starting fromDType with identifier‹Number›
+1292: case identifier identifier‹Number›
+1269: Creating typeVble for identifier‹Number›
+1276: returnValue: Number
+1351: returning fromDType with Number
+588: created method type secondMeth → Number
+594: created method secondMeth → Number from method method secondMeth
+1245: starting fromDType with im.AmpersandType
+1309: case member im.AmpersandType
+1351: returning fromDType with Object[.]t343_importAmpersand_test.grace[19:13-21]: Dialect StaticTyping: no such method or type 'firstMeth' in `test` of type
+    'Object' 
+in type 
+  'set{≠(_ : Object) → Boolean, :: → Binding, asString → String, asDebugString → String}' used on line 19.
+  18: //generate error
+  19: print (test.firstMeth)
+------------------^^^^^^^^^
+!FAIL t343_importAmpersand_test.grace: compile error
+minigrace[.]: t354_specialisationRecursionLoop_test: 0.33 (+0.33): starting compilation
+minigrace[.]: t354_specialisationRecursionLoop_test: 0.35 (+0.02): lexing.
+minigrace[.]: t354_specialisationRecursionLoop_test: 0.43 (+0.08): parsing.
+minigrace[.]: t354_specialisationRecursionLoop_test: 0.58 (+0.15): checking dialect StaticTyping used by module t354_specialisationRecursionLoop_test
+minigrace[.]: t354_specialisationRecursionLoop_test: 1.73 (+1.15): loading dialect "StaticTyping" for checkers.
+minigrace[.]: t354_specialisationRecursionLoop_test: 2.27 (+0.54): rewriting tree.
+minigrace[.]: t354_specialisationRecursionLoop_test: 2.43 (+0.16): symbol tables built.
+
+1698: visiting module module t354_specialisationRecursionLoop_test
+2186 Types scope before collecting types is 
+dict⟬
+  Done::Done
+  Boolean::Boolean
+  Set::Set
+  ResourceException::ExceptionKind
+  Object::Object
+  Exception::ExceptionKind
+  EnvironmentException::ExceptionKind
+  List::List
+  Pattern::Pattern
+  Number::Number
+  ExceptionKind::ExceptionKind
+  Binding::Binding
+  Point::Point
+  String::String
+  Dictionary::Dictionary
+  Range::Range
+  Sequence::Sequence
+  Unknown::Unknown
+  PreludeType::PreludeType
+  Enumerable::Enumerable
+  $Object$::Object
+  ProgrammingError::ExceptionKind
+  Iterator::Iterator
+⟭
+1576: matched as typeDec typedec A
+1243: creating oType from typedec A
+1245: starting fromDType with typeliteral: methods = [methodtype m], types = []
+1255: case TypeLiteral: typeliteral: methods = [methodtype m], types = []
+1259 about to add methodtype m
+568 creating type for part: m
+579 finished with part: part: m
+587 creating returntype for identifier‹A›
+1245: starting fromDType with identifier‹A›
+1292: case identifier identifier‹A›
+1269: Creating typeVble for identifier‹A›
+1276: returnValue: Object
+1351: returning fromDType with Object
+588: created method type m → Object
+594: created method m → Object from method methodtype m
+1261 finished adding
+1351: returning fromDType with { 
+    m → Object; 
+  }
+1252: added to types: { 
+    m → Object; 
+  }
+1576: matched as typeDec typedec B
+1243: creating oType from typedec B
+1245: starting fromDType with op &(1)
+1264: case operator op &(1)
+1245: starting fromDType with identifier‹A›
+1292: case identifier identifier‹A›
+1269: Creating typeVble for identifier‹A›
+1276: returnValue: { 
+    m → Object; 
+  }
+1351: returning fromDType with { 
+    m → Object; 
+  }
+1245: starting fromDType with typeliteral: methods = [methodtype m, methodtype n], types = []
+1255: case TypeLiteral: typeliteral: methods = [methodtype m, methodtype n], types = []
+1259 about to add methodtype m
+568 creating type for part: m
+579 finished with part: part: m
+587 creating returntype for identifier‹B›
+1245: starting fromDType with identifier‹B›
+1292: case identifier identifier‹B›
+1269: Creating typeVble for identifier‹B›
+1276: returnValue: Object
+1351: returning fromDType with Object
+588: created method type m → Object
+594: created method m → Object from method methodtype m
+1261 finished adding
+1259 about to add methodtype n
+568 creating type for part: n
+579 finished with part: part: n
+587 creating returntype for identifier‹String›
+1245: starting fromDType with identifier‹String›
+1292: case identifier identifier‹String›
+1269: Creating typeVble for identifier‹String›
+1276: returnValue: String
+1351: returning fromDType with String
+588: created method type n → String
+594: created method n → String from method methodtype n
+1261 finished adding
+1351: returning fromDType with { 
+    n → String; 
+    m → Object; 
+  }
+1206:returnValue for
+ identifier‹A› &
+ typeliteral: methods = [methodtype m, methodtype n], types = [] is
+ { 
+    m → Object; 
+    n → String; 
+  }
+1351: returning fromDType with { 
+    m → Object; 
+    n → String; 
+  }
+1252: added to types: { 
+    m → Object; 
+    n → String; 
+  }
+1576: matched as typeDec typedec C
+1243: creating oType from typedec C
+1245: starting fromDType with op &(1)
+1264: case operator op &(1)
+1245: starting fromDType with typeliteral: methods = [methodtype m, methodtype n], types = []
+1255: case TypeLiteral: typeliteral: methods = [methodtype m, methodtype n], types = []
+1259 about to add methodtype m
+568 creating type for part: m
+579 finished with part: part: m
+587 creating returntype for identifier‹B›
+1245: starting fromDType with identifier‹B›
+1292: case identifier identifier‹B›
+1269: Creating typeVble for identifier‹B›
+1276: returnValue: { 
+    m → Object; 
+    n → String; 
+  }
+1351: returning fromDType with { 
+    m → Object; 
+    n → String; 
+  }
+588: created method type m → { 
+    m → Object; 
+    n → String; 
+  }
+594: created method m → { 
+    m → Object; 
+    n → String; 
+  } from method methodtype m
+1261 finished adding
+1259 about to add methodtype n
+568 creating type for part: n
+579 finished with part: part: n
+587 creating returntype for identifier‹String›
+1245: starting fromDType with identifier‹String›
+1292: case identifier identifier‹String›
+1269: Creating typeVble for identifier‹String›
+1276: returnValue: String
+1351: returning fromDType with String
+588: created method type n → String
+594: created method n → String from method methodtype n
+1261 finished adding
+1351: returning fromDType with { 
+    n → String; 
+    m → { 
+    m → Object; 
+    n → String; 
+  }; 
+  }
+1245: starting fromDType with identifier‹A›
+1292: case identifier identifier‹A›
+1269: Creating typeVble for identifier‹A›
+1276: returnValue: { 
+    m → Object; 
+  }
+1351: returning fromDType with { 
+    m → Object; 
+  }
+1206:returnValue for
+ typeliteral: methods = [methodtype m, methodtype n], types = [] &
+ identifier‹A› is
+ { 
+    n → String; 
+    m → { 
+    m → Object; 
+    n → String; 
+  }; 
+    m → Object; 
+  }
+1351: returning fromDType with { 
+    n → String; 
+    m → { 
+    m → Object; 
+    n → String; 
+  }; 
+    m → Object; 
+  }
+1252: added to types: { 
+    n → String; 
+    m → { 
+    m → Object; 
+    n → String; 
+  }; 
+    m → Object; 
+  }
+Generics scope is: 
+dict⟬
+⟭
+2186 Types scope after collecting types is 
+dict⟬
+  A::{ 
+    m → Object; 
+  }
+  Done::Done
+  C::{ 
+    n → String; 
+    m → { 
+    m → Object; 
+    n → String; 
+  }; 
+    m → Object; 
+  }
+  B::{ 
+    m → Object; 
+    n → String; 
+  }
+  Boolean::Boolean
+  Set::Set
+  ResourceException::ExceptionKind
+  Object::Object
+  Exception::ExceptionKind
+  EnvironmentException::ExceptionKind
+  List::List
+  Pattern::Pattern
+  Number::Number
+  ExceptionKind::ExceptionKind
+  Binding::Binding
+  Point::Point
+  String::String
+  Dictionary::Dictionary
+  Range::Range
+  Sequence::Sequence
+  Unknown::Unknown
+  PreludeType::PreludeType
+  Enumerable::Enumerable
+  $Object$::Object
+  ProgrammingError::ExceptionKind
+  Iterator::Iterator
+⟭
+568 creating type for part: b
+579 finished with part: part: b
+587 creating returntype for identifier‹B›
+1245: starting fromDType with identifier‹B›
+1292: case identifier identifier‹B›
+1269: Creating typeVble for identifier‹B›
+1276: returnValue: { 
+    m → Object; 
+    n → String; 
+  }
+1351: returning fromDType with { 
+    m → Object; 
+    n → String; 
+  }
+588: created method type b → { 
+    m → Object; 
+    n → String; 
+  }
+594: created method b → { 
+    m → Object; 
+    n → String; 
+  } from method method b
+568 creating type for part: c
+579 finished with part: part: c
+587 creating returntype for identifier‹C›
+1245: starting fromDType with identifier‹C›
+1292: case identifier identifier‹C›
+1269: Creating typeVble for identifier‹C›
+1276: returnValue: { 
+    n → String; 
+    m → { 
+    m → Object; 
+    n → String; 
+  }; 
+    m → Object; 
+  }
+1351: returning fromDType with { 
+    n → String; 
+    m → { 
+    m → Object; 
+    n → String; 
+  }; 
+    m → Object; 
+  }
+588: created method type c → { 
+    n → String; 
+    m → { 
+    m → Object; 
+    n → String; 
+  }; 
+    m → Object; 
+  }
+594: created method c → { 
+    n → String; 
+    m → { 
+    m → Object; 
+    n → String; 
+  }; 
+    m → Object; 
+  } from method method c
+875 visit type dec for typedec A
+1245: starting fromDType with typeliteral: methods = [methodtype m], types = []
+1255: case TypeLiteral: typeliteral: methods = [methodtype m], types = []
+1259 about to add methodtype m
+568 creating type for part: m
+579 finished with part: part: m
+587 creating returntype for identifier‹A›
+1245: starting fromDType with identifier‹A›
+1292: case identifier identifier‹A›
+1269: Creating typeVble for identifier‹A›
+1276: returnValue: { 
+    m → Object; 
+  }
+1351: returning fromDType with { 
+    m → Object; 
+  }
+588: created method type m → { 
+    m → Object; 
+  }
+594: created method m → { 
+    m → Object; 
+  } from method methodtype m
+1261 finished adding
+1351: returning fromDType with { 
+    m → { 
+    m → Object; 
+  }; 
+  }
+875 visit type dec for typedec B
+1245: starting fromDType with op &(1)
+1264: case operator op &(1)
+1245: starting fromDType with identifier‹A›
+1292: case identifier identifier‹A›
+1269: Creating typeVble for identifier‹A›
+1276: returnValue: { 
+    m → Object; 
+  }
+1351: returning fromDType with { 
+    m → Object; 
+  }
+1245: starting fromDType with typeliteral: methods = [methodtype m, methodtype n], types = []
+1255: case TypeLiteral: typeliteral: methods = [methodtype m, methodtype n], types = []
+1259 about to add methodtype m
+568 creating type for part: m
+579 finished with part: part: m
+587 creating returntype for identifier‹B›
+1245: starting fromDType with identifier‹B›
+1292: case identifier identifier‹B›
+1269: Creating typeVble for identifier‹B›
+1276: returnValue: { 
+    m → Object; 
+    n → String; 
+  }
+1351: returning fromDType with { 
+    m → Object; 
+    n → String; 
+  }
+588: created method type m → { 
+    m → Object; 
+    n → String; 
+  }
+594: created method m → { 
+    m → Object; 
+    n → String; 
+  } from method methodtype m
+1261 finished adding
+1259 about to add methodtype n
+568 creating type for part: n
+579 finished with part: part: n
+587 creating returntype for identifier‹String›
+1245: starting fromDType with identifier‹String›
+1292: case identifier identifier‹String›
+1269: Creating typeVble for identifier‹String›
+1276: returnValue: String
+1351: returning fromDType with String
+588: created method type n → String
+594: created method n → String from method methodtype n
+1261 finished adding
+1351: returning fromDType with { 
+    n → String; 
+    m → { 
+    m → Object; 
+    n → String; 
+  }; 
+  }
+1206:returnValue for
+ identifier‹A› &
+ typeliteral: methods = [methodtype m, methodtype n], types = [] is
+ { 
+    m → { 
+    m → Object; 
+    n → String; 
+  }; 
+    n → String; 
+  }
+1351: returning fromDType with { 
+    m → { 
+    m → Object; 
+    n → String; 
+  }; 
+    n → String; 
+  }
+875 visit type dec for typedec C
+1245: starting fromDType with op &(1)
+1264: case operator op &(1)
+1245: starting fromDType with typeliteral: methods = [methodtype m, methodtype n], types = []
+1255: case TypeLiteral: typeliteral: methods = [methodtype m, methodtype n], types = []
+1259 about to add methodtype m
+568 creating type for part: m
+579 finished with part: part: m
+587 creating returntype for identifier‹B›
+1245: starting fromDType with identifier‹B›
+1292: case identifier identifier‹B›
+1269: Creating typeVble for identifier‹B›
+1276: returnValue: { 
+    m → Object; 
+    n → String; 
+  }
+1351: returning fromDType with { 
+    m → Object; 
+    n → String; 
+  }
+588: created method type m → { 
+    m → Object; 
+    n → String; 
+  }
+594: created method m → { 
+    m → Object; 
+    n → String; 
+  } from method methodtype m
+1261 finished adding
+1259 about to add methodtype n
+568 creating type for part: n
+579 finished with part: part: n
+587 creating returntype for identifier‹String›
+1245: starting fromDType with identifier‹String›
+1292: case identifier identifier‹String›
+1269: Creating typeVble for identifier‹String›
+1276: returnValue: String
+1351: returning fromDType with String
+588: created method type n → String
+594: created method n → String from method methodtype n
+1261 finished adding
+1351: returning fromDType with { 
+    n → String; 
+    m → { 
+    m → Object; 
+    n → String; 
+  }; 
+  }
+1245: starting fromDType with identifier‹A›
+1292: case identifier identifier‹A›
+1269: Creating typeVble for identifier‹A›
+1276: returnValue: { 
+    m → Object; 
+  }
+1351: returning fromDType with { 
+    m → Object; 
+  }
+1206:returnValue for
+ typeliteral: methods = [methodtype m, methodtype n], types = [] &
+ identifier‹A› is
+ { 
+    n → String; 
+    m → { 
+    m → Object; 
+    n → String; 
+  }; 
+    m → Object; 
+  }
+1351: returning fromDType with { 
+    n → String; 
+    m → { 
+    m → Object; 
+    n → String; 
+  }; 
+    m → Object; 
+  }
+568 creating type for part: b
+579 finished with part: part: b
+587 creating returntype for identifier‹B›
+1245: starting fromDType with identifier‹B›
+1292: case identifier identifier‹B›
+1269: Creating typeVble for identifier‹B›
+1276: returnValue: { 
+    m → Object; 
+    n → String; 
+  }
+1351: returning fromDType with { 
+    m → Object; 
+    n → String; 
+  }
+588: created method type b → { 
+    m → Object; 
+    n → String; 
+  }
+594: created method b → { 
+    m → Object; 
+    n → String; 
+  } from method method b
+568 creating type for part: m
+579 finished with part: part: m
+587 creating returntype for identifier‹B›
+1245: starting fromDType with identifier‹B›
+1292: case identifier identifier‹B›
+1269: Creating typeVble for identifier‹B›
+1276: returnValue: { 
+    m → Object; 
+    n → String; 
+  }
+1351: returning fromDType with { 
+    m → Object; 
+    n → String; 
+  }
+588: created method type m → { 
+    m → Object; 
+    n → String; 
+  }
+594: created method m → { 
+    m → Object; 
+    n → String; 
+  } from method method m
+568 creating type for part: n
+579 finished with part: part: n
+587 creating returntype for identifier‹String›
+1245: starting fromDType with identifier‹String›
+1292: case identifier identifier‹String›
+1269: Creating typeVble for identifier‹String›
+1276: returnValue: String
+1351: returning fromDType with String
+588: created method type n → String
+594: created method n → String from method method n
+568 creating type for part: m
+579 finished with part: part: m
+587 creating returntype for identifier‹B›
+1245: starting fromDType with identifier‹B›
+1292: case identifier identifier‹B›
+1269: Creating typeVble for identifier‹B›
+1276: returnValue: { 
+    m → Object; 
+    n → String; 
+  }
+1351: returning fromDType with { 
+    m → Object; 
+    n → String; 
+  }
+588: created method type m → { 
+    m → Object; 
+    n → String; 
+  }
+594: created method m → { 
+    m → Object; 
+    n → String; 
+  } from method method m
+568 creating type for part: n
+579 finished with part: part: n
+587 creating returntype for identifier‹String›
+1245: starting fromDType with identifier‹String›
+1292: case identifier identifier‹String›
+1269: Creating typeVble for identifier‹String›
+1276: returnValue: String
+1351: returning fromDType with String
+588: created method type n → String
+594: created method n → String from method method n
+568 creating type for part: m
+579 finished with part: part: m
+587 creating returntype for identifier‹B›
+1245: starting fromDType with identifier‹B›
+1292: case identifier identifier‹B›
+1269: Creating typeVble for identifier‹B›
+1276: returnValue: { 
+    m → Object; 
+    n → String; 
+  }
+1351: returning fromDType with { 
+    m → Object; 
+    n → String; 
+  }
+588: created method type m → { 
+    m → Object; 
+    n → String; 
+  }
+594: created method m → { 
+    m → Object; 
+    n → String; 
+  } from method method m
+568 creating type for part: n
+579 finished with part: part: n
+587 creating returntype for identifier‹String›
+1245: starting fromDType with identifier‹String›
+1292: case identifier identifier‹String›
+1269: Creating typeVble for identifier‹String›
+1276: returnValue: String
+1351: returning fromDType with String
+588: created method type n → String
+594: created method n → String from method method n
+568 creating type for part: c
+579 finished with part: part: c
+587 creating returntype for identifier‹C›
+1245: starting fromDType with identifier‹C›
+1292: case identifier identifier‹C›
+1269: Creating typeVble for identifier‹C›
+1276: returnValue: { 
+    n → String; 
+    m → { 
+    m → Object; 
+    n → String; 
+  }; 
+    m → Object; 
+  }
+1351: returning fromDType with { 
+    n → String; 
+    m → { 
+    m → Object; 
+    n → String; 
+  }; 
+    m → Object; 
+  }
+588: created method type c → { 
+    n → String; 
+    m → { 
+    m → Object; 
+    n → String; 
+  }; 
+    m → Object; 
+  }
+594: created method c → { 
+    n → String; 
+    m → { 
+    m → Object; 
+    n → String; 
+  }; 
+    m → Object; 
+  } from method method c
+568 creating type for part: m
+579 finished with part: part: m
+587 creating returntype for identifier‹C›
+1245: starting fromDType with identifier‹C›
+1292: case identifier identifier‹C›
+1269: Creating typeVble for identifier‹C›
+1276: returnValue: { 
+    n → String; 
+    m → { 
+    m → Object; 
+    n → String; 
+  }; 
+    m → Object; 
+  }
+1351: returning fromDType with { 
+    n → String; 
+    m → { 
+    m → Object; 
+    n → String; 
+  }; 
+    m → Object; 
+  }
+588: created method type m → { 
+    n → String; 
+    m → { 
+    m → Object; 
+    n → String; 
+  }; 
+    m → Object; 
+  }
+594: created method m → { 
+    n → String; 
+    m → { 
+    m → Object; 
+    n → String; 
+  }; 
+    m → Object; 
+  } from method method m
+568 creating type for part: n
+579 finished with part: part: n
+587 creating returntype for identifier‹String›
+1245: starting fromDType with identifier‹String›
+1292: case identifier identifier‹String›
+1269: Creating typeVble for identifier‹String›
+1276: returnValue: String
+1351: returning fromDType with String
+588: created method type n → String
+594: created method n → String from method method n
+568 creating type for part: m
+579 finished with part: part: m
+587 creating returntype for identifier‹C›
+1245: starting fromDType with identifier‹C›
+1292: case identifier identifier‹C›
+1269: Creating typeVble for identifier‹C›
+1276: returnValue: { 
+    n → String; 
+    m → { 
+    m → Object; 
+    n → String; 
+  }; 
+    m → Object; 
+  }
+1351: returning fromDType with { 
+    n → String; 
+    m → { 
+    m → Object; 
+    n → String; 
+  }; 
+    m → Object; 
+  }
+588: created method type m → { 
+    n → String; 
+    m → { 
+    m → Object; 
+    n → String; 
+  }; 
+    m → Object; 
+  }
+594: created method m → { 
+    n → String; 
+    m → { 
+    m → Object; 
+    n → String; 
+  }; 
+    m → Object; 
+  } from method method m
+568 creating type for part: n
+579 finished with part: part: n
+587 creating returntype for identifier‹String›
+1245: starting fromDType with identifier‹String›
+1292: case identifier identifier‹String›
+1269: Creating typeVble for identifier‹String›
+1276: returnValue: String
+1351: returning fromDType with String
+588: created method type n → String
+594: created method n → String from method method n
+568 creating type for part: m
+579 finished with part: part: m
+587 creating returntype for identifier‹C›
+1245: starting fromDType with identifier‹C›
+1292: case identifier identifier‹C›
+1269: Creating typeVble for identifier‹C›
+1276: returnValue: { 
+    n → String; 
+    m → { 
+    m → Object; 
+    n → String; 
+  }; 
+    m → Object; 
+  }
+1351: returning fromDType with { 
+    n → String; 
+    m → { 
+    m → Object; 
+    n → String; 
+  }; 
+    m → Object; 
+  }
+588: created method type m → { 
+    n → String; 
+    m → { 
+    m → Object; 
+    n → String; 
+  }; 
+    m → Object; 
+  }
+594: created method m → { 
+    n → String; 
+    m → { 
+    m → Object; 
+    n → String; 
+  }; 
+    m → Object; 
+  } from method method m
+568 creating type for part: n
+579 finished with part: part: n
+587 creating returntype for identifier‹String›
+1245: starting fromDType with identifier‹String›
+1292: case identifier identifier‹String›
+1269: Creating typeVble for identifier‹String›
+1276: returnValue: String
+1351: returning fromDType with String
+588: created method type n → String
+594: created method n → String from method method n[.]t354_specialisationRecursionLoop_test.grace[27:12-0:0]: Dialect StaticTyping: no such method or type 'n' in `m` of type
+    'Object' 
+in type 
+  'set{≠(_ : Object) → Boolean, :: → Binding, asString → String, asDebugString → String}' used on line 27.
+  26: 
+  27: print (b.m.n)
+-----------------
+!FAIL t354_specialisationRecursionLoop_test.grace: compile error
+minigrace[.]: t358_importSelfRef_test: 0.41 (+0.41): starting compilation
+minigrace[.]: t358_importSelfRef_test: 0.42 (+0.01): lexing.
+minigrace[.]: t358_importSelfRef_test: 0.47 (+0.05): parsing.
+minigrace[.]: t358_importSelfRef_test: 0.64 (+0.17): checking dialect StaticTyping used by module t358_importSelfRef_test
+minigrace[.]: t358_importSelfRef_test: 2.14 (+1.5): loading dialect "StaticTyping" for checkers.
+minigrace[.]: t358_importSelfRef_test: 2.73 (+0.59): rewriting tree.
+minigrace[.]: t358_importSelfRef_test: 2.82 (+0.09): executing sub-compile "/Users/kim/minigrace/j2/compiler-js" --verbose 60 --dir ./ --vtag . --gracelib /Users/kim/minigrace/j2/ --target js --make "././t354_specialisationRecursionLoop_test.grace"
+minigrace[.]: t354_specialisationRecursionLoop_test: 0.33 (+0.33): starting compilation
+minigrace[.]: t354_specialisationRecursionLoop_test: 0.34 (+0.01): lexing.
+minigrace[.]: t354_specialisationRecursionLoop_test: 0.39 (+0.05): parsing.
+minigrace[.]: t354_specialisationRecursionLoop_test: 0.53 (+0.14): checking dialect StaticTyping used by module t354_specialisationRecursionLoop_test
+minigrace[.]: t354_specialisationRecursionLoop_test: 1.76 (+1.23): loading dialect "StaticTyping" for checkers.
+minigrace[.]: t354_specialisationRecursionLoop_test: 2.31 (+0.55): rewriting tree.
+minigrace[.]: t354_specialisationRecursionLoop_test: 2.44 (+0.13): symbol tables built.
+
+1698: visiting module module t354_specialisationRecursionLoop_test
+2186 Types scope before collecting types is 
+dict⟬
+  Done::Done
+  Boolean::Boolean
+  Set::Set
+  ResourceException::ExceptionKind
+  Object::Object
+  Exception::ExceptionKind
+  EnvironmentException::ExceptionKind
+  List::List
+  Pattern::Pattern
+  Number::Number
+  ExceptionKind::ExceptionKind
+  Binding::Binding
+  Point::Point
+  String::String
+  Dictionary::Dictionary
+  Range::Range
+  Sequence::Sequence
+  Unknown::Unknown
+  PreludeType::PreludeType
+  Enumerable::Enumerable
+  $Object$::Object
+  ProgrammingError::ExceptionKind
+  Iterator::Iterator
+⟭
+1576: matched as typeDec typedec A
+1243: creating oType from typedec A
+1245: starting fromDType with typeliteral: methods = [methodtype m], types = []
+1255: case TypeLiteral: typeliteral: methods = [methodtype m], types = []
+1259 about to add methodtype m
+568 creating type for part: m
+579 finished with part: part: m
+587 creating returntype for identifier‹A›
+1245: starting fromDType with identifier‹A›
+1292: case identifier identifier‹A›
+1269: Creating typeVble for identifier‹A›
+1276: returnValue: Object
+1351: returning fromDType with Object
+588: created method type m → Object
+594: created method m → Object from method methodtype m
+1261 finished adding
+1351: returning fromDType with { 
+    m → Object; 
+  }
+1252: added to types: { 
+    m → Object; 
+  }
+1576: matched as typeDec typedec B
+1243: creating oType from typedec B
+1245: starting fromDType with op &(1)
+1264: case operator op &(1)
+1245: starting fromDType with identifier‹A›
+1292: case identifier identifier‹A›
+1269: Creating typeVble for identifier‹A›
+1276: returnValue: { 
+    m → Object; 
+  }
+1351: returning fromDType with { 
+    m → Object; 
+  }
+1245: starting fromDType with typeliteral: methods = [methodtype m, methodtype n], types = []
+1255: case TypeLiteral: typeliteral: methods = [methodtype m, methodtype n], types = []
+1259 about to add methodtype m
+568 creating type for part: m
+579 finished with part: part: m
+587 creating returntype for identifier‹B›
+1245: starting fromDType with identifier‹B›
+1292: case identifier identifier‹B›
+1269: Creating typeVble for identifier‹B›
+1276: returnValue: Object
+1351: returning fromDType with Object
+588: created method type m → Object
+594: created method m → Object from method methodtype m
+1261 finished adding
+1259 about to add methodtype n
+568 creating type for part: n
+579 finished with part: part: n
+587 creating returntype for identifier‹String›
+1245: starting fromDType with identifier‹String›
+1292: case identifier identifier‹String›
+1269: Creating typeVble for identifier‹String›
+1276: returnValue: String
+1351: returning fromDType with String
+588: created method type n → String
+594: created method n → String from method methodtype n
+1261 finished adding
+1351: returning fromDType with { 
+    n → String; 
+    m → Object; 
+  }
+1206:returnValue for
+ identifier‹A› &
+ typeliteral: methods = [methodtype m, methodtype n], types = [] is
+ { 
+    m → Object; 
+    n → String; 
+  }
+1351: returning fromDType with { 
+    m → Object; 
+    n → String; 
+  }
+1252: added to types: { 
+    m → Object; 
+    n → String; 
+  }
+1576: matched as typeDec typedec C
+1243: creating oType from typedec C
+1245: starting fromDType with op &(1)
+1264: case operator op &(1)
+1245: starting fromDType with typeliteral: methods = [methodtype m, methodtype n], types = []
+1255: case TypeLiteral: typeliteral: methods = [methodtype m, methodtype n], types = []
+1259 about to add methodtype m
+568 creating type for part: m
+579 finished with part: part: m
+587 creating returntype for identifier‹B›
+1245: starting fromDType with identifier‹B›
+1292: case identifier identifier‹B›
+1269: Creating typeVble for identifier‹B›
+1276: returnValue: { 
+    m → Object; 
+    n → String; 
+  }
+1351: returning fromDType with { 
+    m → Object; 
+    n → String; 
+  }
+588: created method type m → { 
+    m → Object; 
+    n → String; 
+  }
+594: created method m → { 
+    m → Object; 
+    n → String; 
+  } from method methodtype m
+1261 finished adding
+1259 about to add methodtype n
+568 creating type for part: n
+579 finished with part: part: n
+587 creating returntype for identifier‹String›
+1245: starting fromDType with identifier‹String›
+1292: case identifier identifier‹String›
+1269: Creating typeVble for identifier‹String›
+1276: returnValue: String
+1351: returning fromDType with String
+588: created method type n → String
+594: created method n → String from method methodtype n
+1261 finished adding
+1351: returning fromDType with { 
+    n → String; 
+    m → { 
+    m → Object; 
+    n → String; 
+  }; 
+  }
+1245: starting fromDType with identifier‹A›
+1292: case identifier identifier‹A›
+1269: Creating typeVble for identifier‹A›
+1276: returnValue: { 
+    m → Object; 
+  }
+1351: returning fromDType with { 
+    m → Object; 
+  }
+1206:returnValue for
+ typeliteral: methods = [methodtype m, methodtype n], types = [] &
+ identifier‹A› is
+ { 
+    n → String; 
+    m → { 
+    m → Object; 
+    n → String; 
+  }; 
+    m → Object; 
+  }
+1351: returning fromDType with { 
+    n → String; 
+    m → { 
+    m → Object; 
+    n → String; 
+  }; 
+    m → Object; 
+  }
+1252: added to types: { 
+    n → String; 
+    m → { 
+    m → Object; 
+    n → String; 
+  }; 
+    m → Object; 
+  }
+Generics scope is: 
+dict⟬
+⟭
+2186 Types scope after collecting types is 
+dict⟬
+  A::{ 
+    m → Object; 
+  }
+  Done::Done
+  C::{ 
+    n → String; 
+    m → { 
+    m → Object; 
+    n → String; 
+  }; 
+    m → Object; 
+  }
+  B::{ 
+    m → Object; 
+    n → String; 
+  }
+  Boolean::Boolean
+  Set::Set
+  ResourceException::ExceptionKind
+  Object::Object
+  Exception::ExceptionKind
+  EnvironmentException::ExceptionKind
+  List::List
+  Pattern::Pattern
+  Number::Number
+  ExceptionKind::ExceptionKind
+  Binding::Binding
+  Point::Point
+  String::String
+  Dictionary::Dictionary
+  Range::Range
+  Sequence::Sequence
+  Unknown::Unknown
+  PreludeType::PreludeType
+  Enumerable::Enumerable
+  $Object$::Object
+  ProgrammingError::ExceptionKind
+  Iterator::Iterator
+⟭
+568 creating type for part: b
+579 finished with part: part: b
+587 creating returntype for identifier‹B›
+1245: starting fromDType with identifier‹B›
+1292: case identifier identifier‹B›
+1269: Creating typeVble for identifier‹B›
+1276: returnValue: { 
+    m → Object; 
+    n → String; 
+  }
+1351: returning fromDType with { 
+    m → Object; 
+    n → String; 
+  }
+588: created method type b → { 
+    m → Object; 
+    n → String; 
+  }
+594: created method b → { 
+    m → Object; 
+    n → String; 
+  } from method method b
+568 creating type for part: c
+579 finished with part: part: c
+587 creating returntype for identifier‹C›
+1245: starting fromDType with identifier‹C›
+1292: case identifier identifier‹C›
+1269: Creating typeVble for identifier‹C›
+1276: returnValue: { 
+    n → String; 
+    m → { 
+    m → Object; 
+    n → String; 
+  }; 
+    m → Object; 
+  }
+1351: returning fromDType with { 
+    n → String; 
+    m → { 
+    m → Object; 
+    n → String; 
+  }; 
+    m → Object; 
+  }
+588: created method type c → { 
+    n → String; 
+    m → { 
+    m → Object; 
+    n → String; 
+  }; 
+    m → Object; 
+  }
+594: created method c → { 
+    n → String; 
+    m → { 
+    m → Object; 
+    n → String; 
+  }; 
+    m → Object; 
+  } from method method c
+875 visit type dec for typedec A
+1245: starting fromDType with typeliteral: methods = [methodtype m], types = []
+1255: case TypeLiteral: typeliteral: methods = [methodtype m], types = []
+1259 about to add methodtype m
+568 creating type for part: m
+579 finished with part: part: m
+587 creating returntype for identifier‹A›
+1245: starting fromDType with identifier‹A›
+1292: case identifier identifier‹A›
+1269: Creating typeVble for identifier‹A›
+1276: returnValue: { 
+    m → Object; 
+  }
+1351: returning fromDType with { 
+    m → Object; 
+  }
+588: created method type m → { 
+    m → Object; 
+  }
+594: created method m → { 
+    m → Object; 
+  } from method methodtype m
+1261 finished adding
+1351: returning fromDType with { 
+    m → { 
+    m → Object; 
+  }; 
+  }
+875 visit type dec for typedec B
+1245: starting fromDType with op &(1)
+1264: case operator op &(1)
+1245: starting fromDType with identifier‹A›
+1292: case identifier identifier‹A›
+1269: Creating typeVble for identifier‹A›
+1276: returnValue: { 
+    m → Object; 
+  }
+1351: returning fromDType with { 
+    m → Object; 
+  }
+1245: starting fromDType with typeliteral: methods = [methodtype m, methodtype n], types = []
+1255: case TypeLiteral: typeliteral: methods = [methodtype m, methodtype n], types = []
+1259 about to add methodtype m
+568 creating type for part: m
+579 finished with part: part: m
+587 creating returntype for identifier‹B›
+1245: starting fromDType with identifier‹B›
+1292: case identifier identifier‹B›
+1269: Creating typeVble for identifier‹B›
+1276: returnValue: { 
+    m → Object; 
+    n → String; 
+  }
+1351: returning fromDType with { 
+    m → Object; 
+    n → String; 
+  }
+588: created method type m → { 
+    m → Object; 
+    n → String; 
+  }
+594: created method m → { 
+    m → Object; 
+    n → String; 
+  } from method methodtype m
+1261 finished adding
+1259 about to add methodtype n
+568 creating type for part: n
+579 finished with part: part: n
+587 creating returntype for identifier‹String›
+1245: starting fromDType with identifier‹String›
+1292: case identifier identifier‹String›
+1269: Creating typeVble for identifier‹String›
+1276: returnValue: String
+1351: returning fromDType with String
+588: created method type n → String
+594: created method n → String from method methodtype n
+1261 finished adding
+1351: returning fromDType with { 
+    n → String; 
+    m → { 
+    m → Object; 
+    n → String; 
+  }; 
+  }
+1206:returnValue for
+ identifier‹A› &
+ typeliteral: methods = [methodtype m, methodtype n], types = [] is
+ { 
+    m → { 
+    m → Object; 
+    n → String; 
+  }; 
+    n → String; 
+  }
+1351: returning fromDType with { 
+    m → { 
+    m → Object; 
+    n → String; 
+  }; 
+    n → String; 
+  }
+875 visit type dec for typedec C
+1245: starting fromDType with op &(1)
+1264: case operator op &(1)
+1245: starting fromDType with typeliteral: methods = [methodtype m, methodtype n], types = []
+1255: case TypeLiteral: typeliteral: methods = [methodtype m, methodtype n], types = []
+1259 about to add methodtype m
+568 creating type for part: m
+579 finished with part: part: m
+587 creating returntype for identifier‹B›
+1245: starting fromDType with identifier‹B›
+1292: case identifier identifier‹B›
+1269: Creating typeVble for identifier‹B›
+1276: returnValue: { 
+    m → Object; 
+    n → String; 
+  }
+1351: returning fromDType with { 
+    m → Object; 
+    n → String; 
+  }
+588: created method type m → { 
+    m → Object; 
+    n → String; 
+  }
+594: created method m → { 
+    m → Object; 
+    n → String; 
+  } from method methodtype m
+1261 finished adding
+1259 about to add methodtype n
+568 creating type for part: n
+579 finished with part: part: n
+587 creating returntype for identifier‹String›
+1245: starting fromDType with identifier‹String›
+1292: case identifier identifier‹String›
+1269: Creating typeVble for identifier‹String›
+1276: returnValue: String
+1351: returning fromDType with String
+588: created method type n → String
+594: created method n → String from method methodtype n
+1261 finished adding
+1351: returning fromDType with { 
+    n → String; 
+    m → { 
+    m → Object; 
+    n → String; 
+  }; 
+  }
+1245: starting fromDType with identifier‹A›
+1292: case identifier identifier‹A›
+1269: Creating typeVble for identifier‹A›
+1276: returnValue: { 
+    m → Object; 
+  }
+1351: returning fromDType with { 
+    m → Object; 
+  }
+1206:returnValue for
+ typeliteral: methods = [methodtype m, methodtype n], types = [] &
+ identifier‹A› is
+ { 
+    n → String; 
+    m → { 
+    m → Object; 
+    n → String; 
+  }; 
+    m → Object; 
+  }
+1351: returning fromDType with { 
+    n → String; 
+    m → { 
+    m → Object; 
+    n → String; 
+  }; 
+    m → Object; 
+  }
+568 creating type for part: b
+579 finished with part: part: b
+587 creating returntype for identifier‹B›
+1245: starting fromDType with identifier‹B›
+1292: case identifier identifier‹B›
+1269: Creating typeVble for identifier‹B›
+1276: returnValue: { 
+    m → Object; 
+    n → String; 
+  }
+1351: returning fromDType with { 
+    m → Object; 
+    n → String; 
+  }
+588: created method type b → { 
+    m → Object; 
+    n → String; 
+  }
+594: created method b → { 
+    m → Object; 
+    n → String; 
+  } from method method b
+568 creating type for part: m
+579 finished with part: part: m
+587 creating returntype for identifier‹B›
+1245: starting fromDType with identifier‹B›
+1292: case identifier identifier‹B›
+1269: Creating typeVble for identifier‹B›
+1276: returnValue: { 
+    m → Object; 
+    n → String; 
+  }
+1351: returning fromDType with { 
+    m → Object; 
+    n → String; 
+  }
+588: created method type m → { 
+    m → Object; 
+    n → String; 
+  }
+594: created method m → { 
+    m → Object; 
+    n → String; 
+  } from method method m
+568 creating type for part: n
+579 finished with part: part: n
+587 creating returntype for identifier‹String›
+1245: starting fromDType with identifier‹String›
+1292: case identifier identifier‹String›
+1269: Creating typeVble for identifier‹String›
+1276: returnValue: String
+1351: returning fromDType with String
+588: created method type n → String
+594: created method n → String from method method n
+568 creating type for part: m
+579 finished with part: part: m
+587 creating returntype for identifier‹B›
+1245: starting fromDType with identifier‹B›
+1292: case identifier identifier‹B›
+1269: Creating typeVble for identifier‹B›
+1276: returnValue: { 
+    m → Object; 
+    n → String; 
+  }
+1351: returning fromDType with { 
+    m → Object; 
+    n → String; 
+  }
+588: created method type m → { 
+    m → Object; 
+    n → String; 
+  }
+594: created method m → { 
+    m → Object; 
+    n → String; 
+  } from method method m
+568 creating type for part: n
+579 finished with part: part: n
+587 creating returntype for identifier‹String›
+1245: starting fromDType with identifier‹String›
+1292: case identifier identifier‹String›
+1269: Creating typeVble for identifier‹String›
+1276: returnValue: String
+1351: returning fromDType with String
+588: created method type n → String
+594: created method n → String from method method n
+568 creating type for part: m
+579 finished with part: part: m
+587 creating returntype for identifier‹B›
+1245: starting fromDType with identifier‹B›
+1292: case identifier identifier‹B›
+1269: Creating typeVble for identifier‹B›
+1276: returnValue: { 
+    m → Object; 
+    n → String; 
+  }
+1351: returning fromDType with { 
+    m → Object; 
+    n → String; 
+  }
+588: created method type m → { 
+    m → Object; 
+    n → String; 
+  }
+594: created method m → { 
+    m → Object; 
+    n → String; 
+  } from method method m
+568 creating type for part: n
+579 finished with part: part: n
+587 creating returntype for identifier‹String›
+1245: starting fromDType with identifier‹String›
+1292: case identifier identifier‹String›
+1269: Creating typeVble for identifier‹String›
+1276: returnValue: String
+1351: returning fromDType with String
+588: created method type n → String
+594: created method n → String from method method n
+568 creating type for part: c
+579 finished with part: part: c
+587 creating returntype for identifier‹C›
+1245: starting fromDType with identifier‹C›
+1292: case identifier identifier‹C›
+1269: Creating typeVble for identifier‹C›
+1276: returnValue: { 
+    n → String; 
+    m → { 
+    m → Object; 
+    n → String; 
+  }; 
+    m → Object; 
+  }
+1351: returning fromDType with { 
+    n → String; 
+    m → { 
+    m → Object; 
+    n → String; 
+  }; 
+    m → Object; 
+  }
+588: created method type c → { 
+    n → String; 
+    m → { 
+    m → Object; 
+    n → String; 
+  }; 
+    m → Object; 
+  }
+594: created method c → { 
+    n → String; 
+    m → { 
+    m → Object; 
+    n → String; 
+  }; 
+    m → Object; 
+  } from method method c
+568 creating type for part: m
+579 finished with part: part: m
+587 creating returntype for identifier‹C›
+1245: starting fromDType with identifier‹C›
+1292: case identifier identifier‹C›
+1269: Creating typeVble for identifier‹C›
+1276: returnValue: { 
+    n → String; 
+    m → { 
+    m → Object; 
+    n → String; 
+  }; 
+    m → Object; 
+  }
+1351: returning fromDType with { 
+    n → String; 
+    m → { 
+    m → Object; 
+    n → String; 
+  }; 
+    m → Object; 
+  }
+588: created method type m → { 
+    n → String; 
+    m → { 
+    m → Object; 
+    n → String; 
+  }; 
+    m → Object; 
+  }
+594: created method m → { 
+    n → String; 
+    m → { 
+    m → Object; 
+    n → String; 
+  }; 
+    m → Object; 
+  } from method method m
+568 creating type for part: n
+579 finished with part: part: n
+587 creating returntype for identifier‹String›
+1245: starting fromDType with identifier‹String›
+1292: case identifier identifier‹String›
+1269: Creating typeVble for identifier‹String›
+1276: returnValue: String
+1351: returning fromDType with String
+588: created method type n → String
+594: created method n → String from method method n
+568 creating type for part: m
+579 finished with part: part: m
+587 creating returntype for identifier‹C›
+1245: starting fromDType with identifier‹C›
+1292: case identifier identifier‹C›
+1269: Creating typeVble for identifier‹C›
+1276: returnValue: { 
+    n → String; 
+    m → { 
+    m → Object; 
+    n → String; 
+  }; 
+    m → Object; 
+  }
+1351: returning fromDType with { 
+    n → String; 
+    m → { 
+    m → Object; 
+    n → String; 
+  }; 
+    m → Object; 
+  }
+588: created method type m → { 
+    n → String; 
+    m → { 
+    m → Object; 
+    n → String; 
+  }; 
+    m → Object; 
+  }
+594: created method m → { 
+    n → String; 
+    m → { 
+    m → Object; 
+    n → String; 
+  }; 
+    m → Object; 
+  } from method method m
+568 creating type for part: n
+579 finished with part: part: n
+587 creating returntype for identifier‹String›
+1245: starting fromDType with identifier‹String›
+1292: case identifier identifier‹String›
+1269: Creating typeVble for identifier‹String›
+1276: returnValue: String
+1351: returning fromDType with String
+588: created method type n → String
+594: created method n → String from method method n
+568 creating type for part: m
+579 finished with part: part: m
+587 creating returntype for identifier‹C›
+1245: starting fromDType with identifier‹C›
+1292: case identifier identifier‹C›
+1269: Creating typeVble for identifier‹C›
+1276: returnValue: { 
+    n → String; 
+    m → { 
+    m → Object; 
+    n → String; 
+  }; 
+    m → Object; 
+  }
+1351: returning fromDType with { 
+    n → String; 
+    m → { 
+    m → Object; 
+    n → String; 
+  }; 
+    m → Object; 
+  }
+588: created method type m → { 
+    n → String; 
+    m → { 
+    m → Object; 
+    n → String; 
+  }; 
+    m → Object; 
+  }
+594: created method m → { 
+    n → String; 
+    m → { 
+    m → Object; 
+    n → String; 
+  }; 
+    m → Object; 
+  } from method method m
+568 creating type for part: n
+579 finished with part: part: n
+587 creating returntype for identifier‹String›
+1245: starting fromDType with identifier‹String›
+1292: case identifier identifier‹String›
+1269: Creating typeVble for identifier‹String›
+1276: returnValue: String
+1351: returning fromDType with String
+588: created method type n → String
+594: created method n → String from method method n[.]t354_specialisationRecursionLoop_test.grace[27:12-0:0]: Dialect StaticTyping: no such method or type 'n' in `m` of type
+    'Object' 
+in type 
+  'set{≠(_ : Object) → Boolean, :: → Binding, asString → String, asDebugString → String}' used on line 27.
+  26: 
+  27: print (b.m.n)
+-----------------
+[.]t358_importSelfRef_test.grace[3:1-52]: Failed to compile imported module t354_specialisationRecursionLoop_test (2).
+  2: 
+  3: import "t354_specialisationRecursionLoop_test" as im
+-----^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+!FAIL t358_importSelfRef_test.grace: compile error
+minigrace[.]: t361a_generics_test: 0.33 (+0.33): starting compilation
+minigrace[.]: t361a_generics_test: 0.34 (+0.01): lexing.
+minigrace[.]: t361a_generics_test: 0.38 (+0.04): parsing.
+minigrace[.]: t361a_generics_test: 0.48 (+0.1): checking dialect StaticTyping used by module t361a_generics_test
+minigrace[.]: t361a_generics_test: 1.76 (+1.28): loading dialect "StaticTyping" for checkers.
+minigrace[.]: t361a_generics_test: 2.3 (+0.54): rewriting tree.
+minigrace[.]: t361a_generics_test: 2.44 (+0.14): symbol tables built.
+
+1698: visiting module module t361a_generics_test
+2186 Types scope before collecting types is 
+dict⟬
+  Done::Done
+  Boolean::Boolean
+  Set::Set
+  ResourceException::ExceptionKind
+  Object::Object
+  Exception::ExceptionKind
+  EnvironmentException::ExceptionKind
+  List::List
+  Pattern::Pattern
+  Number::Number
+  ExceptionKind::ExceptionKind
+  Binding::Binding
+  Point::Point
+  String::String
+  Dictionary::Dictionary
+  Range::Range
+  Sequence::Sequence
+  Unknown::Unknown
+  PreludeType::PreludeType
+  Enumerable::Enumerable
+  $Object$::Object
+  ProgrammingError::ExceptionKind
+  Iterator::Iterator
+⟭
+1576: matched as typeDec typedec D
+1243: creating genType from typedec D
+661 typeDec is D
+1245: starting fromDType with typeliteral: methods = [methodtype m], types = []
+1255: case TypeLiteral: typeliteral: methods = [methodtype m], types = []
+1259 about to add methodtype m
+568 creating type for part: m
+579 finished with part: part: m
+587 creating returntype for identifier‹K›
+1245: starting fromDType with identifier‹K›
+1292: case identifier identifier‹K›
+1269: Creating typeVble for identifier‹K›
+1276: returnValue: Object
+1351: returning fromDType with Object
+588: created method type m → Object
+594: created method m → Object from method methodtype m
+1261 finished adding
+1351: returning fromDType with { 
+    m → Object; 
+  }
+691: Created D⟦K⟧ : { 
+    m → Object; 
+  } from type dec typedec D
+1246: added to generics: D⟦K⟧ : { 
+    m → Object; 
+  }
+Generics scope is: 
+dict⟬
+  D::D⟦K⟧ : { 
+    m → Object; 
+  }
+⟭
+2186 Types scope after collecting types is 
+dict⟬
+  Done::Done
+  Boolean::Boolean
+  Set::Set
+  ResourceException::ExceptionKind
+  Object::Object
+  Exception::ExceptionKind
+  EnvironmentException::ExceptionKind
+  List::List
+  Pattern::Pattern
+  Number::Number
+  ExceptionKind::ExceptionKind
+  Binding::Binding
+  Point::Point
+  String::String
+  Dictionary::Dictionary
+  Range::Range
+  Sequence::Sequence
+  Unknown::Unknown
+  PreludeType::PreludeType
+  Enumerable::Enumerable
+  $Object$::Object
+  ProgrammingError::ExceptionKind
+  Iterator::Iterator
+⟭
+568 creating type for part: d
+579 finished with part: part: d
+587 creating returntype for D⟦Number⟧
+1245: starting fromDType with D⟦Number⟧
+1303: case generic D⟦Number⟧
+457: updating method: :: → Binding
+469: new mix parts ::
+471: replace Binding with dict⟬K::identifier‹Number›⟭
+749 update type in fromMethods Binding
+486: new return type: Binding
+481: newMeth is :: → Binding
+457: updating method: ≠(_ : Object) → Boolean
+749 update type in fromMethods Object
+389 newTypeAnno is Object
+469: new mix parts ≠
+471: replace Boolean with dict⟬K::identifier‹Number›⟭
+749 update type in fromMethods Boolean
+486: new return type: Boolean
+481: newMeth is ≠(_ : Object) → Boolean
+457: updating method: asString → String
+469: new mix parts asString
+471: replace String with dict⟬K::identifier‹Number›⟭
+749 update type in fromMethods String
+486: new return type: String
+481: newMeth is asString → String
+457: updating method: m → Object
+469: new mix parts m
+471: replace Object with dict⟬K::identifier‹Number›⟭
+749 update type in fromMethods Object
+486: new return type: Object
+481: newMeth is m → Object
+457: updating method: asDebugString → String
+469: new mix parts asDebugString
+471: replace String with dict⟬K::identifier‹Number›⟭
+749 update type in fromMethods String
+486: new return type: String
+481: newMeth is asDebugString → String
+1351: returning fromDType with { 
+    m → Object; 
+  }
+588: created method type d → { 
+    m → Object; 
+  }
+594: created method d → { 
+    m → Object; 
+  } from method method d
+1245: starting fromDType with D⟦Number⟧
+1303: case generic D⟦Number⟧
+1351: returning fromDType with { 
+    m → Object; 
+  }
+607 created method type x → { 
+    m → Object; 
+  } from def or var defdec x
+875 visit type dec for typedec D
+661 typeDec is D
+1245: starting fromDType with typeliteral: methods = [methodtype m], types = []
+1255: case TypeLiteral: typeliteral: methods = [methodtype m], types = []
+1259 about to add methodtype m
+568 creating type for part: m
+579 finished with part: part: m
+587 creating returntype for identifier‹K›
+1245: starting fromDType with identifier‹K›
+1292: case identifier identifier‹K›
+1269: Creating typeVble for identifier‹K›
+1276: returnValue: Object
+1351: returning fromDType with Object
+588: created method type m → Object
+594: created method m → Object from method methodtype m
+1261 finished adding
+1351: returning fromDType with { 
+    m → Object; 
+  }
+691: Created D⟦K⟧ : { 
+    m → Object; 
+  } from type dec typedec D
+568 creating type for part: d
+579 finished with part: part: d
+587 creating returntype for D⟦Number⟧
+1245: starting fromDType with D⟦Number⟧
+1303: case generic D⟦Number⟧
+1351: returning fromDType with { 
+    m → Object; 
+  }
+588: created method type d → { 
+    m → Object; 
+  }
+594: created method d → { 
+    m → Object; 
+  } from method method d
+568 creating type for part: m
+579 finished with part: part: m
+587 creating returntype for identifier‹Number›
+1245: starting fromDType with identifier‹Number›
+1292: case identifier identifier‹Number›
+1269: Creating typeVble for identifier‹Number›
+1276: returnValue: Number
+1351: returning fromDType with Number
+588: created method type m → Number
+594: created method m → Number from method method m
+568 creating type for part: m
+579 finished with part: part: m
+587 creating returntype for identifier‹Number›
+1245: starting fromDType with identifier‹Number›
+1292: case identifier identifier‹Number›
+1269: Creating typeVble for identifier‹Number›
+1276: returnValue: Number
+1351: returning fromDType with Number
+588: created method type m → Number
+594: created method m → Number from method method m
+568 creating type for part: m
+579 finished with part: part: m
+587 creating returntype for identifier‹Number›
+1245: starting fromDType with identifier‹Number›
+1292: case identifier identifier‹Number›
+1269: Creating typeVble for identifier‹Number›
+1276: returnValue: Number
+1351: returning fromDType with Number
+588: created method type m → Number
+594: created method m → Number from method method m
+1245: starting fromDType with D⟦Number⟧
+1303: case generic D⟦Number⟧
+1351: returning fromDType with { 
+    m → Object; 
+  }minigrace[.]: t361a_generics_test: 2.65 (+0.21): generating JavaScript code.
+AST nodes compiled:
+    identifier	5
+    method	2
+    generic	2
+    member	2
+    dialect	1
+    num	1
+    typedec	1
+    typeliteral	1
+    defdec	1
+    call	1
+minigrace[.]: t361a_generics_test: 2.74 (+0.09): done.
+47
+!FAIL t361a_generics_test.grace: wrong output
+Got output:
+47
+Expected output:
+minigrace[.]: t362_importGenerics_test: 0.38 (+0.38): starting compilation
+minigrace[.]: t362_importGenerics_test: 0.39 (+0.01): lexing.
+minigrace[.]: t362_importGenerics_test: 0.44 (+0.05): parsing.
+minigrace[.]: t362_importGenerics_test: 0.56 (+0.12): checking dialect StaticTyping used by module t362_importGenerics_test
+minigrace[.]: t362_importGenerics_test: 1.89 (+1.33): loading dialect "StaticTyping" for checkers.
+minigrace[.]: t362_importGenerics_test: 2.41 (+0.52): rewriting tree.
+minigrace[.]: t362_importGenerics_test: 2.55 (+0.14): symbol tables built.
+
+1698: visiting module module t362_importGenerics_testminigrace[.]: t362_importGenerics_test: 2.6 (+0.05): lexing.
+
+568 creating type for part: d
+579 finished with part: part: d
+587 creating returntype for im.D⟦Number⟧
+1245: starting fromDType with im.D⟦Number⟧
+1303: case generic im.D⟦Number⟧ProgrammingError on line 1401 of ObjectTypeModule: Attempting to use an undefined generic type im.D.
+  requested from Exception.raise(_)with(_) at line 1401 of ObjectTypeModule
+  requested from block.apply at line 1401 of ObjectTypeModule
+  requested from stackOfKind(_).find(_)butIfMissing(_) at line 76 of ScopeModule
+  requested from block.apply at line 1399 of ObjectTypeModule
+  requested from stackOfKind(_).find(_)butIfMissing(_) at line 76 of ScopeModule
+  requested from anObjectType.fromGeneric(_) at line 1396 of ObjectTypeModule
+  requested from anObjectType.fromDType(_)with(_) at line 1322 of ObjectTypeModule
+  requested from anObjectType.fromDType(_) at line 1252 of ObjectTypeModule
+  requested from aMethodType.fromNode(_) at line 596 of ObjectTypeModule
+  requested from block.apply(_) at line 1133 of StaticTyping
+  requested from block.apply at line 345 of collectionsPrelude
+  requested from while(_)do(_) at line 344 of collectionsPrelude
+  requested from dictionary.empty.keys.do(_) at line 344 of collectionsPrelude
+  requested from astVisitor.processGct(_,_) at line 1097 of StaticTyping
+  requested from astVisitor.visitImport(_) at line 1071 of StaticTyping
+  requested from block.apply(_) at line 792 of StaticTyping
+  requested from block.apply at line 853 of collectionsPrelude
+  requested from while(_)do(_) at line 849 of collectionsPrelude
+  requested from list.withAll(_).do(_) at line 849 of collectionsPrelude
+  requested from for(_)do(_) at line 787 of StaticTyping
+  requested from astVisitor.visitModule(_) at line 787 of StaticTyping
+  requested from astVisitor.visitModule(_)up(_) at line 3206 of ast
+  requested from moduleNode.body(_).accept(_)from(_) at line 1476 of ast
+  requested from moduleNode.body(_).accept(_) at line 273 of ast
+  requested from thisDialect.astChecker(_) at line 1668 of StaticTyping
+[.]t362_importGenerics_test.grace[0]: Compilation error: Unexpected exception raised by AST checker for dialect 'StaticTyping'.
+ProgrammingError: Attempting to use an undefined generic type im.D.
+!FAIL t362_importGenerics_test.grace: compile error
+55/62 passed.
+2 tests compiled but produced the wrong output.
+5 tests did not compile but should have.

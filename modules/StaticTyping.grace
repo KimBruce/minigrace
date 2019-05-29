@@ -364,7 +364,7 @@ def astVisitor: ast.AstVisitor is public = object {
                     }
                     scope.variables.at(param.value)
                         put (anObjectType.fromDType (param.dtype)
-                                                with(emptyList))
+                                                with (emptyList))
                 }
             }
 
@@ -388,7 +388,7 @@ def astVisitor: ast.AstVisitor is public = object {
                                     ofType (anObjectType.number))
             } else {
                 def newType: ObjectType = 
-                    anObjectType.fromDType (param.dtype)
+                    anObjectType.fromDType (param.dtype) with (emptyList)
                 if (debug) then {
                     io.error.write "\n355: newType is {newType}"
                 }
@@ -1053,7 +1053,7 @@ def astVisitor: ast.AstVisitor is public = object {
 
     method visitTypeLiteral(node: share.TypeLiteral) → Boolean {
         cache.at (node) put
-            (anObjectType.fromDType(node)with(emptyList))
+            (anObjectType.fromDType (node) with (emptyList))
         false
     }
 
@@ -1411,7 +1411,7 @@ method updateTypeScope(typeDec : share.TypeDeclaration) → Done
     } else {
         io.error.write "\n1243: creating oType from {typeDec}"
         // DEBUG: Was definedByNode
-        oType := anObjectType.fromDType(typeDec.value) 
+        oType := anObjectType.fromDType (typeDec.value) 
                                         with (emptyList[[String]])
         scope.types.addToGlobalAt(typeDec.nameString) put(oType)
         io.error.write "\n1252: added to types: {oType}"
@@ -1719,7 +1719,7 @@ method addSetterMethodFor(defd: share.Def,
         def name': String = defd.nameString ++ ":=" 
         // (1)"  ?? is name right?
         def dType: ObjectType = 
-            anObjectType.fromDType(defd.dtype)with(emptyList)
+            anObjectType.fromDType (defd.dtype) with (emptyList)
         def param: Param = 
                 aParam.withName(defd.nameString) ofType (dType)
         def sig: List⟦MixPart⟧ =

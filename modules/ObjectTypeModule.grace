@@ -505,7 +505,7 @@ def aMethodType: MethodTypeFactory is public = object {
                 io.error.write "\n457: updating method: {self}"
                 //Construct the list of mixParts of the new MethodType
                 def newMixParts : List⟦MixPart⟧ = emptyList⟦MixPart⟧
-                def debug3 = true
+                def debug3 = false
                 for (signature) do { mPart : MixPart →
                     def newParams : List⟦Param⟧ = emptyList⟦Param⟧
                     for (mPart.parameters) do { param : Param →
@@ -572,7 +572,7 @@ def aMethodType: MethodTypeFactory is public = object {
                 def replacedNode : AstNode = replaceNode2(oType.getNode)
                                                               with(replacements)
                 // used to be definedByNode
-                return anObjectType.fromDType(replacedNode)
+                return anObjectType.fromDType(replacedNode)with(emptyList)
             }
 
             // DELETE: UNUSED
@@ -743,7 +743,7 @@ def aGenericType : GenericTypeFactory is public = object{
 
     //Create a GenericType from a typeDecNode
     method fromTypeDec(typeDec : AstNode) → GenericType {
-        def debug3: Boolean = true
+        def debug3: Boolean = false
         def name : String = typeDec.nameString
         if (debug3) then {
             io.error.write "\n661 typeDec is {name}"
@@ -753,7 +753,7 @@ def aGenericType : GenericTypeFactory is public = object{
         if (debug3) then {io.error.write "\n699: new typeParams: {typeParams}"}
 
         var oType : ObjectType := anObjectType.fromDType(typeDec.value)
-                                with (typeParams)
+                                      with (typeParams)
 
         def genType = fromName(name) parameters(typeParams) objectType(oType)
         io.error.write "\n691: Created {genType} from type dec {typeDec}"
@@ -1211,7 +1211,7 @@ def anObjectType: ObjectTypeFactory is public = object {
 
         //Process the AstNode to get its ObjectType
         method resolve -> ObjectType {
-            fromDType(node')with(typeParams)
+            fromDType (node') with (typeParams)
         }
 
         //an ObjectType is unresolved if it has yet to collect its methods and,
@@ -1294,7 +1294,7 @@ def anObjectType: ObjectTypeFactory is public = object {
             //io.error.write "\n771 node is {node}"
             if ((false != nd) && {nd.kind == "op"}) then {
                 // Both used to be definedByNode
-                def left : ObjectType = fromDType(nd.left) with (typeParams)
+                def left : ObjectType = fromDType (nd.left) with (typeParams)
                 def right : ObjectType = fromDType(nd.right) with (typeParams)
                 setOpNode(typeOp(nd.value, left, right))
             }
@@ -1370,9 +1370,10 @@ def anObjectType: ObjectTypeFactory is public = object {
     }
 
     // Deprecated
-    method fromDType(dtype : AstNode) → ObjectType {
-            ProgrammingError.raise("Wrong version of fromDType, line 1259 of ObjectTypeModule")
-    }
+//    method fromDType(dtype : AstNode) → ObjectType {
+//            io.error.write "\n1374: fromDType with {dtype}"
+//            ProgrammingError.raise("Wrong version of fromDType, line 1375 of ObjectTypeModule")
+//    }
 
     //takes an AstNode and returns its corresponding ObjectType
     method fromDType(dtype : AstNode) with (typeParams: List[[String]])
@@ -1549,7 +1550,7 @@ def anObjectType: ObjectTypeFactory is public = object {
     // Find ObjectType corresponding to the identifier in the scope. If not
     // already there, adds it to the scope.
     method fromIdentifier(ident : share.Identifier) with (typeParams) → ObjectType {
-        def debug3: Boolean = true
+        def debug3: Boolean = false
         if (debug3) then {
             io.error.write("\n1249 fromIdentifier - looking for {ident.value}"++
                                         " inside {scope.types}")

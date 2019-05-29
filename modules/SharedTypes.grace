@@ -233,7 +233,7 @@ type ObjectTypeFactory = {
     makeWithOp(op:String, left: ObjectType, right: ObjectType) -> ObjectType
     
     //takes an AstNode representing a type and returns its corresponding ObjectType
-    fromDType (dtype) → ObjectType
+    fromDType (dtype) with (lst) → ObjectType
     
     //Create an ObjectType from a GenericNode; the type used in the GenericNode
     //must have already been declared and put into the generics scope. The types

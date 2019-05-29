@@ -112,7 +112,7 @@ testSuiteNamed "visitMatchCase tests" with {
     def blk1Specific = blk1.value.value.at(2)
 
     //checks that the type of the var result is String
-    assert(ot.anObjectType.fromDType(blk1Specific.dtype))
+    assert(ot.anObjectType.fromDType(blk1Specific.dtype) with (emptyList)
         shouldBe (ot.anObjectType.string)
   }
 

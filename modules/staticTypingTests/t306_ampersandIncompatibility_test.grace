@@ -30,10 +30,10 @@ def typeNodeRetType     : ast.AstNode = nodes.at(2)
 def typeNodeParam       : ast.AstNode = nodes.at(3)
 def typeNodeParamType   : ast.AstNode = nodes.at(4)
 
-def Base        : sh.ObjectType = ot.anObjectType.fromDType(typeNodeBase.value)
-def RetType     : sh.ObjectType = ot.anObjectType.fromDType(typeNodeRetType.value)
-def Param       : sh.ObjectType = ot.anObjectType.fromDType(typeNodeParam.value)
-def ParamType   : sh.ObjectType = ot.anObjectType.fromDType(typeNodeParamType.value)
+def Base        : sh.ObjectType = ot.anObjectType.fromDType(typeNodeBase.value) with (emptyList)
+def RetType     : sh.ObjectType = ot.anObjectType.fromDType(typeNodeRetType.value) with (emptyList)
+def Param       : sh.ObjectType = ot.anObjectType.fromDType(typeNodeParam.value) with (emptyList)
+def ParamType   : sh.ObjectType = ot.anObjectType.fromDType(typeNodeParamType.value) with (emptyList)
 
 //  *****************************
 //  **   start of test suite   **

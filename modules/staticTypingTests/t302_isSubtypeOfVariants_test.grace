@@ -36,10 +36,10 @@ def typeB : ast.AstNode = nodes.at(2)
 def typeC : ast.AstNode = nodes.at(3)
 def typeD : ast.AstNode = nodes.at(4)
 
-def objTypeA : sh.ObjectType = ot.anObjectType.fromDType(typeA.value)
-def objTypeB : sh.ObjectType = ot.anObjectType.fromDType(typeB.value)
-def objTypeC : sh.ObjectType = ot.anObjectType.fromDType(typeC.value)
-def objTypeD : sh.ObjectType = ot.anObjectType.fromDType(typeD.value)
+def objTypeA : sh.ObjectType = ot.anObjectType.fromDType(typeA.value) with (emptyList)
+def objTypeB : sh.ObjectType = ot.anObjectType.fromDType(typeB.value) with (emptyList)
+def objTypeC : sh.ObjectType = ot.anObjectType.fromDType(typeC.value) with (emptyList)
+def objTypeD : sh.ObjectType = ot.anObjectType.fromDType(typeD.value) with (emptyList)
 
 //  *****************************
 //  **   start of test suite   **

@@ -94,7 +94,7 @@ method objectTypeFromBlockBody(body: Sequence⟦AstNode⟧) → ObjectType
 
 // check the type of node and insert into cache associated with the node
 method checkTypes (node: AstNode) → Done is confidential{
-    def debug3: Boolean = true
+    def debug3: Boolean = false
     if (debug3) then {
         io.error.write "\n233: checking types of {node.nameString}"
     }
@@ -576,7 +576,7 @@ def astVisitor: ast.AstVisitor is public = object {
 
     // type check method declaration
     method visitMethod (meth: AstNode) → Boolean {
-        def debug3: Boolean = true
+        def debug3: Boolean = false
         if (debug3) then {
             io.error.write "\n515: Visiting method {meth}\n"
         }
@@ -861,7 +861,7 @@ def astVisitor: ast.AstVisitor is public = object {
     // Type check an object.  Must get both public and 
     // confidential types
     method visitObject (obj :AstNode) → Boolean {
-        def debug3: Boolean = true
+        def debug3: Boolean = false
         // type check body of the method
         if (debug3) then {
             io.error.write "\n684 Ready to type check {obj}***"
@@ -889,7 +889,7 @@ def astVisitor: ast.AstVisitor is public = object {
     //Process dialects and import statements
     //TODO: handle dialects
     method visitModule (node: AstNode) → Boolean {  // added kim
-        def debug3: Boolean = true
+        def debug3: Boolean = false
         if (debug3) then {
            io.error.write "\n1698: visiting module {node}"
         }
@@ -919,14 +919,14 @@ def astVisitor: ast.AstVisitor is public = object {
         def withoutImport : AstNode = ast.moduleNode.body(bodyNodes)
                         named (node.nameString) scope (node.scope)
         if (debug3) then {
-            io.error.write "\n818st Types scope before "++
-                "collecting types is {scope.types}"
+            io.error.write ("\n818st Types scope before "++
+                "collecting types is {scope.types}")
         }
         // Collect types declared in module into scope
         collectTypes (list (withoutImport.body))
         if (debug3) then {
-            io.error.write "\n823st Types scope after "++
-                "collecting types is {scope.types}"
+            io.error.write ("\n823st Types scope after "++
+                "collecting types is {scope.types}")
         }
         // type check the remaining object (w/o import statements)
         visitObject (withoutImport)
@@ -934,7 +934,7 @@ def astVisitor: ast.AstVisitor is public = object {
 
     // array literals represent collections (sh'd fix to be lineups)
     method visitArray (lineUpLiteral) → Boolean {
-        def debug2: Boolean = true
+        def debug2: Boolean = false
         if (debug2) then {
             io.error.write "\n1704: visiting array {lineUpLiteral}"
         }
@@ -995,7 +995,7 @@ def astVisitor: ast.AstVisitor is public = object {
 
     // Type check type declaration
     method visitTypeDec(node: share.TypeDeclaration) → Boolean {
-        def debug3: Boolean = true
+        def debug3: Boolean = false
         if (debug3) then {
             io.error.write "\n875 visit type dec for {node}"
         }
@@ -1326,7 +1326,7 @@ def astVisitor: ast.AstVisitor is public = object {
     // Move processImport back into visitImport
     // TODO: Make this work
     method visitDialect2 (dlct: AstNode) → Boolean {
-        def debug2: Boolean = true
+        def debug2: Boolean = false
         if (debug2) then {
             io.error.write "\n1861: visiting dialect {dlct}"
         }
@@ -1432,7 +1432,7 @@ method updateMethScope(meth : AstNode) → MethodType is confidential {
 method processBody (body : List⟦AstNode⟧, 
         superclass: AstNode | false) → ObjectType is confidential {
             
-    def debug3: Boolean = true
+    def debug3: Boolean = false
     if (debug3) then {
         io.error.write "\n1958: superclass: {superclass}\n"
     }
@@ -1800,7 +1800,7 @@ def TypeDeclarationError = TypeError.refine "TypeDeclarationError"
 // so that they can reference one another declaratively.
 method collectTypes(nodes : Collection⟦AstNode⟧) → Done 
                                     is confidential {
-    def debug3 = true
+    def debug3 = false
     def names: List⟦String⟧ = list[]
 
     for(nodes) do { node →

@@ -29,7 +29,7 @@ def noSuchMethod: outer.Pattern = object {
 // containing these strings get cut off at the first
 // newline character, resulting in an unhelpful error
 // message.
-method stripNewLines(str) → String is confidential {
+method stripNewLines(str) → String {
     str.replace("\n")with(" ")
 }
 

@@ -498,7 +498,9 @@ def astVisitor: ast.AstVisitor is public = object {
         // expression being matched and its type
         def body = node.value
         var bodyType: ObjectType := objectTypeFromBlock(body)
-        io.error.write "\n440: body with {node} with type {bodyType}"
+        if (debug) then {
+           io.error.write "\n440: body with {node} with type {bodyType}"
+        }
         // Keep track of return types of try and catch blocks
         def returnTypesList: List⟦ObjectType⟧ =
                                     list⟦ObjectType⟧[bodyType]
@@ -611,13 +613,19 @@ def astVisitor: ast.AstVisitor is public = object {
         }
         scope.enter {
             var typeParams: List[[String]] := emptyList[[String]]
-            io.error.write 
-                "\n544st: meth.typeParams: {meth.typeParams}"
+            if (debug) then {
+                io.error.write 
+                    "\n544st: meth.typeParams: {meth.typeParams}"
+            }
             if (false != meth.typeParams) then {
-                io.error.write "\n546st: In has type params"
+                if (debug) then {
+                    io.error.write "\n546st: In has type params"
+                }
                 typeParams := ot.getTypeParams(meth.typeParams)
             }
-            io.error.write "\n547st: typeParams: {typeParams}"
+            if (debug) then {
+               io.error.write "\n547st: typeParams: {typeParams}"
+            }
 //            for (mType.typeParams) do { typeParamName : String →
 //                scope.types.at(typeParamName) 
 //                      put (anObjectType.base)
@@ -667,7 +675,9 @@ def astVisitor: ast.AstVisitor is public = object {
                     }
                 })
             }
-            io.error.write "\n594: Done checking body"
+            if (debug) then {
+                io.error.write "\n594: Done checking body"
+            }
             // If no body then the method must return type Done
             if(meth.body.size == 0) then {
                 if (anObjectType.doneType.isConsistentSubtypeOf 
@@ -684,8 +694,10 @@ def astVisitor: ast.AstVisitor is public = object {
                 def lastNode: AstNode = meth.body.last
                 if (share.Return.match(lastNode).not) then {
                     def lastType = typeOf(lastNode)
-                    io.error.write 
-                        "\n607st: type of lastNode is {lastType}"
+                    if (debug3) then {
+                       io.error.write 
+                          "\n607st: type of lastNode is {lastType}"
+                    }
                     if(lastType.isConsistentSubtypeOf 
                                             (returnType).not) then {
                         DialectError.raise(
@@ -940,19 +952,27 @@ def astVisitor: ast.AstVisitor is public = object {
         }
         var arrayType: ObjectType := anObjectType.base
         def lupSize: Number = lineUpLiteral.value.size
-        io.error.write "\n822: line up size is {lupSize}"
+        if (debug2) then {
+            io.error.write "\n822: line up size is {lupSize}"
+        }
         arrayType := anObjectType.bottom
         for (1..lupSize) do {index: Number ->
               def eltType: ObjectType = 
                 typeOf (lineUpLiteral.value.at (index))
-              io.error.write "\n825 eltType is {eltType}"
+              if (debug2) then {
+                  io.error.write "\n825 eltType is {eltType}"
+              }
               arrayType := arrayType | eltType
-              io.error.write "\nback to 828"
-              io.error.write "\n827 new arrayType: {arrayType}"
+              if (debug2) then {
+                  io.error.write "\nback to 828"
+                  io.error.write "\n827 new arrayType: {arrayType}"
+              }
         }
-        io.error.write "\n828: lineup holds elts of type {arrayType}"
         def newType: ObjectType = ot.collection.apply(list[arrayType])
-        io.error.write "\n829: New type is {newType}"
+        if (debug2) then {
+            io.error.write "\n828: lineup holds elts of type {arrayType}"
+            io.error.write "\n829: New type is {newType}"
+        }
         cache.at (lineUpLiteral) put (newType)
         false
     }
@@ -1272,7 +1292,7 @@ def astVisitor: ast.AstVisitor is public = object {
 
                     importMethods.add (
                         aMethodType.signature (list[mixPart]) returnType 
-                            (anObjectType.definedByNode(typeDec.value)))
+                            (anObjectType.fromDType(typeDec.value)with(emptyList)))
                 } else {
                     updateTypeScope(typeDec)
                 }
@@ -1346,10 +1366,10 @@ def astVisitor: ast.AstVisitor is public = object {
 
         for (dialectMethods) do {meth: MethodType ->
             scope.methods.at(meth.nameString) put(meth)
-            //if (debug) then {
-            io.error.write ("\n2421: Adding from dialect method :"++
+            if (debug) then {
+               io.error.write ("\n2421: Adding from dialect method :"++
                             "{meth.nameString}")
-            // }
+            }
         }
 
         false
@@ -1403,18 +1423,26 @@ method updateTypeScope(typeDec : share.TypeDeclaration) → Done
     // process accordingly
     var oType : ObjectType
     if(false ≠ typeDec.typeParams) then {
-        io.error.write "\n1243: creating genType from {typeDec}"
+        if (debug) then {
+            io.error.write "\n1243: creating genType from {typeDec}"
+        }
         def genType : GenericType = aGenericType.fromTypeDec(typeDec)
         // oType := genType.oType
         scope.generics.addToGlobalAt(typeDec.nameString) put (genType)
-        io.error.write "\n1246: added to generics: {genType}"
+        if (debug) then {
+            io.error.write "\n1246: added to generics: {genType}"
+        }
     } else {
-        io.error.write "\n1243: creating oType from {typeDec}"
+        if (debug) then {
+            io.error.write "\n1243: creating oType from {typeDec}"
+        }
         // DEBUG: Was definedByNode
         oType := anObjectType.fromDType (typeDec.value) 
                                         with (emptyList[[String]])
         scope.types.addToGlobalAt(typeDec.nameString) put(oType)
-        io.error.write "\n1252: added to types: {oType}"
+        if (debug) then {
+            io.error.write "\n1252: added to types: {oType}"
+        }
     }
 }
 

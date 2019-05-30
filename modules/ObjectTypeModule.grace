@@ -488,8 +488,10 @@ def aMethodType: MethodTypeFactory is public = object {
                             "{typeParams} with {replacementTypes}.")
                 }
                 //Create a mapping of GenericTypes-to-ObjectTypes
-                io.error.write "\n444: updating {self} with replacement "++
-                     "types: {replacementTypes}"
+                if (debug) then {
+                     io.error.write ("\n444: updating {self} with replacement "++
+                          "types: {replacementTypes}")
+                }
                 def replacements : Dictionary⟦String, AstNode⟧ =
                            makeDictionary(typeParams,replacementTypes)
                 updateTypeWith(replacements)
@@ -502,7 +504,9 @@ def aMethodType: MethodTypeFactory is public = object {
             // Note : Does not need 'replacements.size == typeParams.size'
             method updateTypeWith (replacements :
                               Dictionary⟦String, ObjectType⟧) → MethodType {
-                io.error.write "\n457: updating method: {self}"
+                if (debug) then {
+                     io.error.write "\n457: updating method: {self}"
+                }
                 //Construct the list of mixParts of the new MethodType
                 def newMixParts : List⟦MixPart⟧ = emptyList⟦MixPart⟧
                 def debug3 = false
@@ -621,14 +625,20 @@ def aMethodType: MethodTypeFactory is public = object {
         match(node) case{ meth :share.Method|share.Class|share.MethodSignature →
             //BREAK CASE OUT AS SEPARATE HELPER METHOD!!
             def signature: List⟦MixPart⟧ = list[]
-            io.error.write "\n575: create method from {node} with type vars:{typeParams}"
+            if (debug) then {
+               io.error.write "\n575: create method from {node} with type vars:{typeParams}"
+            }
             for (meth.signature) do { part:AstNode →
                 def params: List⟦Param⟧ = list[]
-                io.error.write "\n568 creating type for {part}"
+                if (debug) then {
+                     io.error.write "\n568 creating type for {part}"
+                }
 
                 // Collect parameters for each part
                 for (part.params) do { param: AstNode →
-                    io.error.write "\n571 creating type for {param}:{param.dtype}"
+                    if (debug) then {
+                        io.error.write "\n571 creating type for {param}:{param.dtype}"
+                    }
                     params.add (aParam.withName (param.value)
                         // used to be definedByNode
                         ofType (anObjectType.fromDType (param.dtype) with (typeParams)))
@@ -636,14 +646,18 @@ def aMethodType: MethodTypeFactory is public = object {
 
                 // Add this mixpart to signature list
                 signature.add (aMixPartWithName (part.name) parameters (params))
-                io.error.write "\n579 finished with {part}"
+                if (debug) then {
+                   io.error.write "\n579 finished with {part}"
+                }
             }
 
             // return type of the method or class
             def rType: AstNode = match (meth)
                 case { m : share.Method | share.Class → m.dtype}
                 case { m : share.MethodSignature → m.rtype}
-            io.error.write "\n587 creating returntype for {rType}"
+            if (debug) then {
+               io.error.write "\n587 creating returntype for {rType}"
+            }
 
             // Full method type
             // used to use definedByNode
@@ -657,8 +671,10 @@ def aMethodType: MethodTypeFactory is public = object {
     
             def mType : MethodType = signature (signature) with (newTypeParams)
                 returnType (anObjectType.fromDType (rType) with (typeParams))
-            io.error.write "\n588: created method type {mType}"
-            io.error.write "\n594: created method {mType} from {node}"
+            if (debug) then {
+               io.error.write "\n588: created method type {mType}"
+               io.error.write "\n594: created method {mType} from {node}"
+            }
             mType
 
         } case { defd : share.Def | share.Var →
@@ -672,7 +688,9 @@ def aMethodType: MethodTypeFactory is public = object {
                 anObjectType.fromDType (defd.dtype)  with (typeParams)
             }
             def methType = signature (signature) with (typeParams) returnType (dtype)
-            io.error.write "\n607 created method type {methType} from def or var {node}"
+            if (debug) then {
+               io.error.write "\n607 created method type {methType} from def or var {node}"
+            }
             methType
         } case { _ →
             Exception.raise "unrecognised method node" with(node)
@@ -756,7 +774,9 @@ def aGenericType : GenericTypeFactory is public = object{
                                       with (typeParams)
 
         def genType = fromName(name) parameters(typeParams) objectType(oType)
-        io.error.write "\n691: Created {genType} from type dec {typeDec}"
+        if (debug) then {
+           io.error.write "\n691: Created {genType} from type dec {typeDec}"
+        }
         genType
     }
 }
@@ -843,7 +863,9 @@ def anObjectType: ObjectTypeFactory is public = object {
         // replace type variables with object types using replacements
         method updateTypeWith(replacements: Dictionary[[String,ObjectType]])
                     -> ObjectType {
-            io.error.write "\n740 default updateType with {self}"
+            if (debug) then {
+               io.error.write "\n740 default updateType with {self}"
+            }
             self
         }    
     }
@@ -856,7 +878,9 @@ def anObjectType: ObjectTypeFactory is public = object {
         // don't update because it has a name
         method updateTypeWith(replacements:Dictionary[[String,ObjectType]])
                         -> ObjectType {
-            io.error.write "\n749 update type in fromMethods {name}"
+            if (debug) then {
+               io.error.write "\n749 update type in fromMethods {name}"
+            }
             self
         }
 
@@ -926,7 +950,9 @@ def anObjectType: ObjectTypeFactory is public = object {
                                                      → Answer {
                 def selfOtherPair : TypePair = typePair(self, other')
 
-                io.error.write "\n841: checking suptyping for {self} and {other'}"
+                if (debug) then {
+                   io.error.write "\n841: checking suptyping for {self} and {other'}"
+                }
 
                 //if trials already contains selfOtherPair, we can assume
                 //self <: other.  Check other trivial cases of subtyping
@@ -1087,11 +1113,15 @@ def anObjectType: ObjectTypeFactory is public = object {
             // update type of all methods using replacement for generic types.
             method updateTypeWith(replacements:Dictionary[[String,ObjectType]])
                         -> ObjectType {
-                io.error.write "\n966: update methods"
+                if (debug) then {
+                   io.error.write "\n966: update methods"
+                }
                 def newMeths: List[[MethodType]] = emptyList[[MethodType]]
                 for (methods) do {m: MethodType ->
                     newMeths.add(m.updateTypeWith(replacements))
-                    io.error.write "\n977: new version: {newMeths.at (newMeths.size)}"
+                    if (debug) then {
+                        io.error.write "\n977: new version: {newMeths.at (newMeths.size)}"
+                    }
                 }
                 fromMethods(newMeths)
             }
@@ -1175,7 +1205,9 @@ def anObjectType: ObjectTypeFactory is public = object {
         // with all of the generics replaced with their corresponding ObjectType
         method updateTypeWith(replacements:Dictionary[[String,ObjectType]])
                         -> ObjectType {
-            io.error.write "\n1047: update methods"
+            if (debug) then {
+               io.error.write "\n1047: update methods"
+            }
             makeWithOp(op', left.updateTypeWith(replacements),
                             right.updateTypeWith(replacements))
         }
@@ -1190,7 +1222,9 @@ def anObjectType: ObjectTypeFactory is public = object {
 
         var node : AstNode := node'
 
-        io.error.write "\n1065: Using definedByNode to create {self}"
+        if (debug) then {
+               io.error.write "\n1065: Using definedByNode to create {self}"
+        }
         // ObjectTypes that are defined by an opNode can store a TypeOp with
         // relevant information for type checking
 
@@ -1359,11 +1393,15 @@ def anObjectType: ObjectTypeFactory is public = object {
 
         method updateTypeWith(replacements:Dictionary[[String,ObjectType]])
                                 -> ObjectType {
-            io.error.write "\n1240: update methods in definedByNode"
+            if (debug) then {
+               io.error.write "\n1240: update methods in definedByNode"
+            }
             def newMeths: List[[MethodType]] = emptyList[[MethodType]]
             for (methods) do {m: MethodType ->
                 newMeths.add(m.updateTypeWith(replacements))
-                io.error.write "\n1244: new version: {newMeths.at (newMeths.size)}"
+                if (debug) then {
+                   io.error.write "\n1244: new version: {newMeths.at (newMeths.size)}"
+                }
             }
             fromMethods(newMeths)
         }
@@ -1378,7 +1416,9 @@ def anObjectType: ObjectTypeFactory is public = object {
     //takes an AstNode and returns its corresponding ObjectType
     method fromDType(dtype : AstNode) with (typeParams: List[[String]])
                                 → ObjectType {
-        io.error.write "\n1245: starting fromDType with {dtype} and {typeParams}"
+        if (debug) then {
+           io.error.write "\n1245: starting fromDType with {dtype} and {typeParams}"
+        }
 
         // the type value corresponding to dtype
         var returnValue: ObjectType
@@ -1390,18 +1430,26 @@ def anObjectType: ObjectTypeFactory is public = object {
                                                             "types or objects")
 
         } case { typeLiteral : share.TypeLiteral →
-            io.error.write "\n1255: case TypeLiteral: {typeLiteral}"
+            if (debug) then {
+               io.error.write "\n1255: case TypeLiteral: {typeLiteral}"
+            }
             def meths : Set⟦MethodType⟧ = emptySet
             //collect MethodTypes
             for(typeLiteral.methods) do { mType : AstNode →
-                io.error.write "\n1259 about to add {mType}"
+                if (debug) then {
+                   io.error.write "\n1259 about to add {mType}"
+                }
                 meths.add(aMethodType.fromNode(mType) with (typeParams))
-                io.error.write "\n1261 finished adding"
+                if (debug) then {
+                   io.error.write "\n1261 finished adding"
+                }
             }
             returnValue := anObjectType.fromMethods(meths)
 
         } case { op: share.Operator →
-            io.error.write "\n1264: case operator {op}"
+            if (debug) then {
+               io.error.write "\n1264: case operator {op}"
+            }
             // Operator takes care of type expressions: Ex. A & B, A | C
             // What type of operator (& or |)?
             var opValue: String := op.value
@@ -1420,7 +1468,9 @@ def anObjectType: ObjectTypeFactory is public = object {
                     ++ " {rightType}")
               }
               returnValue := leftType & rightType
-              io.error.write"\n1206:returnValue for\n {left} &\n {right} is\n {returnValue}"
+              if (debug) then {
+                 io.error.write"\n1206:returnValue for\n {left} &\n {right} is\n {returnValue}"
+              }
             } case { "|" →
               returnValue := leftType | rightType
             } case { _ →
@@ -1429,25 +1479,37 @@ def anObjectType: ObjectTypeFactory is public = object {
             }
 
         } case { ident : share.Identifier →
-            io.error.write "\n1292: case {ident}"
+            if (debug) then {
+               io.error.write "\n1292: case {ident}"
+            }
             if (typeParams.contains(ident.value)) then {
-                io.error.write "\n1269: Creating typeVble for {ident}"
+                if (debug) then {
+                   io.error.write "\n1269: Creating typeVble for {ident}"
+                }
                 returnValue := typeVble(ident.value)
             } else {
                 //look for identifier in the scope.
-                io.error.write "\n1320: not found {ident.value} in parameters: {typeParams}"
+                if (debug) then {
+                   io.error.write "\n1320: not found {ident.value} in parameters: {typeParams}"
+                }
                 returnValue := fromIdentifier(ident) with (typeParams)
             }
-            io.error.write "\n1276: returnValue: {returnValue}"
+            if (debug) then {
+               io.error.write "\n1276: returnValue: {returnValue}"
+            }
 
         } case { generic : share.Generic →
-            io.error.write "\n1303: case generic {generic}"
+            if (debug) then {
+               io.error.write "\n1303: case generic {generic}"
+            }
             //get the objecttype from instantiating the generic type and
             //add it to the types scope.
             returnValue := fromGeneric(generic)
 
         } case { member : share.Member →
-            io.error.write "\n1309: case member {member}"
+            if (debug) then {
+               io.error.write "\n1309: case member {member}"
+            }
             //name of the receiver
             var recName : String := member.receiver.toGrace(0)
             var memberCall : String := "{recName}.{member.value}"
@@ -1489,7 +1551,9 @@ def anObjectType: ObjectTypeFactory is public = object {
             ProgrammingError.raise "No case for node of kind {dtype.kind}"
                                                                     with(dtype)
         }
-        io.error.write "\n1351: returning fromDType with {returnValue}"
+        if (debug) then {
+           io.error.write "\n1351: returning fromDType with {returnValue}"
+        }
 
         returnValue
     }
@@ -1528,12 +1592,16 @@ def anObjectType: ObjectTypeFactory is public = object {
             }
 
             //Replace the typeParameters with replacementTypes
-            io.error.write "\n1414: node.args: {node.args}"
+            if (debug) then {
+               io.error.write "\n1414: node.args: {node.args}"
+            }
             def argsAsTypes: List[[ObjectType]] = emptyList[[ObjectType]]
             for (node.args) do {arg ->
                 argsAsTypes.add(fromDType(arg) with (emptyList[[String]]))
             }
-            io.error.write "\n1419: argsAsTypes: {argsAsTypes}"
+            if (debug) then {
+               io.error.write "\n1419: argsAsTypes: {argsAsTypes}"
+            }
             def instantiated : ObjectType = genType.apply(argsAsTypes)
 
             //Update the types scope and return
@@ -1558,15 +1626,21 @@ def anObjectType: ObjectTypeFactory is public = object {
         //check if identifier is generic, and if so, turn it into a
         //generic node and recurse so the generic case can handle it.
         if(ident.generics ≠ false) then {
-            io.error.write "\n1429: generic node {ident}"
+            if (debug) then {
+               io.error.write "\n1429: generic node {ident}"
+            }
             def ans: ObjectType = fromDType(ast.genericNode.new(ident, ident.generics))
                 with (typeParams)
-            io.error.write "\n1433: generic node reduced to {ans}"
+            if (debug) then {
+               io.error.write "\n1433: generic node reduced to {ans}"
+            }
             return ans
         }
 
         // DEBUG:  raise an exception if fails!
-        io.error.write "\n1445: about to look up {ident}"
+        if (debug) then {
+           io.error.write "\n1445: about to look up {ident}"
+        }
         def ans: ObjectType = scope.types.find(ident.value) butIfMissing {base}
         //io.error.write "\n1285: Found {ans} when looking up {ident.value}"
         ans
@@ -1581,12 +1655,16 @@ def anObjectType: ObjectTypeFactory is public = object {
             return (self == other') || {other'.isDynamic} || {other' == doneType} || (other' == base)
         }
         method updateTypeWith(replacements: Dictionary[[String,ObjectType]]) -> ObjectType {
-            io.error.write "\n1411"
+            if (debug) then {
+               io.error.write "\n1411"
+            }
             if(!replacements.containsKey(name)) then {
                 ProgrammingError.raise("the type variable {name} " ++
                             "was not found with matching type") 
             }
-            io.error.write "\n1409: Substituting {name} -> {replacements.at (name)} in typeVble"
+            if (debug) then {
+               io.error.write "\n1409: Substituting {name} -> {replacements.at (name)} in typeVble"
+            }
             replacements.at (name)
         }
 
@@ -2172,4 +2250,4 @@ method makeDictionary⟦K,V⟧(keys: List⟦K⟧, vals: List⟦V⟧) → Diction
         dict.at (keys.at (index)) put (vals.at (index))
     }
     dict
-}
+}                             

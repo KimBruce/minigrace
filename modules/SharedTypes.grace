@@ -219,9 +219,6 @@ type ObjectTypeFromOp = ObjectType & interface {
 
 // methods to create an object type from various inputs
 type ObjectTypeFactory = {
-
-    // Create an ObjectType from a node in AST
-    definedByNode (node : AstNode) → ObjectTypeFromMeths
     
     // Create an ObjectType from a collection of method signatures
     fromMethods (methods' : Set⟦MethodType⟧) → ObjectTypeFromMeths
@@ -242,7 +239,7 @@ type ObjectTypeFactory = {
     
     //Find ObjectType corresponding to the identifier in the scope. If not
     //already there, adds it to the scope.
-    fromIdentifier(ident : Identifier) → ObjectType
+    fromIdentifier(ident : Identifier) with (lst) → ObjectType
     
     // ObjectType corresponding to a type variable (e.g. from generic type)
     typeVble(name': String) -> ObjectType

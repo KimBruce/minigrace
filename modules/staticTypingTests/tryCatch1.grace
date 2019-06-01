@@ -112,19 +112,16 @@ method tryReturnExceptionalFinallyReturns -> Number | String {
     }
 }
 
-
-print "tryOK = {tryOK}"
-print "tryExceptional = {tryExceptional}"
-print "tryReturnOK = {tryReturnOK}"
-print "tryReturnExceptional = {tryReturnExceptional}"
-
-print "tryOKFinally = {tryOKFinally}"
-//print "tryExceptionalFinally = {tryExceptionalFinally}"
-tryExceptionalFinally
-print "tryReturnOKFinally = {tryReturnOKFinally}"
-//print "tryReturnExceptionalFinally = {tryReturnExceptionalFinally}"
-tryReturnExceptionalFinally
-print "tryOKFinallyReturns = {tryOKFinallyReturns}"
+// print "tryOK = {tryOK}"
+// print "tryExceptional = {tryExceptional}"
+// print "tryReturnOK = {tryReturnOK}"
+// print "tryReturnExceptional = {tryReturnExceptional}"
+// print "tryOKFinally = {tryOKFinally}"
+// print "tryExceptionalFinally = {tryExceptionalFinally}"
+// print "tryReturnOKFinally = {tryReturnOKFinally}"
+// print "tryReturnExceptionalFinally = {tryReturnExceptionalFinally}"
+// print "tryOKFinallyReturns = {tryOKFinallyReturns}"
+// print "tryExceptionalFinallyReturns = {tryExceptionalFinallyReturns}"
+// print "tryReturnOKFinallyReturns = {tryReturnOKFinallyReturns}"
+// print "tryReturnExceptionalFinallyReturns = {tryReturnExceptionalFinallyReturns}"
 print "tryExceptionalFinallyReturns = {tryExceptionalFinallyReturns}"
-print "tryReturnOKFinallyReturns = {tryReturnOKFinallyReturns}"
-print "tryReturnExceptionalFinallyReturns = {tryReturnExceptionalFinallyReturns}"

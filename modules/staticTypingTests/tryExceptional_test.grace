@@ -8,3 +8,5 @@ method tryExceptional -> String | Done {
         print (4)
     }
 }
+
+print (tryExceptional)

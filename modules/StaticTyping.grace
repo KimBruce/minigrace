@@ -1015,7 +1015,7 @@ def astVisitor: ast.AstVisitor is public = object {
 
     // Type check type declaration
     method visitTypeDec(node: share.TypeDeclaration) → Boolean {
-        def debug3: Boolean = false
+        def debug3: Boolean = true
         if (debug3) then {
             io.error.write "\n875 visit type dec for {node}"
         }
@@ -1029,6 +1029,10 @@ def astVisitor: ast.AstVisitor is public = object {
             //get the type of the right-hand side of the equals sign
             def vType : ObjectType = 
                 anObjectType.fromDType (node.value) with (emptyList)
+            if (debug3) then {
+               io.error.write "\n875 type is {vType}"
+            }
+
             cache.at(node) put (vType)
         }
         false
@@ -1154,6 +1158,8 @@ def astVisitor: ast.AstVisitor is public = object {
 
     // type check both def and var declarations
     method visitDefDec (defd: AstNode) → Boolean {
+        def debug2: Boolean = true
+        def name: String = defd.nameString
         if (defd.decType.value=="Unknown") then {
             // raise error if no type given in declaration
             var typ: String := 
@@ -1165,8 +1171,8 @@ def astVisitor: ast.AstVisitor is public = object {
         // Declared type of feature
         var defType: ObjectType := 
             anObjectType.fromDType (defd.dtype) with (emptyList)
-        if (debug) then {
-            io.error.write "\n1820: defType is {defType}"
+        if (debug2) then {
+            io.error.write "\n1170: defType for {name} is {defType}"
         }
         // initial value
         def value = defd.value
@@ -1174,6 +1180,9 @@ def astVisitor: ast.AstVisitor is public = object {
         // with declared type
         if(false ≠ value) then {  // initial value provided
             def vType: ObjectType = typeOf(value)
+            if (debug2) then {
+               io.error.write "\n1179: vType for {name} is {vType}"
+            }
             // infer type based on initial value if definition 
             // given w/out type
             if(defType.isDynamic && (defd.kind == "defdec")) then {
@@ -1188,7 +1197,6 @@ def astVisitor: ast.AstVisitor is public = object {
             }
         }
 
-        def name: String = defd.nameString
         scope.variables.at(name) put(defType)
         // If field is readable and/or writable, add public methods
         //  for getting and setting
@@ -1421,6 +1429,7 @@ method updateTypeScope(typeDec : share.TypeDeclaration) → Done
                                             is confidential {
     //check whether the typeDec is a GenericType and 
     // process accordingly
+    def debug3 = true
     var oType : ObjectType
     if(false ≠ typeDec.typeParams) then {
         if (debug) then {
@@ -1433,14 +1442,14 @@ method updateTypeScope(typeDec : share.TypeDeclaration) → Done
             io.error.write "\n1246: added to generics: {genType}"
         }
     } else {
-        if (debug) then {
+        if (debug3) then {
             io.error.write "\n1243: creating oType from {typeDec}"
         }
         // DEBUG: Was definedByNode
         oType := anObjectType.fromDType (typeDec.value) 
                                         with (emptyList[[String]])
         scope.types.addToGlobalAt(typeDec.nameString) put(oType)
-        if (debug) then {
+        if (debug3) then {
             io.error.write "\n1252: added to types: {oType}"
         }
     }
@@ -1828,7 +1837,7 @@ def TypeDeclarationError = TypeError.refine "TypeDeclarationError"
 // so that they can reference one another declaratively.
 method collectTypes(nodes : Collection⟦AstNode⟧) → Done 
                                     is confidential {
-    def debug3 = false
+    def debug3 = true
     def names: List⟦String⟧ = list[]
 
     for(nodes) do { node →

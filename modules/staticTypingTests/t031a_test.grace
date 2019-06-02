@@ -28,5 +28,5 @@ object {
             inherit a.new "in inherit"
             s := s ++ " in body of constructor"
 }
+
 print(s)
-print "should be object a (in inherit) in body of constructor"

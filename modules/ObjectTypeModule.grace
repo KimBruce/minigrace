@@ -811,6 +811,9 @@ def anObjectType: ObjectTypeFactory is public = object {
         // Does this type represent the dynamic or unknown type
         method isDynamic -> Boolean {false}
 
+        // Does this type represent the dynamic or unknown type
+        method isPlaceholder -> Boolean {false}
+
         // Create new object type from self and other using op
         method withOp(op: String, other: ObjectType) -> ObjectTypeFromOp {
             if (debug) then {
@@ -872,6 +875,11 @@ def anObjectType: ObjectTypeFactory is public = object {
         }    
     }
 
+    def placeholder: ObjectType is public = object{
+       inherit superObjectType
+       method isPlaceholder -> Boolean {true}
+    }
+
     // Create an ObjectType from a collection of method signatures and a name
     class fromMethods (methods' : Set⟦MethodType⟧) withName (name : String)
                                                 → ObjectType {
@@ -929,12 +937,15 @@ def anObjectType: ObjectTypeFactory is public = object {
             // Keeps track of pairs already considered (co-induction)
             method isSimpleSubtypeOf(trials: List⟦TypePair⟧,
                                                   other:ObjectType) → Answer {
+                def debug3 = true
                 //for each method in other, check that there is a corresponding
                 //method in self
                 for (other.methods) doWithContinue { otherMeth: MethodType, continue →
                     for (self.methods) do {selfMeth: MethodType →
+                        if (debug3) then {print "\n945 selfMeth: {selfMeth}"}
                         def isSpec: Answer =
                               selfMeth.isSpecialisationOf(trials, otherMeth)
+                        if (debug3) then {print "\n947 isSpec: {isSpec}"}
                         if (isSpec.ans) then { continue.apply }
                     }
                     //fails to find corresponding method
@@ -1625,7 +1636,7 @@ def anObjectType: ObjectTypeFactory is public = object {
     // Find ObjectType corresponding to the identifier in the scope. If not
     // already there, adds it to the scope.
     method fromIdentifier(ident : share.Identifier) with (typeParams) → ObjectType {
-        def debug3: Boolean = false
+        def debug3: Boolean = true
         if (debug3) then {
             io.error.write("\n1249 fromIdentifier - looking for {ident.value}"++
                                         " inside {scope.types}")
@@ -1645,7 +1656,7 @@ def anObjectType: ObjectTypeFactory is public = object {
         }
 
         // DEBUG:  raise an exception if fails!
-        if (debug) then {
+        if (debug3) then {
            io.error.write "\n1445: about to look up {ident}"
         }
         def ans: ObjectType = scope.types.find(ident.value) butIfMissing {base}

@@ -1446,9 +1446,11 @@ method updateTypeScope(typeDec : share.TypeDeclaration) → Done
             io.error.write "\n1243: creating oType from {typeDec}"
         }
         // DEBUG: Was definedByNode
+        def typeName: String = typeDec.nameString
+        //scope.types.addToGlobalAt(typeName) put (ot.anObjectType.placeholder)
         oType := anObjectType.fromDType (typeDec.value) 
                                         with (emptyList[[String]])
-        scope.types.addToGlobalAt(typeDec.nameString) put(oType)
+        scope.types.addToGlobalAt(typeName) put(oType)
         if (debug3) then {
             io.error.write "\n1252: added to types: {oType}"
         }

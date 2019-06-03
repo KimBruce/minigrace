@@ -180,6 +180,9 @@ type ObjectType = {
 
     // Does this type represent the dynamic or unknown type
     isDynamic → Boolean
+
+    // Is this just a placeholder for real type?
+    isPlaceholder -> Boolean
     
     == (other:ObjectType) → Boolean
 

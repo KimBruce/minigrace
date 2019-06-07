@@ -838,7 +838,7 @@ def astVisitor: ast.AstVisitor is public = object {
     method getResultType (req: AstNode, rec: AstNode, 
             rType: ObjectType, name: String,
             completeCall: String) -> ObjectType is confidential {
-    // look for method name in type of receiver
+       // look for method name in type of receiver
        match(rType.getMethod(name))
          case { (ot.noSuchMethod) →
              if (debug) then {

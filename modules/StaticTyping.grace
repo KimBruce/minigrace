@@ -29,8 +29,7 @@ type Param = share.Param
 type Parameter = share.Parameter
 
 // Error resulting from type checking
-def DialectError: Exception is public = 
-        prelude.Exception.refine "DialectError"
+def StaticTypingError: Exception = share.StaticTypingError
 
 // imported constants relating to cacheing type info
 def cache: Dictionary = sc.cache
@@ -45,8 +44,6 @@ def aParam: Param = ot.aParam
 
 // debugging prints will print if debug is true
 def debug: Boolean = false
-
-//def CheckerFailure is public = Exception.refine "CheckerFailure"
 
 // return the return type of the block (as declared)
 method objectTypeFromBlock(block: AstNode) → ObjectType 
@@ -69,7 +66,7 @@ method objectTypeFromBlock(block: AstNode) → ObjectType
 
     match(apply) case { (ot.noSuchMethod) →
         def strip = {x → x.nameString}
-        DialectError.raise ("1000: the expression " ++
+        StaticTypingError.raise ("1000: the expression " ++
             "`{share.stripNewLines(block.toGrace(0))}` " ++ 
             "of type '{bType}' on line {block.line} does "++
             "not satisfy the type 'Block'")with(block)
@@ -110,7 +107,7 @@ method checkTypes (node: AstNode) → Done is confidential{
 method typeOf (node: AstNode) → ObjectType {
     checkTypes (node)
     cache.at (node) ifAbsent {
-        DialectError.raise(
+        StaticTypingError.raise(
             "cannot type non-expression {node} on line " ++
             "{node.line}") with (node)
     }
@@ -120,7 +117,7 @@ method typeOf (node: AstNode) → ObjectType {
 method inheritableTypeOf (node: AstNode) → ObjectType 
                                         is confidential {
     allCache.at (node) ifAbsent {
-        DialectError.raise("cannot find confidential type of " ++
+        StaticTypingError.raise("cannot find confidential type of " ++
                         "{node} on line {node.line}") with (node)
     }
 }
@@ -187,7 +184,7 @@ method check (req : share.Request) against(meth' : MethodType)
 
             // Make sure types of args are subtypes of parameter types
             if (aType.isConsistentSubtypeOf (pType).not) then {
-                DialectError.raise("the expression " ++
+                StaticTypingError.raise("the expression " ++
                     "`{share.stripNewLines(arg.toGrace(0))}` of type "++
                     "'{aType}' on  line {args.at(1).line} does " ++
                     "not satisfy the type of parameter '{param}' " ++
@@ -199,7 +196,7 @@ method check (req : share.Request) against(meth' : MethodType)
 }
 
 // If number of parameters and args differ, 
-// throw a DialectError exception
+// throw a StaticTypingError exception
 method checkParamArgsLengthSame(req, sigPart, params, args) -> Done
                             is confidential {
         def pSize: Number = params.size
@@ -218,7 +215,7 @@ method checkParamArgsLengthSame(req, sigPart, params, args) -> Done
                 req.value
             }
 
-            DialectError.raise(
+            StaticTypingError.raise(
                 "too {which} arguments to method part " ++
                 "'{sigPart.name}' on line {req.line}, " ++
                 "expected {pSize} but got {aSize}") with (where)
@@ -236,7 +233,7 @@ method check (node: AstNode) matches (eType : ObjectType)
         inMethod (name : String) → Done is confidential {
     def aType: ObjectType = typeOf(node)
     if (aType.isConsistentSubtypeOf (eType).not) then {
-        DialectError.raise("the method '{name}' on line {node.line} "++
+        StaticTypingError.raise("the method '{name}' on line {node.line} "++
             "declares a result of type '{eType}', but returns an " ++
             "expression of type '{aType}'") with (node)
     }
@@ -301,7 +298,7 @@ def astVisitor: ast.AstVisitor is public = object {
         // make sure condition is compatible with Boolean
         if (typeOf (cond).isConsistentSubtypeOf 
                             (anObjectType.boolean).not) then {
-            DialectError.raise ("1366: the expression "++
+            StaticTypingError.raise ("1366: the expression "++
                 "`{share.stripNewLines (cond.toGrace (0))}` on " ++
                 "line {cond.line} does not satisfy the type "++
                 "'Boolean' for an 'if' condition'") with (cond)
@@ -343,7 +340,7 @@ def astVisitor: ast.AstVisitor is public = object {
         for (block.params) do {p→
             if (((p.kind == "identifier") || {p.wildcard.not})
                             && {p.decType.value == "Unknown"}) then {
-                DialectError.raise("no type given to declaration of"++
+                StaticTypingError.raise("no type given to declaration of"++
                     " parameter '{p.value}' on line {p.line}") with (p)
             }
         }
@@ -427,7 +424,7 @@ def astVisitor: ast.AstVisitor is public = object {
         for (node.cases) do {block →
 
             if(block.isMatchingBlock.not) then{
-              DialectError.raise("1518: The case you are " ++
+              StaticTypingError.raise("1518: The case you are " ++
                 "matching to, {share.stripNewLines(block.toGrace(0))} " ++
                 "on line {block.line}, has more than one " ++
                 "argument on the left side. This is not currently "++
@@ -474,7 +471,7 @@ def astVisitor: ast.AstVisitor is public = object {
 
         // If matchee not covered by cases then raise a type error
         if (matcheeType.isSubtypeOf(paramType).not) then {
-            DialectError.raise("1519: the matchee " ++
+            StaticTypingError.raise("1519: the matchee " ++
                 "`{share.stripNewLines(matchee.toGrace(0))}` of type "++
                 "{matcheeType} on line {matchee.line} does not " ++
                 "match the type(s) {paramTypesList} of the case(s)") 
@@ -510,7 +507,7 @@ def astVisitor: ast.AstVisitor is public = object {
         for (node.cases) do {block →
 
             if(block.isMatchingBlock.not) then{
-              DialectError.raise("1518: The exception block you " ++
+              StaticTypingError.raise("1518: The exception block you " ++
                 "are matching to, {share.stripNewLines(block.toGrace(0))}" ++
                 " on line {block.line}, has more than one parameter." ++
                 "This is not allowed.") with (block)
@@ -588,14 +585,14 @@ def astVisitor: ast.AstVisitor is public = object {
             for (s.params) do {p: AstNode →
                 if (((p.kind == "identifier") && {p.wildcard.not})
                             && {p.decType.value=="Unknown"}) then {
-                    DialectError.raise("no type given to declaration" ++
+                    StaticTypingError.raise("no type given to declaration" ++
                         " of parameter '{p.value}' on line {p.line}")
                                     with (p)
                 }
             }
         }
         if (meth.decType.value=="Unknown") then {
-            DialectError.raise(
+            StaticTypingError.raise(
                 "no return type given to declaration of method"++
                 " '{meth.value.value}' on line {meth.line}") 
                                 with (meth.value)
@@ -682,7 +679,7 @@ def astVisitor: ast.AstVisitor is public = object {
             if(meth.body.size == 0) then {
                 if (anObjectType.doneType.isConsistentSubtypeOf 
                                         (returnType).not) then {
-                    DialectError.raise(
+                    StaticTypingError.raise(
                         "the method '{name}' on line {meth.line} " ++
                         "declares a result of type '{returnType}'," ++
                         " but has no body") with (meth)
@@ -700,7 +697,7 @@ def astVisitor: ast.AstVisitor is public = object {
                     }
                     if(lastType.isConsistentSubtypeOf 
                                             (returnType).not) then {
-                        DialectError.raise(
+                        StaticTypingError.raise(
                             "the method '{name}' on line " ++
                             "{meth.line} declares a result of " ++
                             "type '{returnType}', but returns " ++
@@ -808,7 +805,7 @@ def astVisitor: ast.AstVisitor is public = object {
                 io.error.write "\n1675: looking for type of self"
             }
             scope.variables.find("$elf") butIfMissing {
-                DialectError.raise "type of self missing" with(rec)
+                StaticTypingError.raise "type of self missing" with(rec)
             }
         } elseif {rec.nameString == "module()object"} then {
             // item from prelude
@@ -816,7 +813,7 @@ def astVisitor: ast.AstVisitor is public = object {
                 io.error.write "\n602: looking for type of module"
             }
             scope.variables.findFromLeastRecent("$elf") butIfMissing {
-                DialectError.raise "type of self missing" with(rec)
+                StaticTypingError.raise "type of self missing" with(rec)
             }
         } elseif {rec.kind == "outer"} then {
             if (debug) then {
@@ -826,7 +823,7 @@ def astVisitor: ast.AstVisitor is public = object {
             def outerMethodType: MethodType =
                 scope.methods.findOuter (rec.numberOfLevels) 
                     butIfMissing {
-                        DialectError.raise "type of outer missing" 
+                        StaticTypingError.raise "type of outer missing" 
                             with(rec)
             }
             outerMethodType.retType
@@ -850,14 +847,12 @@ def astVisitor: ast.AstVisitor is public = object {
                 io.error.write 
                     "\n2002: method scope here is {scope.methods}"
              }
-             scope.types.find(completeCall) butIfMissing {
-                 DialectError.raise(
-                     "no such method or type '{req.canonicalName}' in " ++
-                     "`{share.stripNewLines(rec.toGrace(0))}` of type\n" ++
-                     "    '{rType}' \nin type \n  '{rType.methods}'" ++
-                     " used on line {rec.line}")
-                         with(req)
-             }
+             StaticTypingError.raise(
+                 "no such method or type '{req.canonicalName}' in " ++
+                 "`{share.stripNewLines(rec.toGrace(0))}` of type\n" ++
+                 "    '{rType}' \nin type \n  '{rType.methods}'" ++
+                 " used on line {rec.line}")
+                     with(req)
        } case { meth : MethodType →
              // found the method, make sure arguments match 
              // parameter types
@@ -1118,7 +1113,7 @@ def astVisitor: ast.AstVisitor is public = object {
                 // look up type of the method in the receiver
                 match(rType.getMethod(nm))
                   case { (ot.noSuchMethod) →
-                    DialectError.raise("no such method '{nm}' in " ++
+                    StaticTypingError.raise("no such method '{nm}' in " ++
                         "`{share.stripNewLines(rec.toGrace(0))}` of "++
                         " type '{rType}' on line {bind.line}") 
                                                     with (bind)
@@ -1142,7 +1137,7 @@ def astVisitor: ast.AstVisitor is public = object {
 
             // make sure value consistent with destination
             if(vType.isConsistentSubtypeOf(dType).not) then {
-                DialectError.raise("the expression " ++
+                StaticTypingError.raise("the expression " ++
                     "`{share.stripNewLines(value.toGrace(0))}` of "++
                     " type '{vType}' online {value.line} does " ++
                     "not satisfy the type '{dType}' " ++
@@ -1164,7 +1159,7 @@ def astVisitor: ast.AstVisitor is public = object {
             // raise error if no type given in declaration
             var typ: String := 
                 if (share.Var.match(defd)) then {"var"} else {"def"}
-            DialectError.raise("no type given to declaration" ++ 
+            StaticTypingError.raise("no type given to declaration" ++ 
                " of {typ} '{defd.name.value}' on line {defd.line}")
                                                     with (defd.name)
         }
@@ -1189,7 +1184,7 @@ def astVisitor: ast.AstVisitor is public = object {
                 defType := vType
             } elseif {vType.isConsistentSubtypeOf(defType).not} then {
                 // initial value not consistent with declared type
-                DialectError.raise(
+                StaticTypingError.raise(
                     "the expression `{share.stripNewLines(value.toGrace(0))}`" ++
                     " of type '{vType}'  on line {value.line} does " ++
                     "not have type {defd.kind} annotation '{defType}'") 
@@ -1447,7 +1442,6 @@ method updateTypeScope(typeDec : share.TypeDeclaration) → Done
         }
         // DEBUG: Was definedByNode
         def typeName: String = typeDec.nameString
-        //scope.types.addToGlobalAt(typeName) put (ot.anObjectType.placeholder)
         oType := anObjectType.fromDType (typeDec.value) 
                                         with (emptyList[[String]])
         scope.types.addToGlobalAt(typeName) put(oType)
@@ -1688,7 +1682,7 @@ method processBody (body : List⟦AstNode⟧,
                 def mType: MethodType = aMethodType.fromNode(defd)
                                          with (emptyList[[String]])
                 if (allMethods.contains(mType)) then {
-                    DialectError.raise ("A var or def {mType} "
+                    StaticTypingError.raise ("A var or def {mType} "
                         ++ "on line {defd.line} may not override "++
                         "an existing method from the superclass}")
                                                 with (mType)
@@ -1819,7 +1813,7 @@ method checkOverride(mType: MethodType, allMethods: Set⟦MethodType⟧,
     }
     if (mType.isSpecialisationOf 
             (emptyList⟦TypePair⟧, oldMethType).ans.not) then {
-        DialectError.raise ("Type of overriding method {mType} "
+        StaticTypingError.raise ("Type of overriding method {mType} "
             ++ "on line {meth.line} is not a specialization of " 
             ++ "existing method {oldMethType}") with (meth)
     }
@@ -1840,31 +1834,40 @@ def TypeDeclarationError = TypeError.refine "TypeDeclarationError"
 method collectTypes(nodes : Collection⟦AstNode⟧) → Done 
                                     is confidential {
     def debug3 = true
-    def names: List⟦String⟧ = list[]
+    def typeDecs: List[[share.typeDecNode]] = list[]
 
-    for(nodes) do { node →
+    // Collect all type declarations into typeDecs and insert their
+    // left-hand side into scope with placholders
+    for(nodes) do { node -> 
         if(node.kind == "typedec") then {
             if (debug3) then {
                 io.error.write"\n1576: matched as typeDec {node}"
             }
 
-            if(names.contains(node.nameString)) then {
-                DialectError.raise(
+            if(typeDecs.contains(node)) then {
+                StaticTypingError.raise(
                     "The type {node.nameString} on line " ++
                     "{node.line} uses the same name as another "++
                     "type in the same scope") with (node)
             }
 
-            names.push(node.nameString)
-            // put types and generic types into current scope
-            updateTypeScope(node)
+            typeDecs.push(node);
+
+            // Put type placholders into the scope
+            def typeName: String = node.nameString
+            scope.types.addToGlobalAt(typeName) put (ot.anObjectType.placeholder)
         }
     }
+
     if (debug3) then {
         io.error.write "\nGenerics scope is: {scope.generics}"
     }
-}
 
+    // Update type placeholders in the scope to real types 
+    for(typeDecs) do { typeDec →
+        updateTypeScope(typeDec)
+    }
+}
 
 // Determines if a node is publicly available.
 method isPublic(node : share.Method | share.Def | share.Var)

@@ -1166,23 +1166,34 @@ def anObjectType: ObjectTypeFactory is public = object {
            io.error.write("\n942: left':{left'} isMeths: {left'.isMeths}")
            io.error.write("right':{right'} isMeths: {right'.isMeths}")
         }
-        if (left.isMeths && right.isMeths && (op == "&")) then {
-            if (debug) then {
-               io.error.write "\n943 Combining with & -- poorly!"
-            }
-            def newMeths: Set[[MethodType]] = left.methods ++ right.methods
-            if (debug) then {
-                io.error.write "\n945 newMeths: {newMeths}"
-            }
-            return fromMethods(newMeths)
-        }
         method op -> String {op'}
         method left -> ObjectType {left'}
         method right -> ObjectType {right'}
         method isOp -> Boolean {true}
-//        method methods -> Set[[MethodType]] {
-//            ProgrammingError.raise("no methods in types constructed by {op}")
-//        }
+        method methods -> Set[[MethodType]] {
+            match(op)
+                case { "&" ->
+                    if {left.isMeths} then {
+                        def newMeths: Set[[MethodType]] = left.methods
+                        if (debug) then {
+                            io.error.write "\n945 newMeths: {newMeths}"
+                        }
+                        newMeths
+                    } elseif {right.isMeths} then {
+                        def newMeths: Set[[MethodType]] = right.methods
+                        if (debug) then {
+                            io.error.write "\n945 newMeths: {newMeths}"
+                        }
+                        newMethsf
+                    } else {
+                        emptySet
+                    }
+                }
+                case { "|" ->
+                    // TODO Handle | operation
+                    emptySet
+                }
+        }
 
         // TODO: restrict to common types
         method restriction (other: ObjectType) -> ObjectType {
@@ -1226,6 +1237,16 @@ def anObjectType: ObjectTypeFactory is public = object {
             }
             makeWithOp(op', left.updateTypeWith(replacements),
                             right.updateTypeWith(replacements))
+        }
+
+        // Return method type with matching nameString or return noSuchMethod.
+        method getMethod(name : String) → MethodType | noSuchMethod {
+            for(methods) do { meth →    
+                if (meth.nameString == name) then {
+                    return meth
+                }                
+            }
+            return noSuchMethod
         }
     }
 
@@ -1638,7 +1659,6 @@ def anObjectType: ObjectTypeFactory is public = object {
     // already there, raise an exception.   
     class fromIdentifier(ident : share.Identifier) with (typeParams) → ObjectType { 
         inherit superObjectType
-        def debug3: Boolean = false
 
         method id  -> String { return ident.value }
         method isId -> Boolean { true }
@@ -1664,7 +1684,6 @@ def anObjectType: ObjectTypeFactory is public = object {
             } else {
                 scope.types.find(ident.value) butIfMissing {
                     StaticTypingError.raise("Type " + ident.value + "is not defined")
-                }
             }
         }
   

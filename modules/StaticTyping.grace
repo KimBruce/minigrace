@@ -29,7 +29,7 @@ type Param = share.Param
 type Parameter = share.Parameter
 
 // Error resulting from type checking
-def StaticTypingError: Exception = share.StaticTypingError
+def StaticTypingError: Exception is public = share.StaticTypingError
 
 // imported constants relating to cacheing type info
 def cache: Dictionary = sc.cache

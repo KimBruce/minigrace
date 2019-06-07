@@ -1637,7 +1637,7 @@ def anObjectType: ObjectTypeFactory is public = object {
 
 
     // ObjectType corresponding to the identifier in the scope. If not
-    // already there, adds it to the scope.   
+    // already there, raise an exception.   
     class fromIdentifier(ident : share.Identifier) with (typeParams) → ObjectType { 
         inherit superObjectType
         def debug3: Boolean = false

@@ -13,6 +13,9 @@ import "SharedTypes" as share
 
 inherit sg.methods
 
+// Error resulting from type checking
+def StaticTypingError is public = Exception.refine "StaticTypingError"
+
 // rename imported types for convenience
 type MethodType = share.MethodType
 type MethodTypeFactory = share.MethodTypeFactory
@@ -1633,35 +1636,54 @@ def anObjectType: ObjectTypeFactory is public = object {
 
 
 
-    // Find ObjectType corresponding to the identifier in the scope. If not
-    // already there, adds it to the scope.
-    method fromIdentifier(ident : share.Identifier) with (typeParams) → ObjectType {
-        def debug3: Boolean = true
-        if (debug3) then {
-            io.error.write("\n1249 fromIdentifier - looking for {ident.value}"++
-                                        " inside {scope.types}")
-        }
-        //check if identifier is generic, and if so, turn it into a
-        //generic node and recurse so the generic case can handle it.
-        if(ident.generics ≠ false) then {
-            if (debug) then {
-               io.error.write "\n1429: generic node {ident}"
-            }
-            def ans: ObjectType = fromDType(ast.genericNode.new(ident, ident.generics))
-                with (typeParams)
-            if (debug) then {
-               io.error.write "\n1433: generic node reduced to {ans}"
-            }
-            return ans
-        }
+    // ObjectType corresponding to the identifier in the scope. If not
+    // already there, adds it to the scope.   
+    class fromIdentifier(ident : share.Identifier) with (typeParams) → ObjectType { 
+        inherit superObjectType
+        def debug3: Boolean = false
 
-        // DEBUG:  raise an exception if fails!
-        if (debug3) then {
-           io.error.write "\n1445: about to look up {ident}"
+        method id  -> String { return ident.value }
+        method isId -> Boolean { true }
+
+        method ans -> ObjectType {
+            if (debug3) then {
+                io.error.write("\n1249 fromIdentifier - looking for {ident.value}"++
+                                            " inside {scope.types}")
+            }
+
+            // Check if identifier is generic, and if so, turn it into a
+            // generic node and recurse so the generic case can handle it.
+            if(ident.generics ≠ false) then {
+                if (debug) then {
+                   io.error.write "\n1429: generic node {ident}"
+                }
+                def genericAns: ObjectType = fromDType(ast.genericNode.new(ident, ident.generics))
+                    with (typeParams)
+                if (debug) then {
+                   io.error.write "\n1433: generic node reduced to {ans}"
+                }
+                genericAns
+            } else {
+                scope.types.find(ident.value) butIfMissing {
+                    StaticTypingError.raise("Type " + ident.value + "is not defined")
+                }
+            }
         }
-        def ans: ObjectType = scope.types.find(ident.value) butIfMissing {base}
-        //io.error.write "\n1285: Found {ans} when looking up {ident.value}"
-        ans
+  
+        method isSubtypeOf (other: ObjectType) -> Boolean { ans.isSubtypeOf(other) }  
+        method == (other: ObjectType) -> Boolean { ans.asString == other.asString }
+        method asString -> String { ident.value }
+        method methods -> Set⟦MethodType⟧ is public  { ans.methods } 
+
+        // Return method type with matching nameString or return noSuchMethod.
+        method getMethod(name : String) → MethodType | noSuchMethod {
+            for(methods) do { meth →    
+                if (meth.nameString == name) then {
+                    return meth
+                }                
+            }
+            return noSuchMethod
+        }
     }
 
     // ObjectType corresponding to a type variable (e.g. from generic type)

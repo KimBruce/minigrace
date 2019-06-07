@@ -1634,8 +1634,6 @@ def anObjectType: ObjectTypeFactory is public = object {
         }
     }
 
-
-
     // ObjectType corresponding to the identifier in the scope. If not
     // already there, raise an exception.   
     class fromIdentifier(ident : share.Identifier) with (typeParams) → ObjectType { 

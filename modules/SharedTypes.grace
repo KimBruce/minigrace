@@ -9,6 +9,9 @@ import "io" as io
 
 inherit sg.methods
 
+// Error resulting from type checking
+def StaticTypingError is public = Exception.refine "StaticTypingError"
+
 // Returned when searching for a method that is not there.
 def noSuchMethod: outer.Pattern = object {
     inherit BasicPattern.new

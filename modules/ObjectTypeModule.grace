@@ -1184,15 +1184,15 @@ def anObjectType: ObjectTypeFactory is public = object {
                         if (debug) then {
                             io.error.write "\n945 newMeths: {newMeths}"
                         }
-                        newMethsf
+                        newMeths
                     } else {
                         emptySet
                     }
-                }
+            }
                 case { "|" ->
                     // TODO Handle | operation
                     emptySet
-                }
+            }
         }
 
         // TODO: restrict to common types
@@ -1664,7 +1664,7 @@ def anObjectType: ObjectTypeFactory is public = object {
         method isId -> Boolean { true }
 
         method ans -> ObjectType {
-            if (debug3) then {
+            if (debug) then {
                 io.error.write("\n1249 fromIdentifier - looking for {ident.value}"++
                                             " inside {scope.types}")
             }
@@ -1684,7 +1684,8 @@ def anObjectType: ObjectTypeFactory is public = object {
             } else {
                 scope.types.find(ident.value) butIfMissing {
                     StaticTypingError.raise("Type " + ident.value + "is not defined")
-            }
+                }
+            }            
         }
   
         method isSubtypeOf (other: ObjectType) -> Boolean { ans.isSubtypeOf(other) }  

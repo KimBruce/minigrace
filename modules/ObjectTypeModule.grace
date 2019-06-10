@@ -811,6 +811,10 @@ def anObjectType: ObjectTypeFactory is public = object {
         // Is this object type built from a collection of methods?
         method isMeths -> Boolean {false}
 
+        method methList -> List[[Set[[MethodType]]]] {
+            emptyList[[Set[[MethodType]]]]
+        }
+
         // Does this type represent the dynamic or unknown type
         method isDynamic -> Boolean {false}
 
@@ -915,11 +919,18 @@ def anObjectType: ObjectTypeFactory is public = object {
             def methods : Set⟦MethodType⟧ is public = (if (base == dynamic) then {
                 emptySet } else { emptySet.addAll(base.methods) }).addAll(methods')
 
+            method methList -> List[[Set[[MethodType]]]] {
+                list[[Set[[MethodType]]]] [methods]
+            }
+
             // Return method type with matching nameString or return noSuchMethod.
+            // TODO Duplicates A | B
             method getMethod(name : String) → MethodType | noSuchMethod {
-                for(methods) do { meth →
-                    if (meth.nameString == name) then {
-                        return meth
+                for(methList) do { methSet →
+                    for(methSet) do { meth ->
+                        if (meth.nameString == name) then {
+                            return meth
+                        }
                     }
                 }
                 return noSuchMethod
@@ -1195,6 +1206,24 @@ def anObjectType: ObjectTypeFactory is public = object {
             }
         }
 
+        method methList -> List[[Set[[MethodType]]]] {
+            match(op)
+                case { "|" ->
+                    left.methList ++ right.methList
+            }
+                case { "&" ->
+                    def newMethList = emptyList[[Set[[MethodType]]]]
+                    def leftMethList = left.methList
+                    def rightMethList = right.methList
+                    for (leftMethList) do {leftMethSet ->
+                        for(rightMethList) do {rightMethSet ->
+                            newMethList.add(leftMethSet ++ rightMethSet)
+                        }
+                    }
+                    newMethList
+            }
+        }
+
         // TODO: restrict to common types
         method restriction (other: ObjectType) -> ObjectType {
             self
@@ -1241,10 +1270,12 @@ def anObjectType: ObjectTypeFactory is public = object {
 
         // Return method type with matching nameString or return noSuchMethod.
         method getMethod(name : String) → MethodType | noSuchMethod {
-            for(methods) do { meth →    
-                if (meth.nameString == name) then {
-                    return meth
-                }                
+            for(methList) do { methSet →
+                for(methSet) do { meth ->
+                    if (meth.nameString == name) then {
+                        return meth
+                    }
+                }
             }
             return noSuchMethod
         }
@@ -1691,14 +1722,20 @@ def anObjectType: ObjectTypeFactory is public = object {
         method isSubtypeOf (other: ObjectType) -> Boolean { ans.isSubtypeOf(other) }  
         method == (other: ObjectType) -> Boolean { ans.asString == other.asString }
         method asString -> String { ident.value }
-        method methods -> Set⟦MethodType⟧ is public  { ans.methods } 
+        method methods -> Set⟦MethodType⟧ is public  { ans.methods }
+
+        method methList -> List[[Set[[MethodType]]]] {
+            return ans.methList
+        }
 
         // Return method type with matching nameString or return noSuchMethod.
         method getMethod(name : String) → MethodType | noSuchMethod {
-            for(methods) do { meth →    
-                if (meth.nameString == name) then {
-                    return meth
-                }                
+            for(methList) do { methSet →
+                for(methSet) do { meth ->
+                    if (meth.nameString == name) then {
+                        return meth
+                    }
+                }
             }
             return noSuchMethod
         }

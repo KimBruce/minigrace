@@ -1690,7 +1690,7 @@ def anObjectType: ObjectTypeFactory is public = object {
   
         method isSubtypeOf (other: ObjectType) -> Boolean { ans.isSubtypeOf(other) }  
         method == (other: ObjectType) -> Boolean { ans.asString == other.asString }
-        method asString -> String { ans.asString }
+        method asString -> String { ident.value }
         method methods -> Set⟦MethodType⟧ is public  { ans.methods } 
 
         // Return method type with matching nameString or return noSuchMethod.

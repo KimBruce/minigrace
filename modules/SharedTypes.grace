@@ -174,6 +174,8 @@ type ObjectType = {
     // Is this object type built from a collection of methods?
     isMeths -> Boolean
 
+    methList -> List[[Set[[MethodType]]]]
+
     // Create new object type from self and other using op
     withOp(op: String, other: ObjectType) -> ObjectType
 

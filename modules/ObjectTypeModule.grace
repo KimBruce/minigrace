@@ -1086,56 +1086,9 @@ def anObjectType: ObjectTypeFactory is public = object {
             // Can be conservative and report error if types not identical
             // or use m( A | A') -> B & B'
             method & (other': ObjectType) -> ObjectType {
-                if (debug) then {
-                    io.error.write "\n907 checking {other'.isMeths}"
-                }
-                if (other'.isMeths) then {
-                    def newMeths: Set[[MethodType]] =
-                          noDupMethods(self.methods, other'.methods)
-                    if (debug) then {
-                        io.error.write "\n910 newMeths {newMeths}"
-                    }
-                    fromMethods(newMeths)
-                } else {
-                    anObjectType.makeWithOp("&",self,other')
-                }
-            }
-
-            // return list of methods of & of two collections of
-            // method types fst and snd
-            // TODO: if duplicate, just take whichever is smallest.  
-            // Need to fix to take glb of two!!!
-            method noDupMethods(fst: Set[[MethodType]],
-                                snd: Set[[MethodType]]) -> Set[[MethodType]] {
-               if (debug) then {
-                    io.error.write "\n923 NoDup fst:{fst}, and \nsnd:{snd}"
-               }
-               // optimize by throwing away methods in base
-               def modFst: Set[[MethodType]] = fst.copy.removeAll(base.methods)
-               def modSnd: Set[[MethodType]] = snd.copy.removeAll(base.methods)
-               def newMeths: Set[[MethodType]] = fst.copy
-               for (modSnd) do {smt: MethodType ->
-                   for (modFst) do {fmt: MethodType ->
-                       if (fmt.nameString == smt.nameString) then {
-                           if (debug) then {
-                              io.error.write "\n duplicate methods {fmt.nameString}"
-                           }
-                           if (smt.isSpecialisationOf(emptyList,fmt).ans) then {
-                               newMeths.remove(fmt)
-                               newMeths.add(smt)
-                           } elseif {!fmt.isSpecialisationOf(emptyList,smt).ans} then {
-                               TypeError.raise "need to find glb of types of {fmt.nameString}"
-                                    with (smt)
-                           }
-                       } else {
-                           newMeths.add(smt)
-                       }
-                   }
-               }
-               if (debug) then {
-                    io.error.write "\n956: noDupMethods gives {newMeths}"
-               }
-               newMeths
+              
+                anObjectType.makeWithOp("&",self,other')
+                
             }
 
             // update type of all methods using replacement for generic types.
@@ -1182,30 +1135,7 @@ def anObjectType: ObjectTypeFactory is public = object {
         method left -> ObjectType {left'}
         method right -> ObjectType {right'}
         method isOp -> Boolean {true}
-        method methods -> Set[[MethodType]] {
-            match(op)
-                case { "&" ->
-                    if {left.isMeths} then {
-                        def newMeths: Set[[MethodType]] = left.methods
-                        if (debug) then {
-                            io.error.write "\n945 newMeths: {newMeths}"
-                        }
-                        newMeths
-                    } elseif {right.isMeths} then {
-                        def newMeths: Set[[MethodType]] = right.methods
-                        if (debug) then {
-                            io.error.write "\n945 newMeths: {newMeths}"
-                        }
-                        newMeths
-                    } else {
-                        emptySet
-                    }
-            }
-                case { "|" ->
-                    // TODO Handle | operation
-                    emptySet
-            }
-        }
+     
 
         method methList -> List[[Set[[MethodType]]]] {
             match(op)

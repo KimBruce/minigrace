@@ -1146,9 +1146,55 @@ def anObjectType: ObjectTypeFactory is public = object {
                     def newMethList = emptyList[[Set[[MethodType]]]]
                     def leftMethList = left.methList
                     def rightMethList = right.methList
-                    for (leftMethList) do {leftMethSet ->
+
+                    def leftMethListNoBase = emptyList[[Set[[MethodType]]]]
+                    def rightMethListNoBase = emptyList[[Set[[MethodType]]]]
+
+                    // Make a new list from methods on the LHS but discard base methods
+                    for (leftMethList) do { leftMethSet ->
+                        def newMethSet = emptySet[[MethodType]] 
+                        for(leftMethSet) do { leftMeth ->
+                            if(!base.methods.contains(leftMeth)) then {
+                                newMethSet.add(leftMeth)
+                            }
+                        }
+                        leftMethListNoBase.add(newMethSet)
+                    }
+                    
+                    // Make a new list from methods on the RHS but discard base methods
+                    for (rightMethList) do { rightMethSet ->
+                        def newMethSet = emptySet[[MethodType]] 
+                        for(rightMethSet) do { rightMeth ->
+                            if(!base.methods.contains(rightMeth)) then {
+                                newMethSet.add(rightMeth)
+                            }
+                        }
+                        rightMethListNoBase.add(newMethSet)
+                    }
+
+                    for (leftMethList) do { leftMethSet ->
                         for(rightMethList) do {rightMethSet ->
-                            newMethList.add(leftMethSet ++ rightMethSet)
+                            def newMethSet = emptySet[[MethodType]] 
+                            newMethSet.addAll(leftMethSet)
+                            for(leftMethSet) do { leftMeth ->
+                                for(rightMethSet) do { rightMeth -> 
+                                    if(rightMeth.nameString == leftMeth.nameString) then {
+                                        // Check that method signatures match
+                                        // FIX THIS IF-ELSE -- SHOULD WORK WITH DIFFERENT SIGNATURES
+                                        if(leftMeth.signature.asString == rightMeth.signature.asString) then {
+                                            def retType: ObjectType = makeWithOp("&", leftMeth.retType, rightMeth.retType)
+                                            def newMeth: MethodType = aMethodType.signature (leftMeth.signature) returnType (retType)
+                                            newMethSet.add(newMeth)
+                                        } else {
+                                            ProgrammingError.raise "\n1174 Fix to work with different signatures"
+                                        }
+                                    } else {
+                                        newMethSet.add(rightMeth)
+                                    }
+                                }
+                                newMethSet.addAll(base.methods)
+                            }
+                            newMethList.add(newMethSet)
                         }
                     }
                     newMethList

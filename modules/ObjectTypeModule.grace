@@ -811,6 +811,8 @@ def anObjectType: ObjectTypeFactory is public = object {
         // Is this object type built from a collection of methods?
         method isMeths -> Boolean {false}
 
+        // Return the list of sets of methods of the type
+        // Needed for building types with & or |
         method methList -> List[[Set[[MethodType]]]] {
             emptyList[[Set[[MethodType]]]]
         }
@@ -924,7 +926,6 @@ def anObjectType: ObjectTypeFactory is public = object {
             }
 
             // Return method type with matching nameString or return noSuchMethod.
-            // TODO Duplicates A | B
             method getMethod(name : String) → MethodType | noSuchMethod {
                 for(methList) do { methSet →
                     for(methSet) do { meth ->

@@ -1209,7 +1209,7 @@ def anObjectType: ObjectTypeFactory is public = object {
         method methList -> List[[Set[[MethodType]]]] {
             match(op)
                 case { "|" ->
-                    left.methList ++ right.methList
+                    combineMethList(left.methList, right.methList)
             }
                 case { "&" ->
                     def newMethList = emptyList[[Set[[MethodType]]]]
@@ -2345,4 +2345,9 @@ method makeDictionary⟦K,V⟧(keys: List⟦K⟧, vals: List⟦V⟧) → Diction
         dict.at (keys.at (index)) put (vals.at (index))
     }
     dict
-}                             
+}
+
+// TODO: Combines two method lists and discards the clauses that are subtypes 
+method combineMethList(leftMethList: List[[Set[[MethodType]]]], rightMethList: List[[Set[[MethodType]]]]) -> List[[Set[[MethodType]]]] {
+    leftMethList ++ rightMethList
+}                            

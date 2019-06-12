@@ -1127,7 +1127,8 @@ def anObjectType: ObjectTypeFactory is public = object {
     class makeWithOp(op': String, left': ObjectType, right': ObjectType) ->
                                                     ObjectType {
         inherit superObjectType
-        if (debug) then {
+        def debug3: Boolean = true
+        if (debug3) then {
            io.error.write("\n942: left':{left'} isMeths: {left'.isMeths}")
            io.error.write("right':{right'} isMeths: {right'.isMeths}")
         }
@@ -1179,7 +1180,6 @@ def anObjectType: ObjectTypeFactory is public = object {
                                             retType := leftMeth.retType
                                         }
 
-
                                         if(sameSignature) then {
                                             def newMeth: MethodType = aMethodType.signature (leftMeth.signature) returnType (retType)
                                             newMethSet.add(newMeth)
@@ -1198,6 +1198,8 @@ def anObjectType: ObjectTypeFactory is public = object {
                                                 def newMixPart: MixPart = aMixPartWithName(part.name) parameters(paramList)
                                                 newSignature.add(newMixPart)
                                             }
+                                            def newMeth: MethodType = aMethodType.signature (newSignature) returnType (retType)
+                                            newMethSet.add(newMeth)
                                         }
                                     } else {
                                         newMethSet.add(rightMeth)
@@ -1207,6 +1209,9 @@ def anObjectType: ObjectTypeFactory is public = object {
                             }
                             newMethList.add(newMethSet)
                         }
+                    }
+                    if(debug3) then {
+                        io.error.write ("\n1211: newMethList: {newMethList}")
                     }
                     newMethList
             }
@@ -1242,7 +1247,7 @@ def anObjectType: ObjectTypeFactory is public = object {
 
         // print type nicelY
         method asString -> String {
-            left.asString ++ "\n{op}\n" ++ right.asString
+            left.asString ++ "{op}\n" ++ right.asString
         }
 
         // Takes a mapping of generic-to-ObjectType and returns a copy of self
@@ -1702,7 +1707,7 @@ def anObjectType: ObjectTypeFactory is public = object {
                 genericAns
             } else {
                 scope.types.find(ident.value) butIfMissing {
-                    StaticTypingError.raise("Type " + ident.value + "is not defined")
+                    StaticTypingError.raise("Type " ++ ident.value ++ " is not defined")
                 }
             }            
         }

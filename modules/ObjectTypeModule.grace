@@ -1155,8 +1155,10 @@ def anObjectType: ObjectTypeFactory is public = object {
 
                     for (leftMethListNoBase) do { leftMethSet ->
                         for(rightMethListNoBase) do {rightMethSet ->
-                            def newMethSet = emptySet[[MethodType]] 
-                            newMethSet.addAll(leftMethSet)
+                            def newMethSet = emptySet[[MethodType]]
+
+                            // 1. Build a new set of methods from methods in left and right type of '&' that have the same names
+                            // Refer to X.m example above
                             for(leftMethSet) do { leftMeth ->
                                 for(rightMethSet) do { rightMeth -> 
 
@@ -1201,12 +1203,37 @@ def anObjectType: ObjectTypeFactory is public = object {
                                             def newMeth: MethodType = aMethodType.signature (newSignature) returnType (retType)
                                             newMethSet.add(newMeth)
                                         }
-                                    } else {
-                                        newMethSet.add(rightMeth)
                                     }
                                 }
-                                newMethSet.addAll(base.methods)
+                            }   
+
+                            // 2. Loop again and add methods that are not in newMethSet
+                            
+                            for(leftMethSet) do { leftMeth ->
+                                var exists: Boolean := false
+                                for(newMethSet) do { newMeth ->
+                                    if(leftMeth.nameString == newMeth.nameString) then {
+                                        exists := true
+                                    }
+                                }
+                                if(!exists) then {
+                                    newMethSet.add(leftMeth);
+                                }
                             }
+
+                            for(rightMethSet) do { rightMeth ->
+                                var exists: Boolean := false
+                                for(newMethSet) do { newMeth ->
+                                    if(rightMeth.nameString == newMeth.nameString) then {
+                                        exists := true
+                                    }
+                                }
+                                if(!exists) then {
+                                    newMethSet.add(rightMeth);
+                                }
+                            }
+
+                            newMethSet.addAll(base.methods)
                             newMethList.add(newMethSet)
                         }
                     }
@@ -1247,7 +1274,7 @@ def anObjectType: ObjectTypeFactory is public = object {
 
         // print type nicelY
         method asString -> String {
-            left.asString ++ "{op}\n" ++ right.asString
+            left.asString ++ " {op} " ++ right.asString
         }
 
         // Takes a mapping of generic-to-ObjectType and returns a copy of self

@@ -1143,50 +1143,61 @@ def anObjectType: ObjectTypeFactory is public = object {
                     combineMethList(left.methList, right.methList)
             }
                 case { "&" ->
+                    // If type T = { m: A -> B }, type U = { m: A' -> B' }
+                    // and type X = T & U, then X.m: A | A' -> B & B'
+                    // (X.m is a new method with '|' applied to parameters of mixed parts and '&' to return type)
+
                     def newMethList = emptyList[[Set[[MethodType]]]]
-                    def leftMethList = left.methList
-                    def rightMethList = right.methList
 
-                    def leftMethListNoBase = emptyList[[Set[[MethodType]]]]
-                    def rightMethListNoBase = emptyList[[Set[[MethodType]]]]
+                    def leftMethListNoBase = removeBaseMethods (left.methList, base)
+                    def rightMethListNoBase = removeBaseMethods (right.methList, base)
 
-                    // Make a new list from methods on the LHS but discard base methods
-                    for (leftMethList) do { leftMethSet ->
-                        def newMethSet = emptySet[[MethodType]] 
-                        for(leftMethSet) do { leftMeth ->
-                            if(!base.methods.contains(leftMeth)) then {
-                                newMethSet.add(leftMeth)
-                            }
-                        }
-                        leftMethListNoBase.add(newMethSet)
-                    }
-                    
-                    // Make a new list from methods on the RHS but discard base methods
-                    for (rightMethList) do { rightMethSet ->
-                        def newMethSet = emptySet[[MethodType]] 
-                        for(rightMethSet) do { rightMeth ->
-                            if(!base.methods.contains(rightMeth)) then {
-                                newMethSet.add(rightMeth)
-                            }
-                        }
-                        rightMethListNoBase.add(newMethSet)
-                    }
-
-                    for (leftMethList) do { leftMethSet ->
-                        for(rightMethList) do {rightMethSet ->
+                    for (leftMethListNoBase) do { leftMethSet ->
+                        for(rightMethListNoBase) do {rightMethSet ->
                             def newMethSet = emptySet[[MethodType]] 
                             newMethSet.addAll(leftMethSet)
                             for(leftMethSet) do { leftMeth ->
                                 for(rightMethSet) do { rightMeth -> 
+
+                                    // Check that method has the same mixed parts with the same number of parameters
                                     if(rightMeth.nameString == leftMeth.nameString) then {
-                                        // Check that method signatures match
-                                        // FIX THIS IF-ELSE -- SHOULD WORK WITH DIFFERENT SIGNATURES
-                                        if(leftMeth.signature.asString == rightMeth.signature.asString) then {
-                                            def retType: ObjectType = makeWithOp("&", leftMeth.retType, rightMeth.retType)
+                                        var sameSignature: Boolean := true
+
+                                        // Check if method signature have the same types
+                                        for (leftMeth.signature) and (rightMeth.signature) do { part: MixPart, part': MixPart →
+                                            for (part.parameters) and (part'.parameters) do { p: Param, p': Param →
+                                                if (p.typeAnnotation ≠ p'.typeAnnotation) then {
+                                                    sameSignature := false
+                                                }
+                                            }
+                                        }
+
+                                        var retType: ObjectType
+                                        if(leftMeth.retType != rightMeth.retType) then {
+                                            retType := makeWithOp("&", leftMeth.retType, rightMeth.retType)     
+                                        } else {
+                                            retType := leftMeth.retType
+                                        }
+
+
+                                        if(sameSignature) then {
                                             def newMeth: MethodType = aMethodType.signature (leftMeth.signature) returnType (retType)
                                             newMethSet.add(newMeth)
                                         } else {
-                                            ProgrammingError.raise "\n1174 Fix to work with different signatures"
+                                            def newSignature: List⟦MixPart⟧ = emptyList[[MixPart]]
+                                            for (leftMeth.signature) and (rightMeth.signature) do { part: MixPart, part': MixPart →
+                                                def paramList: List[[Param]] = emptyList[[Param]]
+                                                for (part.parameters) and (part'.parameters) do { p: Param, p': Param →
+                                                    if(p.typeAnnotation != p'.typeAnnotation) then {
+                                                        def newParam: Param = aParam.ofType (makeWithOp("|", p.typeAnnotation, p'.typeAnnotation))
+                                                        paramList.add(newParam)
+                                                    } else {
+                                                        paramList.add(p)
+                                                    }
+                                                }
+                                                def newMixPart: MixPart = aMixPartWithName(part.name) parameters(paramList)
+                                                newSignature.add(newMixPart)
+                                            }
                                         }
                                     } else {
                                         newMethSet.add(rightMeth)
@@ -2327,4 +2338,19 @@ method makeDictionary⟦K,V⟧(keys: List⟦K⟧, vals: List⟦V⟧) → Diction
 // TODO: Combines two method lists and discards the clauses that are subtypes 
 method combineMethList(leftMethList: List[[Set[[MethodType]]]], rightMethList: List[[Set[[MethodType]]]]) -> List[[Set[[MethodType]]]] {
     leftMethList ++ rightMethList
-}                            
+}    
+
+// Returns the list methList without base methods 
+method removeBaseMethods(methList: List[[Set[[MethodType]]]], base: ObjectType) -> List[[Set[[MethodType]]]] {
+    def methListNoBase = emptyList[[Set[[MethodType]]]]
+    for (methList) do { methSet ->
+        def newMethSet = emptySet[[MethodType]] 
+        for(methSet) do { meth ->
+            if(!base.methods.contains(meth)) then {
+                newMethSet.add(meth)
+            }
+        }
+        methListNoBase.add(newMethSet)
+    }
+    return methListNoBase
+}                        

@@ -16,20 +16,21 @@ type FatPoint = Point & interface {
 
 type Combo = ColorPoint & FatPoint
 
-// class combo -> Combo {
-//     method color -> String { "Color" }
-//     method x -> Number { 47 }
-//     method radius -> Number { 0 }
-//     method m -> FatPoint { fat }
-// }
+class combo -> Combo {
+    method color -> String { "Color" }
+    method x -> Number { 47 }
+    method radius -> Number { 0 }
+    method m -> FatPoint { fat }
+}
 
-// class fat -> FatPoint {
-//     method radius -> Number { 1 }
-//     method m -> FatPoint { fat }
-//     method x -> Number { 2 }
-// }
+class fat -> FatPoint {
+    method radius -> Number { 1 }
+    method m -> FatPoint { fat }
+    method x -> Number { 2 }
+    method color -> String { "Color" }
+}
 
-// def d: Combo = combo
+def d: Combo = combo
 
-// print (combo.m.color)
-// print (combo.m.radius)
+print (combo.m.color)
+print (combo.m.radius)

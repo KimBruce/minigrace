@@ -1026,6 +1026,7 @@ def astVisitor: ast.AstVisitor is public = object {
                 anObjectType.fromDType (node.value) with (emptyList)
             if (debug3) then {
                io.error.write "\n875 type is {vType}"
+               io.error.write "\n876 methList is {vType.methList}"
             }
 
             cache.at(node) put (vType)

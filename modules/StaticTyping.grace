@@ -703,6 +703,10 @@ def astVisitor: ast.AstVisitor is public = object {
                             "type '{returnType}', but returns " ++
                             "an expression of type '{lastType}'") 
                                         with (lastNode)
+                    } else {
+                        if (debug3) then {
+                            io.error.write ("\n707: {lastType} is consistent subtype of {returnType}")
+                        }
                     }
                 }
                 if (debug3) then {

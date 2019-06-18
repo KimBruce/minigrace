@@ -408,6 +408,7 @@ def astVisitor: ast.AstVisitor is public = object {
     //of the matchee and the params match, and puts the return type
     //of the match-case in the cache.
     method visitMatchCase (node: share.MatchCase) → Boolean {
+        def debug3: Boolean = true
         // expression being matched and its type
         def matchee = node.value
         var matcheeType: ObjectType := typeOf(matchee)
@@ -435,7 +436,7 @@ def astVisitor: ast.AstVisitor is public = object {
             //its type to paramTypesList; ignore if it is a specific 
             //case(ie. 47)
             def blockParam : AstNode = block.params.at(1)
-            if (debug) then {
+            if (debug3) then {
                 io.error.write"\nMy dtype is {blockParam.dtype}"
             }
             if (("string" ≠ blockParam.dtype.kind)
@@ -464,7 +465,7 @@ def astVisitor: ast.AstVisitor is public = object {
         def returnType: ObjectType = 
                         ot.fromObjectTypeList (returnTypesList)
 
-        if (debug) then {
+        if (debug3) then {
             io.error.write "\nparamType now equals: {paramType}"
             io.error.write "\nreturnType now equals: {returnType}"
         }
@@ -690,6 +691,8 @@ def astVisitor: ast.AstVisitor is public = object {
                 // return type
                 def lastNode: AstNode = meth.body.last
                 if (share.Return.match(lastNode).not) then {
+                    // START HERE
+                    print("\n694: meth.body.last: {meth.body.last}")
                     def lastType = typeOf(lastNode)
                     if (debug3) then {
                        io.error.write 
@@ -1014,7 +1017,7 @@ def astVisitor: ast.AstVisitor is public = object {
 
     // Type check type declaration
     method visitTypeDec(node: share.TypeDeclaration) → Boolean {
-        def debug3: Boolean = true
+        def debug3: Boolean = false
         if (debug3) then {
             io.error.write "\n875 visit type dec for {node}"
         }
@@ -1158,7 +1161,7 @@ def astVisitor: ast.AstVisitor is public = object {
 
     // type check both def and var declarations
     method visitDefDec (defd: AstNode) → Boolean {
-        def debug2: Boolean = true
+        def debug2: Boolean = false
         def name: String = defd.nameString
         if (defd.decType.value=="Unknown") then {
             // raise error if no type given in declaration
@@ -1201,8 +1204,7 @@ def astVisitor: ast.AstVisitor is public = object {
         // If field is readable and/or writable, add public methods
         //  for getting and setting
         if (defd.isReadable) then {
-            scope.methods.at(name) put (
-                aMethodType.member (name) ofType (defType))
+            scope.methods.at(name) put (aMethodType.member (name) ofType (defType))
         }
         if (defd.isWritable) then {
             def name' = name ++ ":=(1)"
@@ -1429,7 +1431,7 @@ method updateTypeScope(typeDec : share.TypeDeclaration) → Done
                                             is confidential {
     //check whether the typeDec is a GenericType and 
     // process accordingly
-    def debug3 = true
+    def debug3 = false
     var oType : ObjectType
     if(false ≠ typeDec.typeParams) then {
         if (debug) then {
@@ -1838,7 +1840,7 @@ def TypeDeclarationError = TypeError.refine "TypeDeclarationError"
 // so that they can reference one another declaratively.
 method collectTypes(nodes : Collection⟦AstNode⟧) → Done 
                                     is confidential {
-    def debug3 = true
+    def debug3 = false
     def typeDecs: List[[share.typeDecNode]] = list[]
 
     // Collect all type declarations into typeDecs and insert their

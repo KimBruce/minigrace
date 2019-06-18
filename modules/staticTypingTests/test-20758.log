@@ -1,0 +1,20 @@
+minigrace[.]: t342_importTypes_test: 0.3 (+0.3): starting compilation
+minigrace[.]: t342_importTypes_test: 0.31 (+0.01): lexing.
+minigrace[.]: t342_importTypes_test: 0.34 (+0.03): parsing.
+minigrace[.]: t342_importTypes_test: 0.42 (+0.08): checking dialect StaticTyping used by module t342_importTypes_test
+minigrace[.]: t342_importTypes_test: 1.43 (+1.01): loading dialect "StaticTyping" for checkers.
+minigrace[.]: t342_importTypes_test: 1.86 (+0.43): rewriting tree.
+minigrace[.]: t342_importTypes_test: 1.98 (+0.12): symbol tables built.
+minigrace[.]: t342_importTypes_test: 2.01 (+0.03): lexing.
+minigrace[.]: t342_importTypes_test: 2.04 (+0.03): lexing.
+minigrace[.]: t342_importTypes_test: 2.05 (+0.01): lexing.
+minigrace[.]: t342_importTypes_test: 2.06 (+0.01): lexing.
+minigrace[.]: t342_importTypes_test: 2.07 (+0.01): lexing.
+minigrace[.]: t342_importTypes_test: 2.08 (+0.01): lexing.
+minigrace[.]: t342_importTypes_test: 2.08 (+0): lexing.
+minigrace[.]: t342_importTypes_test: 2.09 (+0.01): lexing.
+minigrace[.]: t342_importTypes_test: 2.09 (+0): lexing.
+minigrace[.]: t342_importTypes_test: 2.1 (+0.01): lexing.
+minigrace[.]: t342_importTypes_test: 2.11 (+0.01): lexing.
+minigrace[.]: t342_importTypes_test: 2.12 (+0.01): lexing.
+minigrace[.]: t342_importTypes_test: 2.23 (+0.11): generating JavaScript code.

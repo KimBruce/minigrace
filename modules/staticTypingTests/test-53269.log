@@ -1,0 +1,7 @@
+minigrace[.]: t349_ampersandNumParams_test: 0.34 (+0.34): starting compilation
+minigrace[.]: t349_ampersandNumParams_test: 0.34 (+0): lexing.
+minigrace[.]: t349_ampersandNumParams_test: 0.39 (+0.05): parsing.
+minigrace[.]: t349_ampersandNumParams_test: 0.53 (+0.14): checking dialect StaticTyping used by module t349_ampersandNumParams_test
+minigrace[.]: t349_ampersandNumParams_test: 1.43 (+0.9): loading dialect "StaticTyping" for checkers.
+minigrace[.]: t349_ampersandNumParams_test: 1.86 (+0.43): rewriting tree.
+minigrace[.]: t349_ampersandNumParams_test: 1.96 (+0.1): symbol tables built.

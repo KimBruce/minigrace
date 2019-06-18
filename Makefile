@@ -440,6 +440,14 @@ test: minigrace.env js/tests/gracelib.js
 # space-separated sequence of test-name prefixes, e.g., "TESTS=t001 t027 t041"
 	js/tests/harness-js j2/minigrace-js js/tests "" $(TESTS)
 
+#only test gradualTypesND dialect
+testStaticTyping: minigrace.env
+	rm -f modules/staticTypingTests/ScopeModule.js
+	rm -f modules/staticTypingTests/ObjectTypeModule.js
+	rm -f modules/staticTypingTests/SharedTypes.js
+	rm -f modules/staticTypingTests/StaticTyping.js
+	modules/staticTypingTests/harness-js j2/minigrace-js modules/staticTypingTests "" $(TESTS)
+
 togracetest: minigrace
 	tests/harness minigrace tests tograce $(TESTS)
 

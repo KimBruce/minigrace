@@ -1,0 +1,80 @@
+=====================================
+module-level symbol table
+
+Current: (module ST: 104➞103➞102➞101):
+     ::(1)(from graceObject)  T(typedec)  asDebugString(from graceObject)  asString(from graceObject)  basicAsString(from graceObject)  isMe(1)(from graceObject)  module()object(defdec)  self(selfDef)  t(method)  x(defdec)  ≠(1)(from graceObject) 
+
+Parent: (dialect ST: 103➞102➞101):
+     ++(1)(method)  ::(1)(method)  ==(1)(method)  AndPattern(method)  BaseType(method)  BasicPattern(method)  Binding(method)  BindingPattern(method)  Block0(method)  Block1(method)  Block2(method)  BoundsError(method)  Collection(method)  ConcurrentModification(method)  Dictionary(method)  Enumerable(method)  EnvironmentException(defdec)  Exception(defdec)  ExceptionKind(typedec)  Expandable(method)  Extractable(typedec)  FailedMatch(method)  Function0(method)  Function1(method)  Function2(method)  Function3(method)  Iterable(method)  Iterator(method)  IteratorExhausted(method)  List(method)  MatchAndDestructuringPattern(method)  MatchResult(typedec)  NoSuchMethod(defdec)  NoSuchObject(method)  OrPattern(method)  Pattern(typedec)  Point(typedec)  Predicate0(typedec)  Predicate1(method)  Predicate2(method)  Predicate3(method)  Procedure0(typedec)  Procedure1(method)  Procedure2(method)  Procedure3(method)  ProgrammingError(defdec)  RequestError(method)  ResourceException(defdec)  RuntimeError(defdec)  Sequence(method)  Set(method)  Singleton(method)  SubobjectResponsibility(method)  SuccessfulMatch(method)  TypeError(defdec)  TypeIntersection(method)  TypeSubtraction(method)  TypeUnion(method)  TypeVariant(method)  UninitializedVariable(method)  VariablePattern(method)  WildcardPattern(method)  _methods(method)  abstract(method)  alwaysEqual(method)  asString(method)  become(1)(method)  binding(method)  clone(1)(method)  coll.Binding⟦K, T⟧(typedec)  coll.Collection⟦T⟧(typedec)  coll.ComparableToDictionary⟦K, T⟧(typedec)  coll.Dictionary⟦K, T⟧(typedec)  coll.Enumerable⟦T⟧(typedec)  coll.Expandable⟦T⟧(typedec)  coll.Function0⟦ResultT⟧(typedec)  coll.Function1⟦ArgT1, ResultT⟧(typedec)  coll.Function2⟦ArgT1, ArgT2, ResultT⟧(typedec)  coll.Iterable⟦T⟧(typedec)  coll.Iterator⟦T⟧(typedec)  coll.List⟦T⟧(typedec)  coll.MinimalyIterable(typedec)  coll.Predicate1⟦ArgT1⟧(typedec)  coll.Procedure0(typedec)  coll.Procedure1⟦ArgT1⟧(typedec)  coll.Procedure2⟦ArgT1, ArgT2⟧(typedec)  coll.SelfType(typedec)  coll.Sequence⟦T⟧(typedec)  coll.Set⟦T⟧(typedec)  collection(method)  collections(method)  dictionary(method)  dictionary(1)(method)  do(1)while(1)(method)  emptyDictionary(method)  emptyList(method)  emptySequence(method)  emptySet(method)  engine(method)  enumerable(method)  for(1)and(1)do(1)(method)  for(1)do(1)(method)  hashCombine(2)(method)  inBrowser(method)  indexable(method)  infinity(defdec)  list(method)  list(1)(method)  max(2)(method)  methods(method)  min(2)(method)  minigrace(method)  native(1)code(1)(method)  native(1)header(1)(method)  pi(method)  point2Dx(1)y(1)(method)  primitiveArray(method)  print(1)(method)  range(method)  repeat(1)times(1)(method)  required(method)  self(selfDef)  sequence(method)  sequence(1)(method)  set(method)  set(1)(method)  singleton(method)  singleton(1)(method)  unbecome(1)(method)  valueOf(1)(method)  while(1)do(1)(method)  π(defdec)  ≠(1)(method) 
+
+Parent: (built-in ST: 102➞101):
+     ...(defdec)  Block(typedec)  Boolean(typedec)  Done(typedec)  Number(typedec)  Object(typedec)  String(typedec)  Type(typedec)  Unknown(typedec)  _prelude(defdec)  confidential(method)  done(defdec)  false(method)  graceObject(method)  outer(defdec)  override(method)  parent(method)  prelude(defdec)  public(method)  readable(method)  self(selfDef)  true(method)  writable(method) 
+
+Parent: (empty ST: 101):
+    
+
+
+=====================================
+0:0-12:6 module (ST 104)
+  dialect "standardGrace"
+  Name: genericDrop
+  1:1-3:1 typedec (ST 140)
+    1:6-6 identifier (ST 140)Binding‹T›
+    Type parameters:
+        1:7-9 typeparams (ST 140)⟦1:8-8 identifier (ST 140)Binding‹V›⟧
+    Value:1:13-3:1 typeliteral (ST 141)
+        Types:
+        Methods:
+          2:4-17 methodtype (ST 142)
+            Name: identifierBinding‹m(1)›
+            Returns:
+              2:14-17 identifier (ST 142)‹Done›
+            Signature:
+              2:4-9 signaturepart (ST 142): m
+                Parameters:
+                  2:6-6 identifier (ST 142)Binding‹v›
+                      Type: 2:8-8 identifier (ST 142)‹V›
+
+
+  5:1-0:0 method (ST 143)
+    Name: 5:7-7 identifierBinding‹t›
+    Returns:
+      5:19-17 generic (ST 143)(5:14-14 identifier (ST 143)‹T›)⟦5:16-16 identifier (ST 143)‹V›⟧
+    Fresh
+    Signature:
+      Part: t
+        Parameters:
+    Generics:
+      5:9-9 identifier (ST 143)Binding‹V›
+    Body:
+      5:1-9:1 object (trait) (ST 144)
+        Name: t
+        6:4-8:4 method (ST 145)
+          Name: 6:11-16 identifierBinding‹m(1)›
+          Returns:
+            6:21-24 identifier (ST 145)‹Done›
+          Signature:
+            Part: m
+              Parameters:
+                6:13-13 identifier (ST 145)Binding‹v›
+                    Type: 6:15-15 identifier (ST 145)‹V›
+          Body:
+            7:8-15 call (ST 145) on self
+              Receiver: 7:14-20 identifier (ST 145)‹prelude›
+              Method Name: print(1)
+              Parts:
+                7:8-14 callwithpart: print
+                  Args:
+                    7:14-14 identifier (ST 145)‹v›
+  11:1-0:0 defdec (ST 104)
+    11:5-5 identifier (ST 104)Binding‹x›
+    Type: 11:19-17 generic (ST 104)(11:9-9 identifier (ST 104)‹T›)⟦11:11-16 identifier (ST 104)‹Number›⟧
+    Value: 11:21-0:0 member (ST 104) on self ‹t›
+        11:21-24 identifier (ST 104)‹self›
+  12:1-6 call (ST 104)
+    Receiver: 12:1-1 identifier (ST 104)‹x›
+    Method Name: m(1)
+    Parts:
+      12:3-5 callwithpart: m
+        Args:
+          12:5-5 num (ST 104)(3)

@@ -1,0 +1,31 @@
+=====================================
+module-level symbol table
+
+Current: (module ST: 104➞103➞102➞101):
+     ::(1)(from graceObject)  a(defdec)  asDebugString(from graceObject)  asString(from graceObject)  basicAsString(from graceObject)  isMe(1)(from graceObject)  module()object(defdec)  self(selfDef)  ≠(1)(from graceObject) 
+
+Parent: (dialect ST: 103➞102➞101):
+     ++(1)(method)  ::(1)(method)  ==(1)(method)  AndPattern(method)  BaseType(method)  BasicPattern(method)  Binding(method)  BindingPattern(method)  Block0(method)  Block1(method)  Block2(method)  BoundsError(method)  Collection(method)  ConcurrentModification(method)  Dictionary(method)  Enumerable(method)  EnvironmentException(defdec)  Exception(defdec)  ExceptionKind(typedec)  Expandable(method)  Extractable(typedec)  FailedMatch(method)  Function0(method)  Function1(method)  Function2(method)  Function3(method)  Iterable(method)  Iterator(method)  IteratorExhausted(method)  List(method)  MatchAndDestructuringPattern(method)  MatchResult(typedec)  NoSuchMethod(defdec)  NoSuchObject(method)  OrPattern(method)  Pattern(typedec)  Point(typedec)  Predicate0(typedec)  Predicate1(method)  Predicate2(method)  Predicate3(method)  Procedure0(typedec)  Procedure1(method)  Procedure2(method)  Procedure3(method)  ProgrammingError(defdec)  RequestError(method)  ResourceException(defdec)  RuntimeError(defdec)  Sequence(method)  Set(method)  Singleton(method)  SubobjectResponsibility(method)  SuccessfulMatch(method)  TypeError(defdec)  TypeIntersection(method)  TypeSubtraction(method)  TypeUnion(method)  TypeVariant(method)  UninitializedVariable(method)  VariablePattern(method)  WildcardPattern(method)  _methods(method)  abstract(method)  alwaysEqual(method)  asString(method)  become(1)(method)  binding(method)  clone(1)(method)  coll.MinimalyIterable(typedec)  coll.Procedure0(typedec)  coll.SelfType(typedec)  collection(method)  collections(method)  dictionary(method)  dictionary(1)(method)  do(1)while(1)(method)  emptyDictionary(method)  emptyList(method)  emptySequence(method)  emptySet(method)  engine(method)  enumerable(method)  for(1)and(1)do(1)(method)  for(1)do(1)(method)  hashCombine(2)(method)  inBrowser(method)  indexable(method)  infinity(defdec)  list(method)  list(1)(method)  max(2)(method)  methods(method)  min(2)(method)  minigrace(method)  native(1)code(1)(method)  native(1)header(1)(method)  pi(method)  point2Dx(1)y(1)(method)  primitiveArray(method)  print(1)(method)  range(method)  repeat(1)times(1)(method)  required(method)  self(selfDef)  sequence(method)  sequence(1)(method)  set(method)  set(1)(method)  singleton(method)  singleton(1)(method)  unbecome(1)(method)  valueOf(1)(method)  while(1)do(1)(method)  π(defdec)  ≠(1)(method) 
+
+Parent: (built-in ST: 102➞101):
+     ...(defdec)  Block(typedec)  Boolean(typedec)  Done(typedec)  Number(typedec)  Object(typedec)  String(typedec)  Type(typedec)  Unknown(typedec)  _prelude(defdec)  confidential(method)  done(defdec)  false(method)  graceObject(method)  outer(defdec)  override(method)  parent(method)  prelude(defdec)  public(method)  readable(method)  self(selfDef)  true(method)  writable(method) 
+
+Parent: (empty ST: 101):
+    
+
+
+=====================================
+0:0-2:45 module (ST 104)
+  dialect "standardGrace"
+  Name: testException
+  2:1-45 defdec (ST 104)
+    2:5-5 identifier (ST 104)Binding‹a›
+    Type: 2:8-13 identifier (ST 104)‹Number›
+    Value: 2:17-45 call (ST 104)
+        Receiver: 2:17-0:15 member (ST 104) on self ‹ProgrammingError›
+          2:17-23 identifier (ST 104)‹prelude›
+        Method Name: raise(1)
+        Parts:
+          2:34-45 callwithpart: raise
+            Args:
+              2:40-45 string (ST 104)(oops)

@@ -1,0 +1,183 @@
+minigrace[.]: elseifTest_test: 0.3 (+0.3): starting compilation
+minigrace[.]: elseifTest_test: 0.31 (+0.01): lexing.
+minigrace[.]: elseifTest_test: 0.34 (+0.03): parsing.
+minigrace[.]: elseifTest_test: 0.41 (+0.07): 0: (5.34)rbrace } closes if opened by (5.1)identifier if
+minigrace[.]: elseifTest_test: 0.43 (+0.02): 1: (7.23)rbrace } closes if opened by (5.1)identifier if
+minigrace[.]: elseifTest_test: 0.43 (+0): checking dialect StaticTyping used by module elseifTest_test
+minigrace[.]: elseifTest_test: 1.49 (+1.06): loading dialect "StaticTyping" for checkers.
+minigrace[.]: elseifTest_test: 1.95 (+0.46): lexing.
+
+1858 tokens are (1.1)keyword type(1.6)identifier Collection(1.16)lgeneric ⟦(1.17)identifier T(1.18)rgeneric ⟧(1.20)op =(1.22)lbrace {(2.4)identifier isEmpty(2.13)arrow →(2.15)identifier Boolean(2.22)separator \n(3.4)identifier size(3.10)arrow →(3.12)identifier Number(3.18)separator \n(4.4)identifier first(4.11)arrow →(4.13)identifier T(4.14)separator \n(5.4)identifier sizeIfUnknown(5.17)lparen ((5.18)identifier action(5.24)colon :(5.26)identifier Function0(5.35)lgeneric ⟦(5.36)identifier Number(5.42)rgeneric ⟧(5.43)rparen )(5.46)arrow →(5.48)identifier Number(5.54)separator \n(6.4)identifier do(6.6)lparen ((6.7)identifier action(6.13)colon :(6.15)identifier Function1(6.24)lgeneric ⟦(6.25)identifier T(6.26)comma ,(6.27)identifier Unknown(6.34)rgeneric ⟧(6.35)rparen )(6.38)arrow →(6.40)identifier Done(6.44)separator \n(7.4)identifier do(7.6)lparen ((7.7)identifier action(7.13)colon :(7.14)identifier Function1(7.23)lgeneric ⟦(7.24)identifier T(7.25)comma ,(7.27)identifier Unknown(7.34)rgeneric ⟧(7.35)rparen )(7.37)identifier separatedBy(7.48)lparen ((7.49)identifier sep(7.52)colon :(7.53)identifier Function0(7.62)lgeneric ⟦(7.63)identifier Unknown(7.70)rgeneric ⟧(7.71)rparen )(7.74)arrow →(7.76)identifier Done(7.80)separator \n(8.4)identifier map(8.7)lgeneric ⟦(8.8)identifier R(8.9)rgeneric ⟧(8.10)lparen ((8.11)identifier unaryFunction(8.24)colon :(8.25)identifier Function1(8.34)lgeneric ⟦(8.35)identifier T(8.36)comma ,(8.38)identifier R(8.39)rgeneric ⟧(8.40)rparen )(8.43)arrow →(8.45)identifier Collection(8.55)lgeneric ⟦(8.56)identifier T(8.57)rgeneric ⟧(8.58)separator \n(9.4)identifier fold(9.8)lgeneric ⟦(9.9)identifier R(9.10)rgeneric ⟧(9.11)lparen ((9.12)identifier binaryFunction(9.26)colon :(9.27)identifier Function2(9.36)lgeneric ⟦(9.37)identifier R(9.38)comma ,(9.40)identifier T(9.41)comma ,(9.43)identifier R(9.44)rgeneric ⟧(9.45)rparen )(9.47)identifier startingWith(9.59)lparen ((9.60)identifier initial(9.67)colon :(9.68)identifier R(9.69)rparen )(9.72)arrow →(9.74)identifier R(9.75)separator \n(10.4)identifier filter(10.10)lparen ((10.11)identifier condition(10.20)colon :(10.21)identifier Function1(10.30)lgeneric ⟦(10.31)identifier T(10.32)comma ,(10.34)identifier Boolean(10.41)rgeneric ⟧(10.42)rparen )(10.45)arrow →(10.47)identifier Collection(10.57)lgeneric ⟦(10.58)identifier T(10.59)rgeneric ⟧(10.60)separator \n(11.4)op ++(11.6)lparen ((11.7)identifier other(11.12)colon :(11.14)identifier Collection(11.24)lgeneric ⟦(11.25)identifier T(11.26)rgeneric ⟧(11.27)rparen )(11.30)arrow →(11.32)identifier Collection(11.42)lgeneric ⟦(11.43)identifier T(11.44)rgeneric ⟧(12.1)rbrace }(13.1)eof minigrace[.]: elseifTest_test: 2 (+0.05): parsing.
+
+1858 parseTree is typedec Collection
+661 typeDec is Collection
+ first → T
+ fold(binaryFunction : Function2⟦R,T,R⟧)startingWith(initial : R) → R
+ do(action : Function1⟦T,Unknown⟧) → Done
+ filter(condition : Function1⟦T,Boolean⟧) → Collection⟦T⟧
+ map(unaryFunction : Function1⟦T,R⟧) → Collection⟦T⟧
+ do(action : Function1⟦T,Unknown⟧)separatedBy(sep : Function0⟦Unknown⟧) → Done
+ asString → String
+ asDebugString → String
+ :: → Binding
+ ++(other : Collection⟦T⟧) → Collection⟦T⟧
+ sizeIfUnknown(action : Function0⟦Number⟧) → Number
+ ≠(_ : Object) → Object
+ size → Number
+ isEmpty → Boolean
+469: new mix parts first
+471: replace T with dict⟬T::identifier‹Number›⟭
+481: newMeth is first → Number
+389 newTypeAnno is Function2⟦R,Number,R⟧
+389 newTypeAnno is R
+469: new mix parts fold
+471: replace R with dict⟬T::identifier‹Number›⟭
+481: newMeth is fold(binaryFunction : Function2⟦R,Number,R⟧)startingWith(initial : R) → R
+389 newTypeAnno is Function1⟦Number,Unknown⟧
+469: new mix parts do
+471: replace Done with dict⟬T::identifier‹Number›⟭
+481: newMeth is do(action : Function1⟦Number,Unknown⟧) → Done
+389 newTypeAnno is Function1⟦Number,Boolean⟧
+469: new mix parts filter
+471: replace Collection⟦T⟧ with dict⟬T::identifier‹Number›⟭
+481: newMeth is filter(condition : Function1⟦Number,Boolean⟧) → Collection⟦Number⟧
+389 newTypeAnno is Function1⟦Number,R⟧
+469: new mix parts map
+471: replace Collection⟦T⟧ with dict⟬T::identifier‹Number›⟭
+481: newMeth is map(unaryFunction : Function1⟦Number,R⟧) → Collection⟦Number⟧
+389 newTypeAnno is Function1⟦Number,Unknown⟧
+389 newTypeAnno is Function0⟦Unknown⟧
+469: new mix parts do
+471: replace Done with dict⟬T::identifier‹Number›⟭
+481: newMeth is do(action : Function1⟦Number,Unknown⟧)separatedBy(sep : Function0⟦Unknown⟧) → Done
+469: new mix parts asString
+471: replace String with dict⟬T::identifier‹Number›⟭
+481: newMeth is asString → String
+469: new mix parts asDebugString
+471: replace String with dict⟬T::identifier‹Number›⟭
+481: newMeth is asDebugString → String
+469: new mix parts ::
+471: replace Binding with dict⟬T::identifier‹Number›⟭
+481: newMeth is :: → Binding
+389 newTypeAnno is Collection⟦Number⟧
+469: new mix parts ++
+471: replace Collection⟦T⟧ with dict⟬T::identifier‹Number›⟭
+481: newMeth is ++(other : Collection⟦Number⟧) → Collection⟦Number⟧
+389 newTypeAnno is Function0⟦Number⟧
+469: new mix parts sizeIfUnknown
+471: replace Number with dict⟬T::identifier‹Number›⟭
+481: newMeth is sizeIfUnknown(action : Function0⟦Number⟧) → Number
+389 newTypeAnno is Object
+469: new mix parts ≠
+471: replace Boolean with dict⟬T::identifier‹Number›⟭
+481: newMeth is ≠(_ : Object) → Boolean
+469: new mix parts size
+471: replace Number with dict⟬T::identifier‹Number›⟭
+481: newMeth is size → Number
+469: new mix parts isEmpty
+471: replace Boolean with dict⟬T::identifier‹Number›⟭
+481: newMeth is isEmpty → BooleannList is { 
+    first → Number; 
+    fold(binaryFunction : Function2⟦R,Number,R⟧)startingWith(initial : R) → R; 
+    do(action : Function1⟦Number,Unknown⟧) → Done; 
+    filter(condition : Function1⟦Number,Boolean⟧) → Collection⟦Number⟧; 
+    sizeIfUnknown(action : Function0⟦Number⟧) → Number; 
+    do(action : Function1⟦Number,Unknown⟧)separatedBy(sep : Function0⟦Unknown⟧) → Done; 
+    ++(other : Collection⟦Number⟧) → Collection⟦Number⟧; 
+    map(unaryFunction : Function1⟦Number,R⟧) → Collection⟦Number⟧; 
+    size → Number; 
+    isEmpty → Boolean; 
+  }minigrace[.]: elseifTest_test: 2.21 (+0.21): rewriting tree.
+minigrace[.]: elseifTest_test: 2.3 (+0.09): symbol tables built.
+minigrace[.]: elseifTest_test: 2.39 (+0.09): generating JavaScript code.
+AST nodes compiled:
+    num	3
+    identifier	3
+    call	3
+    string	3
+    if	2
+    op	2
+    dialect	1
+    defdec	1
+minigrace[.]: elseifTest_test: 2.44 (+0.05): done.
+
+1858 tokens are (1.1)keyword type(1.6)identifier Collection(1.16)lgeneric ⟦(1.17)identifier T(1.18)rgeneric ⟧(1.20)op =(1.22)lbrace {(2.4)identifier isEmpty(2.13)arrow →(2.15)identifier Boolean(2.22)separator \n(3.4)identifier size(3.10)arrow →(3.12)identifier Number(3.18)separator \n(4.4)identifier first(4.11)arrow →(4.13)identifier T(4.14)separator \n(5.4)identifier sizeIfUnknown(5.17)lparen ((5.18)identifier action(5.24)colon :(5.26)identifier Function0(5.35)lgeneric ⟦(5.36)identifier Number(5.42)rgeneric ⟧(5.43)rparen )(5.46)arrow →(5.48)identifier Number(5.54)separator \n(6.4)identifier do(6.6)lparen ((6.7)identifier action(6.13)colon :(6.15)identifier Function1(6.24)lgeneric ⟦(6.25)identifier T(6.26)comma ,(6.27)identifier Unknown(6.34)rgeneric ⟧(6.35)rparen )(6.38)arrow →(6.40)identifier Done(6.44)separator \n(7.4)identifier do(7.6)lparen ((7.7)identifier action(7.13)colon :(7.14)identifier Function1(7.23)lgeneric ⟦(7.24)identifier T(7.25)comma ,(7.27)identifier Unknown(7.34)rgeneric ⟧(7.35)rparen )(7.37)identifier separatedBy(7.48)lparen ((7.49)identifier sep(7.52)colon :(7.53)identifier Function0(7.62)lgeneric ⟦(7.63)identifier Unknown(7.70)rgeneric ⟧(7.71)rparen )(7.74)arrow →(7.76)identifier Done(7.80)separator \n(8.4)identifier map(8.7)lgeneric ⟦(8.8)identifier R(8.9)rgeneric ⟧(8.10)lparen ((8.11)identifier unaryFunction(8.24)colon :(8.25)identifier Function1(8.34)lgeneric ⟦(8.35)identifier T(8.36)comma ,(8.38)identifier R(8.39)rgeneric ⟧(8.40)rparen )(8.43)arrow →(8.45)identifier Collection(8.55)lgeneric ⟦(8.56)identifier T(8.57)rgeneric ⟧(8.58)separator \n(9.4)identifier fold(9.8)lgeneric ⟦(9.9)identifier R(9.10)rgeneric ⟧(9.11)lparen ((9.12)identifier binaryFunction(9.26)colon :(9.27)identifier Function2(9.36)lgeneric ⟦(9.37)identifier R(9.38)comma ,(9.40)identifier T(9.41)comma ,(9.43)identifier R(9.44)rgeneric ⟧(9.45)rparen )(9.47)identifier startingWith(9.59)lparen ((9.60)identifier initial(9.67)colon :(9.68)identifier R(9.69)rparen )(9.72)arrow →(9.74)identifier R(9.75)separator \n(10.4)identifier filter(10.10)lparen ((10.11)identifier condition(10.20)colon :(10.21)identifier Function1(10.30)lgeneric ⟦(10.31)identifier T(10.32)comma ,(10.34)identifier Boolean(10.41)rgeneric ⟧(10.42)rparen )(10.45)arrow →(10.47)identifier Collection(10.57)lgeneric ⟦(10.58)identifier T(10.59)rgeneric ⟧(10.60)separator \n(11.4)op ++(11.6)lparen ((11.7)identifier other(11.12)colon :(11.14)identifier Collection(11.24)lgeneric ⟦(11.25)identifier T(11.26)rgeneric ⟧(11.27)rparen )(11.30)arrow →(11.32)identifier Collection(11.42)lgeneric ⟦(11.43)identifier T(11.44)rgeneric ⟧(12.1)rbrace }(13.1)eof 
+1858 parseTree is typedec Collection
+661 typeDec is Collection
+ first → T
+ fold(binaryFunction : Function2⟦R,T,R⟧)startingWith(initial : R) → R
+ do(action : Function1⟦T,Unknown⟧) → Done
+ filter(condition : Function1⟦T,Boolean⟧) → Collection⟦T⟧
+ map(unaryFunction : Function1⟦T,R⟧) → Collection⟦T⟧
+ do(action : Function1⟦T,Unknown⟧)separatedBy(sep : Function0⟦Unknown⟧) → Done
+ asString → String
+ asDebugString → String
+ :: → Binding
+ ++(other : Collection⟦T⟧) → Collection⟦T⟧
+ sizeIfUnknown(action : Function0⟦Number⟧) → Number
+ ≠(_ : Object) → Object
+ size → Number
+ isEmpty → Boolean
+469: new mix parts first
+471: replace T with dict⟬T::identifier‹Number›⟭
+481: newMeth is first → Number
+389 newTypeAnno is Function2⟦R,Number,R⟧
+389 newTypeAnno is R
+469: new mix parts fold
+471: replace R with dict⟬T::identifier‹Number›⟭
+481: newMeth is fold(binaryFunction : Function2⟦R,Number,R⟧)startingWith(initial : R) → R
+389 newTypeAnno is Function1⟦Number,Unknown⟧
+469: new mix parts do
+471: replace Done with dict⟬T::identifier‹Number›⟭
+481: newMeth is do(action : Function1⟦Number,Unknown⟧) → Done
+389 newTypeAnno is Function1⟦Number,Boolean⟧
+469: new mix parts filter
+471: replace Collection⟦T⟧ with dict⟬T::identifier‹Number›⟭
+481: newMeth is filter(condition : Function1⟦Number,Boolean⟧) → Collection⟦Number⟧
+389 newTypeAnno is Function1⟦Number,R⟧
+469: new mix parts map
+471: replace Collection⟦T⟧ with dict⟬T::identifier‹Number›⟭
+481: newMeth is map(unaryFunction : Function1⟦Number,R⟧) → Collection⟦Number⟧
+389 newTypeAnno is Function1⟦Number,Unknown⟧
+389 newTypeAnno is Function0⟦Unknown⟧
+469: new mix parts do
+471: replace Done with dict⟬T::identifier‹Number›⟭
+481: newMeth is do(action : Function1⟦Number,Unknown⟧)separatedBy(sep : Function0⟦Unknown⟧) → Done
+469: new mix parts asString
+471: replace String with dict⟬T::identifier‹Number›⟭
+481: newMeth is asString → String
+469: new mix parts asDebugString
+471: replace String with dict⟬T::identifier‹Number›⟭
+481: newMeth is asDebugString → String
+469: new mix parts ::
+471: replace Binding with dict⟬T::identifier‹Number›⟭
+481: newMeth is :: → Binding
+389 newTypeAnno is Collection⟦Number⟧
+469: new mix parts ++
+471: replace Collection⟦T⟧ with dict⟬T::identifier‹Number›⟭
+481: newMeth is ++(other : Collection⟦Number⟧) → Collection⟦Number⟧
+389 newTypeAnno is Function0⟦Number⟧
+469: new mix parts sizeIfUnknown
+471: replace Number with dict⟬T::identifier‹Number›⟭
+481: newMeth is sizeIfUnknown(action : Function0⟦Number⟧) → Number
+389 newTypeAnno is Object
+469: new mix parts ≠
+471: replace Boolean with dict⟬T::identifier‹Number›⟭
+481: newMeth is ≠(_ : Object) → Boolean
+469: new mix parts size
+471: replace Number with dict⟬T::identifier‹Number›⟭
+481: newMeth is size → Number
+469: new mix parts isEmpty
+471: replace Boolean with dict⟬T::identifier‹Number›⟭
+481: newMeth is isEmpty → BooleannList is { 
+    first → Number; 
+    fold(binaryFunction : Function2⟦R,Number,R⟧)startingWith(initial : R) → R; 
+    do(action : Function1⟦Number,Unknown⟧) → Done; 
+    filter(condition : Function1⟦Number,Boolean⟧) → Collection⟦Number⟧; 
+    sizeIfUnknown(action : Function0⟦Number⟧) → Number; 
+    do(action : Function1⟦Number,Unknown⟧)separatedBy(sep : Function0⟦Unknown⟧) → Done; 
+    ++(other : Collection⟦Number⟧) → Collection⟦Number⟧; 
+    map(unaryFunction : Function1⟦Number,R⟧) → Collection⟦Number⟧; 
+    size → Number; 
+    isEmpty → Boolean; 
+  }positive

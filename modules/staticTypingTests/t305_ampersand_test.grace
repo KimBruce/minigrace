@@ -55,7 +55,11 @@ testSuiteNamed "ampersand with variant types" with {
         assert({A & A}) shouldntRaise (Exception)
     }
 
+    // TODO Does not work
     test "self & literal" by {
+        print({A & 5}.asString)
+        print(A.isDynamic)
+        print(5.isDynamic)
         //type-checker fails to find method 'isDynamic' inside 5
         assert({A & 5}) shouldRaise (NoSuchMethod)
     }

@@ -58,6 +58,7 @@ testSuiteNamed "isSubtypeOf variant tests" with {
             ("Type A should not have evaluated as a subtype of Type B | C")
     }
 
+    // TODO Does not work
     test "variant self, non-variant other" by {
       def objTypeCorD : sh.ObjectType = objTypeC | objTypeD
       def objTypeBorC : sh.ObjectType = objTypeB | objTypeC
@@ -65,11 +66,13 @@ testSuiteNamed "isSubtypeOf variant tests" with {
       assert(objTypeCorD.isSubtypeOf(objTypeA)) description
             ("Type C | D should have evaluated as a subtype of Type A")
 
+      // This test does not pass
       deny(objTypeBorC.isSubtypeOf(objTypeA)) description
             ("Type B | C should not have evaluated as a subtype of Type A")
 
     }
 
+    // TODO Does not work
     test "variant self, variant other" by {
       def objTypeCorD : sh.ObjectType = objTypeC | objTypeD
       def objTypeBorA : sh.ObjectType = objTypeB | objTypeA
@@ -80,7 +83,15 @@ testSuiteNamed "isSubtypeOf variant tests" with {
       assert(objTypeCorD.isSubtypeOf(objTypeBorA)) description
             ("Type C | D should have evaluated as a subtype of Type B | A")
 
+      // This test does work
       deny(objTypeCorB.isSubtypeOf(objTypeAorC)) description
             ("Type C | B should not have evaluated as a subtype of Type A | C")
     }
 }
+
+def objTypeBorC : sh.ObjectType = objTypeB | objTypeC
+def objTypeCorB : sh.ObjectType = objTypeC | objTypeB
+def objTypeAorC : sh.ObjectType = objTypeA | objTypeC
+
+print(objTypeBorC.isSubtypeOf(objTypeA)) // should be false
+print(objTypeCorB.isSubtypeOf(objTypeAorC)) // should be false

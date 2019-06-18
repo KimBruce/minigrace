@@ -116,6 +116,7 @@ testSuiteNamed "visitMatchCase tests" with {
         shouldBe (ot.anObjectType.string)
   }
 
+  // TODO Does not work
   test "matchee and param type-mismatch error" by {
     def blk2 = nodes.filter{n -> n.name.name == "testBlock2"}.first
     assert ({blk2.accept(st.astVisitor)}) shouldRaise (st.StaticTypingError)
@@ -126,6 +127,7 @@ testSuiteNamed "visitMatchCase tests" with {
     assert ({blk3.accept(st.astVisitor)}) shouldRaise (st.StaticTypingError)
   }
 
+  // TODO Does not work
   test "variant type matchee and params" by {
     def blk4 = nodes.filter{n -> n.name.name == "testBlock4"}.first
     assert({blk4.accept(st.astVisitor)}) shouldntRaise (Exception)
@@ -134,6 +136,7 @@ testSuiteNamed "visitMatchCase tests" with {
     assert ({blk5.accept(st.astVisitor)}) shouldRaise (st.StaticTypingError)
   }
 
+  // TODO Does not work
   test "variant return-type" by {
     def blk6 = nodes.filter{n -> n.name.name == "testBlock6"}.first
     assert ({blk6.accept(st.astVisitor)}) shouldntRaise (Exception)

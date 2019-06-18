@@ -11,30 +11,13 @@ import "ScopeModule" as sc
 import "SharedTypes" as share
 
 def input : String =
-    "type Point = \{\n" ++
-    "    x -> Number\n" ++
+    "type A = \{\n" ++
+    "   m -> String\n" ++
+    "   n -> Number\n" ++
     "}\n" ++
-    "type ColorPoint = Point & interface \{\n" ++
-    "    color -> String\n" ++
-    "    m -> ColorPoint\n" ++
-    "}\n" ++
-    "type FatPoint = Point & interface \{\n" ++
-    "    radius -> Number\n" ++
-    "    m -> FatPoint\n" ++
-    "}\n" ++
-    "type Combo = ColorPoint & FatPoint\n" ++
-    "class combo -> Combo \{\n" ++
-    "    method color -> String \{ \"Color\" \}\n" ++
-    "    method x -> Number \{ 47 \}\n" ++
-    "    method radius -> Number \{ 0 \}\n" ++
-    "    method m -> FatPoint \{ fat \}\n" ++
-    "}\n" ++
-    "class fat -> FatPoint \{\n" ++
-    "    method radius -> Number \{ 1 \}\n" ++
-    "    method m -> FatPoint \{ fat \}\n" ++
-    "    method x -> Number \{ 2 \}\n" ++
-    "}\n" ++
-    "def d: Combo = combo\n"
+    "type B = \{\n" ++
+    "   m -> String\n" ++
+    "}\n" 
 
 // Turns input into an abstract syntax tree (ast)
 def tokens = lexer.lexString(input)
@@ -50,11 +33,24 @@ for(nodes) do { node ->
     print("\nnode.asString: {node.asString}")
 }
 
-def dobj = nodes.filter{n -> n.asString == "defdec d"}.first
-def combotype = nodes.filter{n -> n.asString == "typedec Combo"}.first
 
-def comboOT: share.ObjectType = ot.anObjectType.fromDType(combotype.value) with (emptyList)
+def Anode = nodes.filter{n -> n.asString == "typedec A"}.first
+def Bnode = nodes.filter{n -> n.asString == "typedec B"}.first
 
-print("\n53: scope.types.stack: {sc.scope.types.stack}")
-print ("\n54:{comboOT.methList}")
-print ("\n55: {ot.anObjectType.fromDType(dobj.dtype) with (emptyList)}")
+def AOT: share.ObjectType = ot.anObjectType.fromDType(Anode.value) with (emptyList)
+def BOT: share.ObjectType = ot.anObjectType.fromDType(Bnode.value) with (emptyList)
+
+
+print(AOT.methList)
+print ("1: " ++ AOT.isSubtypeOf(BOT))
+print ("2: " ++ BOT.isSubtypeOf(AOT))
+print ("3: " ++ (BOT == AOT))
+print ("4: " ++ AOT.isSubtypeOf(AOT))
+
+
+
+
+
+// print("\n53: scope.types.stack: {sc.scope.types.stack}")
+// print ("\n54:{comboOT.methList}")
+// print ("\n55: {ot.anObjectType.fromDType(dobj.dtype) with (emptyList)}")

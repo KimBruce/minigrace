@@ -1,5 +1,7 @@
-#pragma ExtendedLineups
-#pragma noTypeChecks
+//#pragma ExtendedLineups
+
+//#pragma noTypeChecks
+
 dialect "none"
 import "standardGrace" as sg
 
@@ -14,13 +16,14 @@ def StaticTypingError is public = Exception.refine "StaticTypingError"
 
 // Returned when searching for a method that is not there.
 def noSuchMethod: outer.Pattern = object {
-    inherit BasicPattern.new
+    use BasicPattern
 
-    method match(obj : Object) {
+    method matches(obj : Object) -> Boolean {
         if(self.isMe(obj)) then {
-            SuccessfulMatch.new(self, list[])
+//            SuccessfulMatch.new(self, list[])
+           true
         } else {
-            FailedMatch.new(obj)
+           false // FailedMatch.new(obj)
         }
     }
 }
@@ -125,11 +128,16 @@ type MethodTypeFactory = {
     signature (signature' : List⟦MixPart⟧)
             returnType (rType : ObjectType)→ MethodType
 
+    signature (signature' : List⟦MixPart⟧)
+                     with (typeParams': List[[String]])
+                       returnType (retType' : ObjectType) → MethodType
+
     // Create method type for parameterless method
     member (name : String) ofType (rType : ObjectType) → MethodType
 
+    // DO WE NEED THIS??
     // Create method type for imported method
-    fromGctLine (line : String, importName: String) → MethodType
+    // fromGctLine (line : String, importName: String) → MethodType
 
     // Create method type from AST node representing method
     fromNode (node: AstNode) → MethodType
@@ -296,13 +304,13 @@ type AstNode = { kind → String }
 
 // Create a pattern for matching kind for match
 class aPatternMatchingNode (kind : String) → Pattern {
-    inherit outer.BasicPattern.new
+    use BasicPattern
 
-    method match (obj : Object) → MatchResult | false {
+    method matches (obj : Object) → Boolean { // MatchResult | false {
         match (obj)
           case { node : AstNode →
             if (kind == node.kind) then {
-                SuccessfulMatch.new (node, outer.emptySequence)
+                true //SuccessfulMatch.new (node, outer.emptySequence)
             } else {
                 false
             }
@@ -318,11 +326,11 @@ class aPatternMatchingNode (kind : String) → Pattern {
 // A pattern that matches if parameter satisfies predicate
 // Use in matches
 class booleanPattern (predicate: Function1⟦AstNode⟧) → Pattern {
-    inherit BasicPattern.new
+    use BasicPattern
     
-    method match (obj: AstNode) → MatchResult | false{
+    method matches (obj: AstNode) → Boolean { //MatchResult | false{
         if (predicate.apply (obj)) then {
-            SuccessfulMatch.new (obj, outer.emptySequence)
+            true //SuccessfulMatch.new (obj, outer.emptySequence)
         } else {
             false
         }

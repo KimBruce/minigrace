@@ -1,5 +1,5 @@
-#pragma ExtendedLineups
-#pragma noTypeChecks
+//#pragma ExtendedLineups
+//#pragma noTypeChecks
 dialect "none"
 import "standardGrace" as sg
 
@@ -11,7 +11,7 @@ import "io" as io
 import "ScopeModule" as sc
 import "SharedTypes" as share
 
-inherit sg.methods
+//inherit sg.methods
 
 // Error resulting from type checking
 def StaticTypingError is public = Exception.refine "StaticTypingError"
@@ -27,7 +27,7 @@ type AstNode = share.AstNode
 type Parameter = share.Parameter
 type ObjectTypeFromOp = share.ObjectTypeFromOp
 type ObjectTypeFromMeths = share.ObjectTypeFromMeths
-def scope: share.Scope = sc.scope
+def scope: sc.Scope = sc.scope
 
 // Scoping error declaration
 def ScopingError: outer.ExceptionKind is public =
@@ -37,7 +37,7 @@ def ScopingError: outer.ExceptionKind is public =
 def debug : Boolean = false
 
 // Collection of method types in type
-var methodtypes: List[[MethodType]] := [ ]
+var methodtypes: List[[MethodType]] := emptyList[[MethodType]]
 
 // visitor to convert a type expression to a string
 // Makes printing them a bit clearer. Used in gct?
@@ -125,7 +125,7 @@ method dtypeToString(dtype) {
     if (false == dtype) then {
         "Unknown"
     } elseif {dtype.kind == "typeliteral"} then {
-        methodtypes := []
+        methodtypes := list[]
         dtype.accept(typeVisitor)
         methodtypes.at (1)
     } else {
@@ -141,26 +141,26 @@ method dtypeToString(dtype) {
 // Used in match statements to catch indicate no method found
 // Method returns these when no method found.
 def noSuchMethod: outer.Pattern is readable = object {
-    inherit BasicPattern.new
+    use BasicPattern
 
-    method match(obj : Object) {
+    method matches(obj : Object) -> Boolean {
         if (self.isMe(obj)) then {
-            SuccessfulMatch.new(self, list[])
+            true //SuccessfulMatch.new(self, list[])
         } else {
-            FailedMatch.new(obj)
+            false //FailedMatch.new(obj)
         }
     }
 }
 
 // Used in match statements to indicate no type found
-def noSuchType: outer.Pattern = object {
-    inherit BasicPattern.new
+def noSuchType: Pattern = object {
+    use BasicPattern
 
-    method match(obj : Object) {
+    method matches(obj : Object) -> Boolean{
         if (self.isMe(obj)) then {
-            SuccessfulMatch.new(self, list[])
+            true //SuccessfulMatch.new(self, list[])
         } else {
-            FailedMatch.new(obj)
+            false //FailedMatch.new(obj)
         }
     }
 }
@@ -309,13 +309,13 @@ def aMethodType: MethodTypeFactory is public = object {
                                     "({part.parameters.size})")
                     }
                     show := "{show}{part.name}("
-                    var once: Boolean := false
+                    var once1: Boolean := false
                     for (part.parameters) do { param →
-                        if (once) then {
+                        if (once1) then {
                             show := "{show}, "
                         }
                         show := "{show}{param}"
-                        once := true
+                        once1 := true
                     }
                     show := "{show})"
                 }
@@ -697,7 +697,7 @@ def aMethodType: MethodTypeFactory is public = object {
                io.error.write "\n607 created method type {methType} from def or var {node}"
             }
             methType
-        } case { _ →
+        } else {
             Exception.raise "unrecognised method node" with(node)
         }
     }
@@ -750,12 +750,12 @@ def aGenericType : GenericTypeFactory is public = object{
 
         method asString → String {
             var s : String := name ++ "⟦"
-            var once : Boolean := true
+            var once1 : Boolean := true
             for (typeParams) do {typeParam : String →
-                if (once.not) then {
+                if (once1.not) then {
                     s := "{s}, {typeParam}"
                 } else {
-                    once := false
+                    once1 := false
                     s := "{s}{typeParam}"
                 }
             }
@@ -1460,7 +1460,7 @@ def anObjectType: ObjectTypeFactory is public = object {
             } case { member : share.Member →
                 "{asStringHelper(member.receiver)}.{member.value}" ++
                                         "{typeParamsToString(member.generics)}"
-            } case { _ →
+            } else {
                 ProgrammingError.raise("No case in method 'asString' of the" ++
                                           "class definedByNode for node of " ++
                                           "kind {nd.kind}") with(nd)
@@ -1566,7 +1566,7 @@ def anObjectType: ObjectTypeFactory is public = object {
               }
             } case { "|" →
               returnValue := leftType | rightType
-            } case { _ →
+            } else {
               ProgrammingError.raise("Expected '&' or '|', got {opValue}")
                                                                         with(op)
             }
@@ -1640,7 +1640,7 @@ def anObjectType: ObjectTypeFactory is public = object {
                               ScopingError.raise("Failed to find {memberCall}")}
             }
 
-        } case { _ →
+        } else {
             ProgrammingError.raise "No case for node of kind {dtype.kind}"
                                                                     with(dtype)
         }
@@ -1927,11 +1927,11 @@ def anObjectType: ObjectTypeFactory is public = object {
     base := fromMethods(sg.emptySet) withName("Object")
 
     // Used for type-checking imports; please update when additional types are
-    // added
-    def preludeTypes: Set⟦String⟧ is public = ["Done", "Pattern", "Iterator",
+    // added   : Set⟦String⟧
+    def preludeTypes is public = sg.set[[String]].withAll(["Done", "Pattern", "Iterator",
                                   "Boolean", "Number", "String", "List", "Set",
                                   "Sequence", "Dictionary", "Point", "Binding",
-                                  "Collection", "Enumerable", "Range", "Object"]
+                                  "Collection", "Enumerable", "Range", "Object"])
 
     // Create object types for built-in types (includes all prelude types)
     // This part just creates them, no methods yet

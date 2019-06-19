@@ -1,5 +1,5 @@
-#pragma ExtendedLineups
-#pragma noTypeChecks
+//#pragma ExtendedLineups
+//#pragma noTypeChecks
 dialect "none"
 import "standardGrace" as sg
 

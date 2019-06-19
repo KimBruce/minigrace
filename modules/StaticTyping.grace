@@ -1,5 +1,5 @@
-#pragma ExtendedLineups
-#pragma noTypeChecks
+//#pragma ExtendedLineups
+//#pragma noTypeChecks
 dialect "none"
 import "standardGrace" as sg
 
@@ -27,6 +27,9 @@ type AstNode = share.AstNode
 type MixPart = share.MixPart
 type Param = share.Param
 type Parameter = share.Parameter
+//This type is used for checking subtyping
+type TypePair = share.TypePair
+
 
 // Error resulting from type checking
 def StaticTypingError: Exception is public = share.StaticTypingError
@@ -208,7 +211,7 @@ method checkParamArgsLengthSame(req, sigPart, params, args) -> Done
             } else { 
                 "few" 
             }
-            def where: Number = if (aSize > pSize) then {
+            def wheresIt: Number = if (aSize > pSize) then {
                 args.at (pSize + 1)
             } else {
             // Can we get beyond the final argument?
@@ -218,7 +221,7 @@ method checkParamArgsLengthSame(req, sigPart, params, args) -> Done
             StaticTypingError.raise(
                 "too {which} arguments to method part " ++
                 "'{sigPart.name}' on line {req.line}, " ++
-                "expected {pSize} but got {aSize}") with (where)
+                "expected {pSize} but got {aSize}") with (wheresIt)
         }
 }
 
@@ -1132,7 +1135,7 @@ def astVisitor: ast.AstVisitor is public = object {
                 }
             }
 
-        } case { _ →
+        } else {
             // destination type
             def dType: ObjectType = typeOf(dest)
 
@@ -1710,7 +1713,7 @@ method processBody (body : List⟦AstNode⟧,
             } case { td : share.TypeDeclaration →
                 //Now does nothing if given type declaration; might make this
                 //raise an error as embedded types are disallowed.
-            } case { _ →
+            } else {
                     if (debug3) then {
                         io.error.write"\n2617 ignored {stmt}"
                     }
@@ -1885,7 +1888,7 @@ method isPublic(node : share.Method | share.Def | share.Var)
         }
 
         true
-    } case { _ →
+    } else {
         for(node.annotations) do { ann →
             if((ann.value == "public") || 
                     (ann.value == "readable")) then {

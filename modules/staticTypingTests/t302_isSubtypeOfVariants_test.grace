@@ -88,10 +88,3 @@ testSuiteNamed "isSubtypeOf variant tests" with {
             ("Type C | B should not have evaluated as a subtype of Type A | C")
     }
 }
-
-def objTypeBorC : sh.ObjectType = objTypeB | objTypeC
-def objTypeCorB : sh.ObjectType = objTypeC | objTypeB
-def objTypeAorC : sh.ObjectType = objTypeA | objTypeC
-
-print(objTypeBorC.isSubtypeOf(objTypeA)) // should be false
-print(objTypeCorB.isSubtypeOf(objTypeAorC)) // should be false

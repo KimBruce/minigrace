@@ -692,7 +692,9 @@ def astVisitor: ast.AstVisitor is public = object {
                 def lastNode: AstNode = meth.body.last
                 if (share.Return.match(lastNode).not) then {
                     // START HERE
-                    print("\n694: meth.body.last: {meth.body.last}")
+                    if (debug3) then {
+                        print("\n694: meth.body.last: {meth.body.last}")
+                    }
                     def lastType = typeOf(lastNode)
                     if (debug3) then {
                        io.error.write 
@@ -1185,6 +1187,7 @@ def astVisitor: ast.AstVisitor is public = object {
             def vType: ObjectType = typeOf(value)
             if (debug2) then {
                io.error.write "\n1179: vType for {name} is {vType}"
+               print("\n1191: {vType.isConsistentSubtypeOf(defType)}")
             }
             // infer type based on initial value if definition 
             // given w/out type

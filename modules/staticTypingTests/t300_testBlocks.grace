@@ -29,7 +29,7 @@ dialect "StaticTyping"
 
 // Should raise an exception but DOES NOT
 def testBlock5: Object = object {
-   def value: String | Number = "Hello World"
+   def value: String | Number = 17
 
    var result: String := match(value)
        case { s: String -> "" }
@@ -45,9 +45,9 @@ def testBlock5: Object = object {
 // }
 
 // Should raise an exception
-def testBlock7: Object = object {
-   def value: String = "Hello World"
-   var result: String | Boolean := match(value)
-       case { "Hello World" -> "Hello World" }
-       case { s: String -> 5 }
-}
+// def testBlock7: Object = object {
+//    def value: String = "Hello World"
+//    var result: String | Boolean := match(value)
+//        case { "Hello World" -> "Hello World" }
+//        case { s: String -> 5 }
+// }

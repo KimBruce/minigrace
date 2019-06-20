@@ -41,8 +41,6 @@ def objTypeBar : sh.ObjectType = ot.anObjectType.fromDType(typeBar.value)with(em
 
 testSuiteNamed "self-referential subtype test" with {
     test "self-referential not a subtype" by {
-        assert({inputTree.accept(st.astVisitor)}) shouldRaise (TypeError)
+        assert({inputTree.accept(st.astVisitor)}) shouldRaise (sh.StaticTypingError)
     }
 }
-
-

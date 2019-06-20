@@ -21,7 +21,7 @@ def input : String =
     "   m -> Foo" ++
     "\}\n" ++
     "type B = \{\n" ++
-    "   n -> Bar" ++
+    "   m -> Bar" ++
     "\}\n"
 
 print(input)
@@ -59,7 +59,7 @@ testSuiteNamed "subtying tests" with {
     }
 
     test "simple method subtype" by {
-        assert(objTypeA.isSubtypeOf(objTypeB)) shouldBe (false)
+        assert(objTypeA.isSubtypeOf(objTypeB)) shouldBe (true)
     }
 
     test "simple method not subtype" by {

@@ -836,6 +836,10 @@ def anObjectType: ObjectTypeFactory is public = object {
             emptyList[[Set[[MethodType]]]]
         }
 
+        method decompose -> List[[ObjectType]] {
+            list[[ObjectType]] [self]
+        }
+
         // Does this type represent the dynamic or unknown type
         method isDynamic -> Boolean {false}
 
@@ -1040,6 +1044,14 @@ def anObjectType: ObjectTypeFactory is public = object {
                     trials.add(selfOtherPair)
                 }
 
+                // Handle simple case where other is collection of methods
+                if (other'.isMeths) then {
+                    if (debug47) then {io.error.write "\n816: both are meths"}
+                    def oans = isSimpleSubtypeOf(trials, other')
+                    if (debug47) then {io.error.write "\n818: self: {self} subtype of other: {other'}  ans is {oans}"}
+                    return oans
+                }
+
                 // case where other is built from & or |
                 if (other'.isOp) then {
                     def left: Answer = self.isSubtypeHelper(trials,other'.left)
@@ -1056,14 +1068,6 @@ def anObjectType: ObjectTypeFactory is public = object {
                          answerConstructor(left.ans && right.ans,trials)
                     }
                     return helperResult
-                }
-
-                // Handle simple case where other is collection of methods
-                if (other'.isMeths) then {
-                    if (debug47) then {io.error.write "\n816: both are meths"}
-                    def oans = isSimpleSubtypeOf(trials, other')
-                    if (debug47) then {io.error.write "\n818: self: {self} subtype of other: {other'}  ans is {oans}"}
-                    return oans
                 }
 
                 // case where other is a named type
@@ -1296,26 +1300,45 @@ def anObjectType: ObjectTypeFactory is public = object {
             self
         }
 
-        // TODO: FIX THIS. Move to superObject and check subtypes of methods
+        method decompose -> List[[ObjectType]] {
+            left.decompose ++ right.decompose
+        }
+
+        // TODO Move to superObject? 
         method isSubtypeHelper (trials: List⟦TypePair⟧, other: ObjectType) → Answer {
+            def selfDecomposedList: List[[ObjectType]] = decompose
+            def otherDecomposedList: List[[ObjectType]] = other.decompose
 
-            def leftOtherPair: TypePair = typePair(left, other)
-            def rightOtherPair: TypePair = typePair(right, other)
-            trials.add(leftOtherPair);
-            trials.add(rightOtherPair);
-
-            def leftAns: Answer = left.isSubtypeHelper(trials, other)
-            def rightAns: Answer = right.isSubtypeHelper(trials, other)
-            if (debug) then {
-                io.error.write
-                    "\n832: ansLeft: {leftAns}, ansRight: {rightAns}"
+            match(op)
+                case { "|" ->
+                    if(debug3) then {
+                        io.error.write("\n1314: In {op} case: {left} {op} {right}")
+                    }
+                    for(selfDecomposedList) doWithContinue { selfType: ObjectType, continue -> 
+                        for(otherDecomposedList) do { otherType: ObjectType ->
+                            def answer: Answer = selfType.isSubtypeHelper(trials, otherType)
+                            if(debug3) then {
+                                io.error.write("\n1318: selfType {selfType} is subtype of otherType {otherType}: {answer.ans}")
+                            }
+                            if(answer.ans) then {
+                                continue.apply
+                            }
+                        }
+                        return answerConstructor(false, trials)
+                    }
+                    return answerConstructor(true, trials)
             }
-            def helperResult: Answer = if (op == "|") then {
-                 answerConstructor(leftAns.ans && rightAns.ans,trials)
-            } else { // & node
-                 answerConstructor(leftAns.ans || rightAns.ans,trials)
+                case { "&" -> 
+                    for(selfDecomposedList) doWithContinue { selfType: ObjectType, continue -> 
+                        for(otherDecomposedList) do { otherType: ObjectType ->
+                            def answer: Answer = selfType.isSubtypeHelper(trials, otherType)
+                            if(answer.ans.not) then {
+                                answerConstructor(false, trials)
+                            }
+                        }          
+                    }
+                    answerConstructor(true, trials)
             }
-            return helperResult
         }
 
         // conservative version of subtype where A & B <: C iff A <: C or B <: C

@@ -26,6 +26,9 @@ type ObjectTypeFromOp = share.ObjectTypeFromOp
 type ObjectTypeFromMeths = share.ObjectTypeFromMeths
 def scope: share.Scope = sc.scope
 
+// Error resulting from type checking
+def StaticTypingError: Exception is public = share.StaticTypingError
+
 // Scoping error declaration
 def ScopingError: outer.ExceptionKind is public =
                                                 TypeError.refine("ScopingError")
@@ -177,11 +180,11 @@ class typePair (first':ObjectType, second':ObjectType) →
     }
 
     method == (other:Object) → Boolean {
-        (first == other.first) && (second == other.second)
+        (first.asString == other.first.asString) && (second.asString == other.second.asString)
     }
 
     method asString {
-        "<{first'} , {second'}>"
+        "<{first'}, {second'}>"
     }
 }
 
@@ -450,10 +453,20 @@ def aMethodType: MethodTypeFactory is public = object {
             // no uninitialized type params
             method nongenericSpecialisationOf(trials: List⟦TypePair⟧,
                                                   other: MethodType) → Answer {
+                def debug3: Boolean = false
+                if(debug3) then {
+                    io.error.write("\n458: Entering nongenericSpecialisationOf")
+                }
+
                 //Shortcut for when self and other have the exact same param
                 //types and return type
-                if (self == other) then {
+                if (self.isMe(other)) then {
                     return answerConstructor(true, trials)
+                }
+
+                if(debug3) then {
+                    io.error.write("\n471: signature = {signature}")
+                    io.error.write("\n471: other.signature = {other.signature}")
                 }
 
                 //Check subtyping of param and return types
@@ -461,6 +474,7 @@ def aMethodType: MethodTypeFactory is public = object {
                                             do { part: MixPart, part': MixPart →
                     for (part.parameters) and (part'.parameters)
                                                     do { p: Param, p': Param →
+
                         def pt: ObjectType = p.typeAnnotation
                         def pt': ObjectType = p'.typeAnnotation
 
@@ -474,6 +488,12 @@ def aMethodType: MethodTypeFactory is public = object {
                     }
                 }
 
+                if(debug3) then {
+                    io.error.write("\n492: retType = {retType}")
+                    io.error.write("\n493: other.retType = {other.retType}")
+                    io.error.write("\n494: trials = {trials}")
+                }
+
                 return retType.isSubtypeHelper (trials, other.retType)
             }
 
@@ -482,7 +502,7 @@ def aMethodType: MethodTypeFactory is public = object {
             // TODO: Modify or delete
             method apply(replacementTypes : List⟦AstNode⟧) → MethodType {
                 if(replacementTypes.size ≠ typeParams.size) then {
-                    TypeError.raise("Wrong number of type parameters " ++
+                    StaticTypingError.raise("Wrong number of type parameters " ++
                             "given when instantiating generic method " ++
                             "{nameString}. Attempted to replace " ++
                             "{typeParams} with {replacementTypes}.")
@@ -723,7 +743,7 @@ def aGenericType : GenericTypeFactory is public = object{
         //typeParams stored in oType with their counterpart in the list
         method apply(replacementTypes : List⟦ObjectType⟧) → ObjectType {
             if(replacementTypes.size ≠ typeParams.size) then {
-                TypeError.raise("Wrong number of type parameters given when " ++
+                StaticTypingError.raise("Wrong number of type parameters given when " ++
                             "instantiating generic type {name}. Attempted to" ++
                               " replace {typeParams} with {replacementTypes}.")
             }
@@ -808,6 +828,8 @@ def anObjectType: ObjectTypeFactory is public = object {
         // Is this object type built from a collection of methods?
         method isMeths -> Boolean {false}
 
+        method isDone -> Boolean {false}
+
         // Return the list of sets of methods of the type
         // Needed for building types with & or |
         method methList -> List[[Set[[MethodType]]]] {
@@ -856,7 +878,7 @@ def anObjectType: ObjectTypeFactory is public = object {
         //method == (other:ObjectType) → Boolean { self.isMe(other) }
         method == (other:ObjectType) → Boolean {
             //io.error.write "\n873 check equality of {asString} and {other.asString}"
-            asString == other.asString
+            self.isSubtypeOf(other) && other.isSubtypeOf(self)
         }
 
         // Instantiate generic parameters with tparams
@@ -898,10 +920,14 @@ def anObjectType: ObjectTypeFactory is public = object {
                io.error.write "\n749 update type in fromMethods {name}"
             }
             self
-        }
+        } 
 
         // Is type given with a name (yes in this case)
         method isId -> Boolean is override {true}
+
+        method isDone -> Boolean is override {
+            if(name == "Done") then { true } else { false }
+        }
 
         method asString → String is override {name}
     }
@@ -953,19 +979,32 @@ def anObjectType: ObjectTypeFactory is public = object {
             // Keeps track of pairs already considered (co-induction)
             method isSimpleSubtypeOf(trials: List⟦TypePair⟧,
                                                   other:ObjectType) → Answer {
-                def debug3 = false
+                def debug3: Boolean = false
                 //for each method in other, check that there is a corresponding
                 //method in self
-                for (other.methods) doWithContinue { otherMeth: MethodType, continue →
-                    for (self.methods) do {selfMeth: MethodType →
-                        if (debug3) then {print "\n945 selfMeth: {selfMeth}"}
-                        def isSpec: Answer =
-                              selfMeth.isSpecialisationOf(trials, otherMeth)
-                        if (debug3) then {print "\n947 isSpec: {isSpec}"}
-                        if (isSpec.ans) then { continue.apply }
+                if(debug3) then {
+                    print("\n961: methList: {methList}")
+                }
+                for (other.methList) do { otherMethSet: Set[[MethodType]] ->
+                    if(debug3) then {
+                        print("\n963: other.methList.methSet: {otherMethSet}")
                     }
-                    //fails to find corresponding method
-                    return answerConstructor(false, trials)
+                    for (otherMethSet) doWithContinue { otherMeth: MethodType, continue ->
+                        for (self.methList) do {selfMethSet: Set[[MethodType]] →
+                            for (selfMethSet) do { selfMeth: MethodType ->
+                                if (debug3) then { print "\n968 otherMeth: {otherMeth}" }
+                                if (debug3) then { print "\n945 selfMeth: {selfMeth}" }
+                                def isSpec: Answer =
+                                      selfMeth.isSpecialisationOf(trials, otherMeth)
+                                if (debug3) then { print "\n947 isSpec.ans: {isSpec.ans}" }
+                                if (isSpec.ans) then {
+                                    continue.apply 
+                                }
+                            }
+                        }
+                        //fails to find corresponding method
+                        return answerConstructor(false, trials)
+                    }
                 }
                 return answerConstructor(true, trials)
             }
@@ -982,16 +1021,19 @@ def anObjectType: ObjectTypeFactory is public = object {
 
                 if (debug47) then {
                    io.error.write "\n841: checking suptyping for {self} and {other'}"
+                   io.error.write "\n842: other'.isMeths: {other'.isMeths}"
                 }
 
                 //if trials already contains selfOtherPair, we can assume
                 //self <: other.  Check other trivial cases of subtyping
-                if ((self == other') || {trials.contains(selfOtherPair)}
-                        || {other'.isDynamic} || {other' == doneType}) then{
+                if ((self.isMe(other')) || {trials.contains(selfOtherPair)}
+                        || {other'.isDynamic} || {other'.isDone}) then{
                     if (debug47) then {
                         io.error.write "\n992: self : {self} other: {other'}"
-                        io.error.write "\n993: trials : (trials.asString}"
+                        io.error.write "\n993: other'.methList : {other'.methList}"
+                        io.error.write "\n994: trials : {trials}"
                         io.error.write "\n1001: selfOtherPair: {selfOtherPair}"
+                        io.error.write "\n1002: trials.contains(selfOtherPair): {trials.contains(selfOtherPair)}"
                     }
                     return answerConstructor(true, trials)
                 } else {
@@ -1024,14 +1066,9 @@ def anObjectType: ObjectTypeFactory is public = object {
                     return oans
                 }
 
-                // TODO: should this be an error? Probably not.
-                if (other'.isTypeVble) then {
-                   return answerConstructor(false,trials)
-                }
-
                 // case where other is a named type
                 if (other'.isId) then {
-                   if (debug) then {
+                   if (debug47) then {
                       io.error.write "\n825 in id case for {other'}"
                    }
                    def idType: ObjectType = scope.types.find(other'.id)
@@ -1039,8 +1076,13 @@ def anObjectType: ObjectTypeFactory is public = object {
                    return isSubtypeHelper (trials, idType)
                 }
 
+                // TODO: should this be an error? Probably not.
+                if (other'.isTypeVble) then {
+                   return answerConstructor(false,trials)
+                }
+
                 // Should have covered all cases by now!
-                if (debug) then { 
+                if (debug47) then { 
                    io.error.write "Oops! Missed a case for {self} and {other'}"
                    io.error.write "other'.isMeths = {other'.isMeths}"
                 }
@@ -1372,12 +1414,6 @@ def anObjectType: ObjectTypeFactory is public = object {
 
         // Does this type represent the dynamic or unknown type
         def isDynamic : Boolean is public = false
-
-        //The asString of a definedByNode contains the information needed to
-        //determine equivalency
-        method == (other:ObjectType) → Boolean {
-            asString == other.asString
-        }
 
         // Determines if self is a subtype of other
         method isSubtypeOf (other : ObjectType) -> Boolean {
@@ -1737,9 +1773,10 @@ def anObjectType: ObjectTypeFactory is public = object {
     class fromIdentifier(ident : share.Identifier) with (typeParams) → ObjectType { 
         inherit superObjectType
 
-        method id  -> String { return ident.value }
+        method id  -> String { ident.value }
         method isId -> Boolean { true }
         method isOp -> Boolean { ans.isOp }
+        method isMeths -> Boolean { ans.isMeths }
 
         method left -> ObjectType { ans.left }
         method right -> ObjectType { ans.right }
@@ -1772,8 +1809,10 @@ def anObjectType: ObjectTypeFactory is public = object {
         }
   
         method isSubtypeOf (other: ObjectType) -> Boolean { ans.isSubtypeOf(other) }  
-        method == (other: ObjectType) -> Boolean { ans.asString == other.asString }
-        method asString -> String { ident.value }
+        method == (other: ObjectType) -> Boolean {
+            ans.isSubtypeOf(other) && other.isSubtypeOf(ans) 
+        }
+        method asString -> String { id }
         method methods -> Set⟦MethodType⟧ is public  { ans.methods }
 
         method methList -> List[[Set[[MethodType]]]] {
@@ -2365,7 +2404,7 @@ method continue'(e, bl) → Done is confidential {
 //Takes a non-empty list of objectTypes and combines them into a variant type
 method fromObjectTypeList(oList : List⟦ObjectType⟧) → ObjectType{
       if (oList.size == 0) then {
-          TypeError.raise("\nTried to construct a variant type from" ++
+          StaticTypingError.raise("\nTried to construct a variant type from" ++
               "an empty list of variant types")
       }
       var varType: ObjectType := oList.at (1)

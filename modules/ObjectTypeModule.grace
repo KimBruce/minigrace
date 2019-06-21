@@ -1004,7 +1004,7 @@ def anObjectType: ObjectTypeFactory is public = object {
             //      methods.
             method isSimpleSubtypeOf(trials: List⟦TypePair⟧,
                                                   other:ObjectType) → Answer {
-            def debug3: Boolean = false
+                def debug3: Boolean = false
                 // For each method in other, check that there is a corresponding
                 // method in self
                 if(debug3) then {
@@ -2583,7 +2583,7 @@ method removeBaseMethods(methods: List[[Set[[MethodType]]]], base: ObjectType) -
                 newMethSet.add(meth)
             }
         }
-        methListNoBase.add(newMethSet)
+        methodsNoBase.add(newMethSet)
     }
     return methodsNoBase
 }                        

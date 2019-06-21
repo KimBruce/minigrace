@@ -606,7 +606,7 @@ def objectType = object {
     addVar "List" ofType (pattern)
     addVar "Point" ofType (pattern)
 
-    addVar "done" ofType (self.done)
+    addVar "Done" ofType (self.done)
     addVar "true" ofType (boolean)
     addVar "false" ofType (boolean)
     addVar "emptyList" ofType (list)

@@ -1,0 +1,291 @@
+#!/usr/bin/env node
+
+// this file, `grace.in`, is used to generate `grace`, which executes
+// compiled Grace code at the command line
+
+"use strict";
+
+var path = require("path");
+var fs = require("fs");
+
+// common code for `grace`, the command-line runner, compiler-js, the
+// runner for the compiler, and the web ide.
+
+function MiniGrace() {
+    this.compileError = false;
+    this.vis = "standard";
+    this.mode = "js";
+    this.modname = "main";
+    this.verbosity = 20;
+    this.lastSourceCode = "";
+    this.lastMode = "";
+    this.lastModname = "";
+    this.breakLoops = false;
+    this.debugMode = false;
+    this.lastDebugMode = false;
+    this.printStackFrames = true;
+    
+    this.generated_output = "";
+    
+    this.stdout_write = function(value) {
+        if(typeof(process) != "undefined") {
+            process.stdout.write(value);
+        }
+    };
+    
+    this.stderr_write = function(value) {
+        // This function is used only in the oldWeb interface.  The exp interface
+        // replaces it with a different method in editor.js around line 138.
+        // There, each error write is turned into an html div, and is thus a line
+        // of its own.  For compatibility, we make each stderr_write a separate line.
+        if(typeof(process) != "undefined") {
+            process.stderr.write(value + "\n");
+        } else {
+            console.log(value + "\n");
+        }
+    };
+    
+    this.stdin_read = function() {
+        if(typeof(process) != "undefined") {
+            return process.stdin.read();
+        } else {
+            return "";
+        }
+    };
+}
+
+
+MiniGrace.prototype.padToFour = function(num) {
+    return num <= 9999 ? ("   "+num).slice(-4) : num;
+}
+
+MiniGrace.prototype.trapErrors = function(func) {
+    this.exception = null;
+    try {
+        func();
+    } catch (e) {
+        var eStr = e.toString();
+        if ((eStr === "RangeError: Maximum call stack size exceeded") ||    // Chrome
+            (eStr === "InternalError: too much recursion") ) {              // Firefox
+            e = new GraceExceptionPacket(new GraceException("TooMuchRecursion", ProgrammingErrorObject),
+                   new GraceString("does one of your methods request execution of itself without limit?"));
+        } else if (e.exctype === "graceexception") {
+            var stderr_write = this.stderr_write;
+            this.exception = e;
+            if (e.exception.name === "AssertionFailure") {
+                stderr_write("Assertion Failed: " + e.message._value);
+                var skipable = new GraceList([
+                            new GraceString("gUnit"),
+                            new GraceString("minitest"),
+                            new GraceString("minispec"),
+                            new GraceString("beginningStudent")
+                ]);
+                callmethod(e, "printBacktraceSkippingModules", [1], skipable);
+                stderr_write("  requested on line " + lineNumber + " of " + this.lastModname + ".");
+            } else {
+                callmethod(e, "printBacktrace", [0]);
+                if (lineNumber > 0) {
+                    stderr_write("  requested on line " + lineNumber + " of " + this.lastModname + ".\n");
+                }
+                if (originalSourceLines[e.moduleName]) {
+                    var lines = originalSourceLines[e.moduleName];
+                for (let i = e.lineNumber - 1; i <= e.lineNumber + 1; i++) {
+                        if (lines[i-1]) {
+                            stderr_write(this.padToFour(i) + ": " + lines[i-1] + "\n");
+                        }
+                    }
+                    stderr_write("\n");
+                }
+            }
+            if (e.stackFrames.length > 0 && this.printStackFrames) {
+                stderr_write("Stack frames:\n");
+                for (i=0; i<e.stackFrames.length; i++) {
+                    stderr_write("  " + e.stackFrames[i].methodName);
+                    e.stackFrames[i].forEach(function(name, value) {
+                        var debugString = "unknown";
+                        try {
+                            if (value === undefined) {
+                                debugString = "‹undefined›";
+                            } else {
+                                debugString = callmethod(value,
+                                    "asDebugString", [0])._value;
+                            }
+                        } catch(e) {
+                            debugger;
+                            debugString = "[Error calling asDebugString:" +
+                                e.message._value + "]";
+                        }
+                        if (debugString.length > 60)
+                            debugString = debugString.substring(0,57) + "...";
+                        stderr_write("    " + name + " = " + debugString);
+                    });
+                }
+            }
+            process.exit(3);
+        } else if (e.exctype === "return") {
+            this.stderr_write("ProgrammingError: you are attempting to return " +
+                "from a method that has already returned, at line " +
+                lineNumber + " of " + moduleName);
+            process.exit(2);
+        } else if (e != "SystemExit") {
+            this.stderr_write("Internal error around line " +
+                lineNumber + " of " + moduleName + ": " + e);
+            throw e;
+            process.exit(2);
+        }
+    }
+};
+// end of common code
+
+global.minigrace = {};
+global.sourceObject = null;
+global.invocationCount = 0;
+global.onOuter = false;
+global.onSelf = false;
+global.gctCache = {};
+global.originalSourceLines = {};
+global.stackFrames = [];
+
+
+MiniGrace.prototype.run = function(fileName) {
+    stackFrames = [];
+    var code = minigrace.generated_output;
+    minigrace.stdout_write = function(value) {
+        process.stdout.write(value, "utf-8");
+    };
+    minigrace.stderr_write = function(value) {
+        process.stderr.write(value, "utf-8");
+    };
+    minigrace.stdin_read = function() {
+        return "";
+    };
+    var modName = path.basename(fileName, ".js");
+    var dirName = path.dirname(fileName);
+    this.loadModule(modName, dirName, pathDirArray);
+        // defines a global gracecode_‹modName›
+    var theModule = global[graceModuleName(modName)];
+    this.trapErrors(function() {
+        do_import(fileName, theModule);
+    }              );
+};
+
+function findOnPath(fn, pathArray) {
+    if (fn[0] === "/") {
+        if (fs.existsSync(fn)) { return fn; }
+        throw new Error('file "' + fn + '" does not exist.');
+    }
+    var candidates = [];
+    for (var ix = 0; ix < pathArray.length ; ix++) {
+        var candidate = path.resolve(pathArray[ix], fn);  
+            // path.resolve joins, normalizes, & makes absolute
+        if (fs.existsSync(candidate)) { return candidate; }
+        candidates.push(candidate);
+    }
+    console.error('module "' + fn + '" not found.  Tried:');
+    for (ix = 0; ix < candidates.length ; ix++) {
+        console.error(candidates[ix]);
+    }
+    process.exit(2);
+    return "undefined";
+}
+
+function addToPathIfNecessary(dir) {
+    if ( pathDirArray.indexOf(dir) === -1 ) {
+        pathDirArray.push(dir);
+    }
+}
+
+MiniGrace.prototype.loadModule = function(moduleName, referencingDir, pathdirs) {
+    var graceModule = graceModuleName(moduleName);
+    if (typeof global[graceModule] === "function") return;   //already loaded
+    var extn = ".js";
+    var fileName = moduleName;
+    if ( moduleName.endsWith(extn)) {
+        moduleName = moduleName.substring(0, moduleName.length - extn.length);
+    } else {
+        fileName = fileName + extn;
+    }
+    if (! pathdirs) {
+        // provide default value for parameter
+        pathdirs = pathDirArray;
+    }
+    var found = findOnPath(fileName, [referencingDir].concat(pathdirs));
+    var sourceDir = path.dirname(fs.realpathSync(found));
+    try {
+        require(found);
+    } catch (e) {
+        console.warn("%s while loading file %s", e.toString(), found);
+        process.exit(-3);
+    }
+    if (typeof global[graceModule] !== 'function') {
+        console.error("loaded file '" + found + "', but it did not define '" +
+                            graceModule + "'.");
+        console.error('loadModule(' + moduleName + ', ' +
+                            referencingDir + ') failed!');
+        process.exit(2);
+    }
+    var recursiveImports = global[graceModule].imports;
+    for (var ix = 0; ix < recursiveImports.length; ix++) {
+        MiniGrace.prototype.loadModule(recursiveImports[ix], sourceDir, pathdirs);
+    }
+};
+
+function abspath(file) {
+    if (path.isAbsolute(file)) return file;
+    return path.join(process.cwd(), file);
+}
+
+
+var graceModulePath = process.env.GRACE_MODULE_PATH;
+if (graceModulePath === undefined) {
+    var fallbackPath = "/usr/lib/grace/modules/";
+    try {
+        if (fs.statSync(fallbackPath).isDirectory) {
+            graceModulePath = fallbackPath;
+        }
+    } catch (e) {
+            graceModulePath = "";
+    }
+    if (! process.env.CI) {
+        console.warn("environment does not contain GRACE_MODULE_PATH; using " + graceModulePath);
+    }
+}
+
+var pathDirArray = graceModulePath.split(path.delimiter);
+
+addToPathIfNecessary("./");
+addToPathIfNecessary("../");
+
+try {
+    if (typeof GraceObject === "undefined") {
+        require(findOnPath("gracelib.js", pathDirArray));
+    }
+    if (typeof unicodedata === "undefined") {
+        require(findOnPath("unicodedata.js", pathDirArray));
+    }
+    minigrace = new MiniGrace();
+    minigrace.loadModule("standardGrace", "./", pathDirArray);
+    var executable = process.argv[2];
+    if (! executable.endsWith(".js")) executable = executable + ".js";
+    var exFile = findOnPath(executable, pathDirArray);
+    minigrace.execFile = abspath(exFile);
+
+    minigrace.trapErrors(function() {
+        // as as special case, do_import("standardGrace", …) adds to Grace_prelude,
+        // rather than creating a new module object.
+        do_import('standardGrace', gracecode_standardGrace);
+        minigrace.run(executable);
+    });
+} catch (e) {
+    if (typeof e.message === "string")
+        console.error(e.message)
+    else if (typeof e.message._value === "string")
+        console.error(e.message._value)
+    else console.error(e.message);
+    console.error(e.exitStack);
+    process.exit(1);
+}
+
+if (typeof global !== "undefined") {
+    global.path = path;
+}

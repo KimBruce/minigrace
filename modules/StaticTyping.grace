@@ -43,7 +43,7 @@ def scope: share.Scope = sc.scope
 def aParam: Param = ot.aParam
 
 // debugging prints will print if debug is true
-def debug: Boolean = false
+def debug: Boolean = true 
 
 // return the return type of the block (as declared)
 method objectTypeFromBlock(block: AstNode) → ObjectType 
@@ -91,26 +91,42 @@ method objectTypeFromBlockBody(body: Sequence⟦AstNode⟧) → ObjectType
 
 // check the type of node and insert into cache associated with the node
 method checkTypes (node: AstNode) → Done is confidential{
-    def debug3: Boolean = false
+    print ("\n 94: node on checkTypes = {node}")
+    def debug3: Boolean = true
     if (debug3) then {
         io.error.write "\n233: checking types of {node.nameString}"
     }
+
+
+ 
+    print ("\n 99: node.kind = {node.kind}")
+    print ("\n 101: cache = {cache}")
     cache.at (node) ifAbsent {
+        print ("\n 100: in here")
         if (debug3) then {
            io.error.write "\n235: {node.nameString} not in cache"
         }
+        print ("\n 104: in here")
+        print ("\n node = {node}")
         node.accept (astVisitor)
+        
     }
+    print ("\n 108: in here")
 }
 
 // check type of node, put in cache & then return type
 method typeOf (node: AstNode) → ObjectType {
     checkTypes (node)
-    cache.at (node) ifAbsent {
+    print ("\n 115: checkTypes (node) {checkTypes (node)}")
+
+    def ct = cache.at (node) ifAbsent {
+
         StaticTypingError.raise(
             "cannot type non-expression {node} on line " ++
             "{node.line}") with (node)
     }
+    print ("\n 117: cache.at (node) = {ct}")
+    ct
 }
 
 // retrieve from cache the inheritable type of an object
@@ -154,13 +170,28 @@ method check (req : share.Request) against(meth' : MethodType)
       io.error.write(
           "\n134 checking {req} of kind {req.kind} against {meth'}")
     }
+
+    print ("\n 158: req = {req} meth' = {meth'} ")
     var meth : MethodType := meth'
 
+    print ("\n 170: req.generics = {req.generics}")
+    print ("\n 171: req.kind = {req.kind}")
+    print ("\n 172: req.generics = {req.generics} ") //SHOULD BE TRUE
+    print ("\n 173: meth.apply = {meth.apply(req.generics)}")
+    print ("\n 173: meth.hasTypeParams = {meth.apply(req.generics).hasTypeParams}")
+    print ("\n 174: meth = {meth}")
+    print ("\n 176: meth.apply = {req.generics}")
+
+    
     // instantiate generics if necessary
     if ((req.kind == "call") || (req.kind == "member")
                             || (req.kind == "identifier")) then {
+       
         if ((false ≠ req.generics) && (meth.hasTypeParams)) then {
-            meth := meth.apply(req.generics)
+            print ("\n 188: in the apply " )
+            meth := meth.apply(req.generics) //WHAT IS THIS?
+            print ("\n 176: meth.apply etc = {meth}") //DOES NOT ENTER THIS PRINT STATEMENT
+
         }
     }
     def name: String = meth.nameString
@@ -173,7 +204,9 @@ method check (req : share.Request) against(meth' : MethodType)
         checkParamArgsLengthSame (req, sigPart, params, args)
         for (params) and (args) do { param: Param, arg: AstNode →
             def pType: ObjectType = param.typeAnnotation
+            print ("\n 178:  args= {args}") // AT THIS POINT GENERIC SUBSTITUTION SHOULD HAVE HAPPENED
             def aType: ObjectType = typeOf(arg)
+            print ("\n 190: aType = {aType}")
             if (debug) then {
                 io.error.write (
                     "\n171 Checking {arg} of type {aType} is " ++
@@ -181,8 +214,8 @@ method check (req : share.Request) against(meth' : MethodType)
                     "against {meth}")
                 io.error.write("\n172 aType: {aType}, pType: {pType}")
             }
-
             // Make sure types of args are subtypes of parameter types
+            print ("\n 188: pType.isConsistentSubtypeOf (aType) = {pType.isConsistentSubtypeOf (aType)}")
             if (aType.isConsistentSubtypeOf (pType).not) then {
                 StaticTypingError.raise("the expression " ++
                     "`{share.stripNewLines(arg.toGrace(0))}` of type "++
@@ -329,6 +362,7 @@ def astVisitor: ast.AstVisitor is public = object {
         }
 
         // save type in cache
+        print ("\n 359: cache.at (ifnode) put (ifType) = {cache.at (ifnode) put (ifType)}")
         cache.at (ifnode) put (ifType)
         false
     }
@@ -397,7 +431,9 @@ def astVisitor: ast.AstVisitor is public = object {
         def blockType: ObjectType = 
             anObjectType.blockTaking(parameters) returning (retType)
 
+        print ("\n 429: cache.at (block) put (blockType) = {cache.at (block) put (blockType)} ")
         cache.at (block) put (blockType)
+        
         if (debug) then {
             io.error.write "block has type {blockType}"
         }
@@ -480,6 +516,7 @@ def astVisitor: ast.AstVisitor is public = object {
         }
 
         // returnType is type of the match-case statement
+        print ("\n 512:cache.at(node) put (returnType) = {cache.at(node) put (returnType)}")
         cache.at(node) put (returnType)
 
         false
@@ -533,7 +570,7 @@ def astVisitor: ast.AstVisitor is public = object {
             if (debug) then {io.error.write 
                 "\n470: using type of finally clause: {returnType}"
             }
-        } else {  // return type is variant of all block types.	   
+        } else {  // return type is variant of all block types.    
 
             // Type returned by variant of all return types in cases
             returnType := ot.fromObjectTypeList(returnTypesList)
@@ -549,6 +586,7 @@ def astVisitor: ast.AstVisitor is public = object {
 
 
         // returnType is type of the match-case statement
+        print ("\n 583:cache.at(node) put (returnType) = {cache.at(node) put (returnType)} ")
         cache.at(node) put (returnType)
 
         false
@@ -576,7 +614,7 @@ def astVisitor: ast.AstVisitor is public = object {
 
     // type check method declaration
     method visitMethod (meth: AstNode) → Boolean {
-        def debug3: Boolean = false
+        def debug3: Boolean = true
         if (debug3) then {
             io.error.write "\n515: Visiting method {meth}\n"
         }
@@ -602,8 +640,8 @@ def astVisitor: ast.AstVisitor is public = object {
         // meth.value is Identifier Node
         def name: String = meth.value.value
         // declared type of the method being introduced
-        var mType: MethodType
-        var returnType: ObjectType
+        var mType: MethodType 
+        var returnType: ObjectType 
 
         // Enter new scope with parameters to type-check body of method
         if (debug3) then {
@@ -611,6 +649,8 @@ def astVisitor: ast.AstVisitor is public = object {
         }
         scope.enter {
             var typeParams: List[[String]] := emptyList[[String]]
+            mType := aMethodType.fromNode(meth) with (typeParams)
+            returnType := mType.retType
             if (debug) then {
                 io.error.write 
                     "\n544st: meth.typeParams: {meth.typeParams}"
@@ -624,10 +664,10 @@ def astVisitor: ast.AstVisitor is public = object {
             if (debug) then {
                io.error.write "\n547st: typeParams: {typeParams}"
             }
-//            for (mType.typeParams) do { typeParamName : String →
-//                scope.types.at(typeParamName) 
-//                      put (anObjectType.base)
-//            }
+            for (mType.typeParams) do { typeParamName : String →
+               scope.types.at(typeParamName) 
+                     put (anObjectType.base)
+            }
             mType := aMethodType.fromNode(meth) with (typeParams)
             returnType := mType.retType
             for(meth.signature) do { part: AstNode →
@@ -662,6 +702,7 @@ def astVisitor: ast.AstVisitor is public = object {
                         check (ret.value) matches (returnType) 
                                             inMethod (name)
                         // note sure why record returnType?
+                        print ("\n 697:cache.at(ret) put (returnType) = {cache.at(ret) put (returnType)} ")
                         cache.at(ret) put (returnType)
                         return false
                     }
@@ -694,10 +735,14 @@ def astVisitor: ast.AstVisitor is public = object {
                     // START HERE
                     print("\n694: meth.body.last: {meth.body.last}")
                     def lastType = typeOf(lastNode)
+                    print ("\n 697 : typeOf last node = {lastType}")
                     if (debug3) then {
                        io.error.write 
                           "\n607st: type of lastNode is {lastType}"
                     }
+
+                    print ("\n 702: isSubtype {lastType.isConsistentSubtypeOf(returnType)}")
+
                     if(lastType.isConsistentSubtypeOf 
                                             (returnType).not) then {
                         StaticTypingError.raise(
@@ -723,6 +768,7 @@ def astVisitor: ast.AstVisitor is public = object {
                 if (lastNode.kind == "object") then {
                     visitObject(lastNode)
                     def confidType: ObjectType = allCache.at(lastNode)
+
                     allCache.at(meth.nameString) put (confidType)
                     if (debug3) then {
                         io.error.write (
@@ -735,6 +781,7 @@ def astVisitor: ast.AstVisitor is public = object {
 
         // if method is just a member name then can record w/variables
         if (isMember(mType)) then {
+            print ("\n 745: in this line")
             scope.variables.at(name) put(returnType)
         }
 
@@ -742,6 +789,7 @@ def astVisitor: ast.AstVisitor is public = object {
         scope.methods.at(name) put(mType)
 
         // Declaration statement always has type Done
+        print ("\n 784:cache.at(meth) put (anObjectType.doneType) = {cache.at(meth) put (anObjectType.doneType)} ")
         cache.at(meth) put (anObjectType.doneType)
         false
 
@@ -750,8 +798,13 @@ def astVisitor: ast.AstVisitor is public = object {
     // type check a method request
     method visitCall (req: AstNode) → Boolean {
         // Receiver of request
+        print ("798: req = {req}") //the call node
         def rec: AstNode = req.receiver
-        def debug3 = false
+        print ("\n 762: receiver = {rec.kind}")
+        print ("\n 762: receiver.dType = {rec.dtype}")
+        print ("\n 762: receiver.generics = {rec.generics}")
+
+        def debug3 = true
 
         if (debug3) then {
             io.error.write ("\n1673: visitCall's call is: "++
@@ -759,11 +812,25 @@ def astVisitor: ast.AstVisitor is public = object {
                 " with kind {rec.kind}")
         }
 
+
+//GENERIC STUFF WILL PROBABLY BE HERE SOMEWHERE
+    //     if ((req.kind == "call") || (req.kind == "member")
+    //                         || (req.kind == "identifier")) then {
+       
+    //     if ((false ≠ req.generics) && (meth.hasTypeParams)) then {
+    //         print ("\n 188: in the apply " )
+    //         meth := meth.apply(req.generics) //WHAT IS THIS?
+    //         print ("\n 176: meth.apply etc = {meth}") //DOES NOT ENTER THIS PRINT STATEMENT
+
+    //     }
+    // }
+
         // type of receiver of request
         def rType: ObjectType = typeOfReceiver(rec)
+        print ("\n 811: rType, type of receiver = {rType}")
 
         def callType: ObjectType = if (rType.isDynamic) then {
-            if (debug) then {
+            if (debug3) then {
                 io.error.write "\n624: rType: {rType} is dynamic}"
             }
             anObjectType.dynamic
@@ -774,6 +841,7 @@ def astVisitor: ast.AstVisitor is public = object {
             //that the programmer used nonconflicting names
 
             var name: String := req.nameString
+            print ("\n 818: req.nameString = {req.nameString}")
             if (name.contains "$object(") then {
                 //Adjust name for weird addition when used 
                 // in inherit node
@@ -786,17 +854,25 @@ def astVisitor: ast.AstVisitor is public = object {
                     ++ " with kind {req.receiver.kind}"
             if (debug3) then {
                 io.error.write "\n2154: {completeCall}"
-                io.error.write "\n2155: {req.nameString}"
+                io.error.write "\n2155: {req.nameString}" 
+                
 
+                print ("\n rType = {rType}")
                 io.error.write 
                     "\n2000: rType.methods is: {rType.methods}"
             }
+
+
+            print ("\n 837: getResultType(req, rec, rType, name, completeCall) = {getResultType(req, rec, rType, name, completeCall)} ")
             getResultType(req, rec, rType, name, completeCall)
             
         }
         if (debug3) then {
             io.error.write "\n1701: callType: {callType}"
         }
+
+        print ("\n 843:cache.at(req) put (callType) = {cache.at(req) put (callType)} ")
+        print ("\n 844: callType = {callType}")
         cache.at(req) put (callType)
         // tells the callNode to typecheck its receiver, 
         // arguments, and generics
@@ -845,15 +921,22 @@ def astVisitor: ast.AstVisitor is public = object {
     method getResultType (req: AstNode, rec: AstNode, 
             rType: ObjectType, name: String,
             completeCall: String) -> ObjectType is confidential {
+
+       print ("\n 901: req = {req} rec = {rec}")
+       def debug3 = true
+       print "\n 900: scope = {scope.methods}"
        // look for method name in type of receiver
        match(rType.getMethod(name))
          case { (ot.noSuchMethod) →
-             if (debug) then {
-                io.error.write "\n2001: got to case noSuchMethod "++
-                    "while looking for {name}"
+             if (debug3) then {
+                print ("\n 863: completeCall = {completeCall}")
+                print ("\n 864: name = {name}")
+                io.error.write "\n2001: got to case noSuchMethod while looking for {name}"
                 io.error.write 
                     "\n2002: method scope here is {scope.methods}"
+                print "\n 869: end "
              }
+             //print ("\n 908: ")
              StaticTypingError.raise(
                  "no such method or type '{req.canonicalName}' in " ++
                  "`{share.stripNewLines(rec.toGrace(0))}` of type\n" ++
@@ -863,11 +946,12 @@ def astVisitor: ast.AstVisitor is public = object {
        } case { meth : MethodType →
              // found the method, make sure arguments match 
              // parameter types
-             if (debug) then {
+             if (debug3) then {
                  io.error.write 
                     "\nchecking request {req} against {meth}"
              }
              // returns type of result
+             print ("\n 922: check(req) against(meth) = {check(req) against(meth)} ")
              check(req) against(meth)
        }
     }
@@ -875,7 +959,7 @@ def astVisitor: ast.AstVisitor is public = object {
     // Type check an object.  Must get both public and 
     // confidential types
     method visitObject (obj :AstNode) → Boolean {
-        def debug3: Boolean = false
+        def debug3: Boolean = true
         // type check body of the method
         if (debug3) then {
             io.error.write "\n684 Ready to type check {obj}***"
@@ -885,6 +969,7 @@ def astVisitor: ast.AstVisitor is public = object {
         }
         // Record both public and confidential methods 
         // (for inheritance)
+        print ("\n 936: cache.at(obj) put (pcType.publicType) = {cache.at(obj) put (pcType.publicType)} ")
         cache.at(obj) put (pcType.publicType)
         allCache.at(obj) put (pcType.inheritableType)
         if (debug3) then {
@@ -903,7 +988,7 @@ def astVisitor: ast.AstVisitor is public = object {
     //Process dialects and import statements
     //TODO: handle dialects
     method visitModule (node: AstNode) → Boolean {  // added kim
-        def debug3: Boolean = false
+        def debug3: Boolean = true
         if (debug3) then {
            io.error.write "\n1698: visiting module {node}"
         }
@@ -966,7 +1051,7 @@ def astVisitor: ast.AstVisitor is public = object {
               }
               arrayType := arrayType | eltType
               if (debug2) then {
-                  io.error.write "\nback to 828"
+                  io.error.write "\nbacek to 828"
                   io.error.write "\n827 new arrayType: {arrayType}"
               }
         }
@@ -975,7 +1060,10 @@ def astVisitor: ast.AstVisitor is public = object {
             io.error.write "\n828: lineup holds elts of type {arrayType}"
             io.error.write "\n829: New type is {newType}"
         }
+
+        print("\n 1019: cache.at (lineUpLiteral) put (newType) = {cache.at (lineUpLiteral) put (newType)} ")
         cache.at (lineUpLiteral) put (newType)
+        
         false
     }
 
@@ -1010,6 +1098,8 @@ def astVisitor: ast.AstVisitor is public = object {
             scope.variables.find(ident.value)
                                 butIfMissing { anObjectType.dynamic }
         }
+
+        print ("\n 1057: cache.at (ident) put (idType) = {cache.at (ident) put (idType)}")
         cache.at (ident) put (idType)
         true
 
@@ -1026,6 +1116,7 @@ def astVisitor: ast.AstVisitor is public = object {
             // create GenericType to later be instantiated 
             // with real types
             def genType : GenericType = aGenericType.fromTypeDec(node)
+            print ("\n 1083: cache.at(node) put (genType) = {cache.at(node) put (genType)} ")
             cache.at(node) put (genType)
         } else {
             //get the type of the right-hand side of the equals sign
@@ -1036,6 +1127,7 @@ def astVisitor: ast.AstVisitor is public = object {
                io.error.write "\n876 methList is {vType.methList}"
             }
 
+            print ("\n 1093: cache.at(node) put (vType) = {cache.at(node) put (vType)}")
             cache.at(node) put (vType)
         }
         false
@@ -1052,12 +1144,14 @@ def astVisitor: ast.AstVisitor is public = object {
 
     // type of string is String
     method visitString (node: AstNode) → Boolean {
+        print ("\n 1100: cache.at (node) put (anObjectType.string) = {cache.at (node) put (anObjectType.string)}")
         cache.at (node) put (anObjectType.string)
         false
     }
 
     // type of number is Number
     method visitNum (node: AstNode) → Boolean {
+        print ("\n 1107: cache.at (node) put (anObjectType.number) = {cache.at (node) put (anObjectType.number)}")
         cache.at (node) put (anObjectType.number)
         false
     }
@@ -1069,8 +1163,10 @@ def astVisitor: ast.AstVisitor is public = object {
             io.error.write"\n2283 type checking op"
         }
         if(node.value == "&") then {
+            print ("\n 1129 : cache.at put = {cache.at(node) put (typeOf(node.left) & typeOf(node.right))} ")
             cache.at(node) put (typeOf(node.left) & typeOf(node.right))
         } elseif {node.value == "|"} then {
+            print ("\n 1129 : cache.at put = {cache.at(node) put (typeOf(node.left) | typeOf(node.right))} ")
             cache.at(node) put (typeOf(node.left) | typeOf(node.right))
         } else {
             visitCall(node)
@@ -1079,6 +1175,7 @@ def astVisitor: ast.AstVisitor is public = object {
     }
 
     method visitTypeLiteral(node: share.TypeLiteral) → Boolean {
+        print ("\n 1129: cache.at put = {cache.at (node) put (anObjectType.fromDType (node) with (emptyList))}")
         cache.at (node) put
             (anObjectType.fromDType (node) with (emptyList))
         false
@@ -1154,6 +1251,7 @@ def astVisitor: ast.AstVisitor is public = object {
             }
         }
         // type of bind is always Done
+        print ("\n 1206 : cache.at (bind) put (anObjectType.doneType) = {cache.at (bind) put (anObjectType.doneType)}")
         cache.at (bind) put (anObjectType.doneType)
         false
     }
@@ -1214,6 +1312,8 @@ def astVisitor: ast.AstVisitor is public = object {
             scope.methods.at (name') put(aMethodType.signature(sig) 
                                 returnType(anObjectType.doneType))
         }
+
+        print ("\n 1268: cache.at (defd) put (anObjectType.doneType) = {cache.at (defd) put (anObjectType.doneType)}")
         cache.at (defd) put (anObjectType.doneType)
         false
     }
@@ -1254,6 +1354,7 @@ def astVisitor: ast.AstVisitor is public = object {
         // Store import in scopes and cache
         scope.variables.at(impName) put(impOType)
         scope.methods.at(impName) put(impMType)
+        print ("\n 1321: cache.at(imp) put (impOType) = {cache.at(imp) put (impOType)} ")
         cache.at(imp) put (impOType)
         if (debug) then {
             io.error.write("\n2421: ObjectType of the " ++
@@ -1320,6 +1421,7 @@ def astVisitor: ast.AstVisitor is public = object {
 
     // type check expression being returned via return statement
     method visitReturn (node: AstNode) → Boolean {
+        print ("\n 1388: cache.at(node) put (typeOf(node.value)) = {cache.at(node) put (typeOf(node.value))} ")
         cache.at(node) put (typeOf(node.value))
         false
     }
@@ -1334,6 +1436,7 @@ def astVisitor: ast.AstVisitor is public = object {
                 "\n1999: parts: {node.value.parts.removeLast}"
         }
         def nodeType: ObjectType = typeOf(node.value)
+        print ("\n 1403: cache.at(node) put (nodeType) =  {cache.at(node) put (nodeType)}")
         cache.at(node) put (nodeType)
         if (debug) then {
             io.error.write "\n2000 inherit {node} has type {nodeType}"
@@ -1784,6 +1887,7 @@ method addSetterMethodFor(defd: share.Def,
 // Make sure all statements in object body type-check
 method typeCheckObjectBody(hasInherits: Boolean, body: List⟦AstNode⟧)
                                     -> Done is confidential {
+    print ("\n 1859: body in typeCheckObjectBody = {body}")
     // Type-check the object body, dropping the inherit clause
     def indices: Collection⟦Number⟧ = if(hasInherits) then {
         2..body.size

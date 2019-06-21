@@ -97,6 +97,12 @@ type MethodType = {
     typeParams → List⟦String⟧
 
     // checks if method has type parameters
+
+
+
+
+
+    
     hasTypeParams → Boolean
 
     // check equivalence of part names, param types, and return type;

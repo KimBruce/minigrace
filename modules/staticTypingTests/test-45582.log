@@ -1,0 +1,66 @@
+minigrace[.]: SelfTest_test: 0.06 (+0.06): starting compilation
+minigrace[.]: SelfTest_test: 0.07 (+0.01): lexing.
+minigrace[.]: SelfTest_test: 0.08 (+0.01): parsing.
+minigrace[.]: SelfTest_test: 0.11 (+0.03): checking dialect StaticTyping used by module SelfTest_test
+minigrace[.]: SelfTest_test: 1.26 (+1.15): loading dialect "StaticTyping" for checkers.
+minigrace[.]: SelfTest_test: 1.7 (+0.44): rewriting tree.
+minigrace[.]: SelfTest_test: 1.81 (+0.11): symbol tables built.
+
+Generics scope is: 
+dict⟬
+⟭
+575: create method from method m(1) with type vars:[]
+1245: starting fromDType with identifier‹Number› and type params: []
+1292: case identifier‹Number›
+1320: not found Number in parameters: []
+1276: returnValue: Number
+1351: returning fromDType with Number
+579 finished with part: m(1)
+587 creating returntype for identifier‹Number›
+1245: starting fromDType with identifier‹Number› and type params: []
+1292: case identifier‹Number›
+1320: not found Number in parameters: []
+1276: returnValue: Number
+1351: returning fromDType with Number
+588: created method type m(n : Number) → Number
+594: created method m(n : Number) → Number from method m(1)
+1245: starting fromDType with identifier‹Number› and type params: []
+1292: case identifier‹Number›
+1320: not found Number in parameters: []
+1276: returnValue: Number
+1351: returning fromDType with Number
+678: created return type Number
+575: create method from method m(1) with type vars:[]
+1245: starting fromDType with identifier‹Number› and type params: []
+1292: case identifier‹Number›
+1320: not found Number in parameters: []
+1276: returnValue: Number
+1351: returning fromDType with Number
+579 finished with part: m(1)
+587 creating returntype for identifier‹Number›
+1245: starting fromDType with identifier‹Number› and type params: []
+1292: case identifier‹Number›
+1320: not found Number in parameters: []
+1276: returnValue: Number
+1351: returning fromDType with Number
+588: created method type m(n : Number) → Number
+594: created method m(n : Number) → Number from method m(1)
+1245: starting fromDType with identifier‹Number› and type params: []
+1292: case identifier‹Number›
+1320: not found Number in parameters: []
+1276: returnValue: Number
+1351: returning fromDType with Number
+678: created return type Number
+1245: starting fromDType with identifier‹Number› and type params: []
+1292: case identifier‹Number›
+1320: not found Number in parameters: []
+1276: returnValue: Number
+1351: returning fromDType with Numberminigrace[.]: SelfTest_test: 1.86 (+0.05): generating JavaScript code.
+AST nodes compiled:
+    call	2
+    dialect	1
+    method	1
+    identifier	1
+    num	1
+minigrace[.]: SelfTest_test: 1.89 (+0.03): done.
+20

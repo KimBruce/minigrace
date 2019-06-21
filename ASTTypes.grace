@@ -415,7 +415,11 @@ type CallNode = BaseNode && {
    shallowCopy -> ???
 }
    
-def callNode:CallNodeFactory is public
+def callNode:CallNodeFactory is public = object {
+
+   generics := true
+
+}
 
 def moduleNode is public = object {
     method body(b) named(n) scope(s) {
@@ -1043,6 +1047,7 @@ def identifierNode is public = object {
             aNode == dtype
         }
         method accept(visitor : ASTVisitor) from(as) {
+            print ("\n 1046: In ASTTypes accept")
             if (visitor.visitIdentifier(self) up(as)) then {
                 def newChain = as.extend(self)
                 if (false != self.dtype) then {
@@ -1076,7 +1081,7 @@ def identifierNode is public = object {
                     s := s ++ "\n" ++ spc ++ "  " ++ g.pretty(depth + 2)
                 }
             }
-            s
+            
         }
         method toGrace(depth : Number) -> String {
             var s

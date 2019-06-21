@@ -31,7 +31,7 @@ def ScopingError: outer.ExceptionKind is public =
                                                 TypeError.refine("ScopingError")
 
 // If true prints extra info
-def debug : Boolean = false
+def debug : Boolean = true
 
 // Collection of method types in type
 var methodtypes: List[[MethodType]] := [ ]
@@ -481,6 +481,7 @@ def aMethodType: MethodTypeFactory is public = object {
             // Returns a different MethodType with the correct types
             // TODO: Modify or delete
             method apply(replacementTypes : List⟦AstNode⟧) → MethodType {
+                print ("\n 484: replacementTypes ")
                 if(replacementTypes.size ≠ typeParams.size) then {
                     TypeError.raise("Wrong number of type parameters " ++
                             "given when instantiating generic method " ++
@@ -509,7 +510,7 @@ def aMethodType: MethodTypeFactory is public = object {
                 }
                 //Construct the list of mixParts of the new MethodType
                 def newMixParts : List⟦MixPart⟧ = emptyList⟦MixPart⟧
-                def debug3 = false
+                def debug3 = true
                 for (signature) do { mPart : MixPart →
                     def newParams : List⟦Param⟧ = emptyList⟦Param⟧
                     for (mPart.parameters) do { param : Param →
@@ -622,7 +623,9 @@ def aMethodType: MethodTypeFactory is public = object {
     // if node is a method, class, method signature,
     // def, or var, create appropriate method type
     method fromNode (node: AstNode) with (typeParams: List[[String]]) → MethodType {
-        def debug3 = false
+        def debug3 = true
+        print ("\n 627: node in fromNode = {node}")
+        print ("\n 628: the tpeParams of this node {typeParams}")
         match(node) case{ meth :share.Method|share.Class|share.MethodSignature →
             //BREAK CASE OUT AS SEPARATE HELPER METHOD!!
             def signature: List⟦MixPart⟧ = list[]
@@ -719,6 +722,11 @@ def aGenericType : GenericTypeFactory is public = object{
         //The ObjectType belonging to this generic type
         var oType : ObjectType is public:= oType'
 
+        //TypeError.raise ("It is getting inside generics")
+
+
+        print ("\n 22: name = {name} typeParams = {typeParams} oType = {oType}")
+
         //Takes a list of replacement ObjectTypes and replaces references to the
         //typeParams stored in oType with their counterpart in the list
         method apply(replacementTypes : List⟦ObjectType⟧) → ObjectType {
@@ -734,6 +742,7 @@ def aGenericType : GenericTypeFactory is public = object{
             //Create a mapping of GenericTypes-to-ObjectTypes
             def replacements : Dictionary⟦String, ObjectType⟧ =
                               makeDictionary(typeParams, replacementTypes)
+            print ("\n 39: replacements = {replacements} ")
 
             //Tells each method to replace references to any of the typeParams
             def appliedMethods : Set⟦MethodType⟧ = emptySet⟦MethodType⟧
@@ -741,8 +750,14 @@ def aGenericType : GenericTypeFactory is public = object{
                 appliedMethods.add(meth.updateTypeWith(replacements))
             }
 
+            print ("\n 751: appliedMethods = {appliedMethods}")
+
+            print ("\n 47: applied methods = {appliedMethods}")
+
             //Returns an ObjectType with the generics replaced
-            anObjectType.fromMethods(appliedMethods)
+            print ("\n 756:{anObjectType.fromMethods(appliedMethods)}")
+            anObjectType.fromMethods(appliedMethods) //PRINT THIS 
+            //PRINT THE ENTIRE THING
         }
 
         method asString → String {
@@ -758,6 +773,8 @@ def aGenericType : GenericTypeFactory is public = object{
             }
             "{s}⟧ : {oType.asString}"
         }
+
+        method isConsistentSubtypeOf(_ : ObjectType) → Boolean { true }
 
     }
 
@@ -904,6 +921,8 @@ def anObjectType: ObjectTypeFactory is public = object {
         method isId -> Boolean is override {true}
 
         method asString → String is override {name}
+
+        method isConsistentSubtypeOf(_ : ObjectType) → Boolean { true }
     }
 
     // build object type from collection of methods
@@ -978,7 +997,7 @@ def anObjectType: ObjectTypeFactory is public = object {
             method isSubtypeHelper(trials:List⟦TypePair⟧, other':ObjectType)
                                                      → Answer {
                 def selfOtherPair : TypePair = typePair(self, other')
-                def debug47 = false 
+                def debug47 = true  
 
                 if (debug47) then {
                    io.error.write "\n841: checking suptyping for {self} and {other'}"
@@ -1422,7 +1441,7 @@ def anObjectType: ObjectTypeFactory is public = object {
 
         method isConsistentSubtypeOf (other : ObjectType) → Boolean{
             //Call isSubTypeOf
-            resolve.isConsistentSubtypeOf(other.resolve)
+            isSubtypeOf(other)
         }
 
         method getVariantTypes → List⟦ObjectType⟧ {

@@ -408,7 +408,7 @@ def astVisitor: ast.AstVisitor is public = object {
     //of the matchee and the params match, and puts the return type
     //of the match-case in the cache.
     method visitMatchCase (node: share.MatchCase) → Boolean {
-        def debug3: Boolean = true
+        def debug3: Boolean = false
         // expression being matched and its type
         def matchee = node.value
         var matcheeType: ObjectType := typeOf(matchee)

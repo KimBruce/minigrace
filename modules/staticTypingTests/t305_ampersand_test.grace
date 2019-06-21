@@ -101,6 +101,6 @@ testSuiteNamed "ampersand with variant types" with {
             ("(A|B) & (B|C) should equal (A&C)|(A&D)|(B&C)|(B&D)")
 
         assert(((A&C)|(A&D)|(B&C)|(B&D)).isSubtypeOf(AorB & CorD)) description
-            ("(A&C)|(A&D)|(B&C)|(B&D) should equal (A|B) & (B|C)")
+            ("(A&C)|(A&D)|(B&C)|(B&D) should equal (A|B) & (C|D)")
     }
 }

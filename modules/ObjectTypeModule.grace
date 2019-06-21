@@ -1386,7 +1386,6 @@ def anObjectType: ObjectTypeFactory is public = object {
             }
                 case { "&" ->
 
-                    // Formally:
                     // 1. Build two lists of object types for self and other
                     //    based on sets of methods in methList that are 
                     //    a normal-form representation of possible method 

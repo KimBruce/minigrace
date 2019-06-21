@@ -4,7 +4,7 @@ dialect "none"
 import "standardGrace" as sg
 
 import "lexer" as lexer
-import "parser2" as parser
+import "parser" as parser
 import "ast" as ast
 import "xmodule" as xmodule
 import "io" as io
@@ -14,7 +14,7 @@ import "SharedTypes" as share
 //inherit sg.methods
 
 // Error resulting from type checking
-def StaticTypingError is public = Exception.refine "StaticTypingError"
+def StaticTypingError: sg.ExceptionKind is public = sg.Exception.refine "StaticTypingError"
 
 // rename imported types for convenience
 type MethodType = share.MethodType
@@ -27,11 +27,12 @@ type AstNode = share.AstNode
 type Parameter = share.Parameter
 type ObjectTypeFromOp = share.ObjectTypeFromOp
 type ObjectTypeFromMeths = share.ObjectTypeFromMeths
+type List = sg.List
 def scope: sc.Scope = sc.scope
 
 // Scoping error declaration
-def ScopingError: outer.ExceptionKind is public =
-                                                TypeError.refine("ScopingError")
+def ScopingError: sg.ExceptionKind is public =
+                                                sg.TypeError.refine("ScopingError")
 
 // If true prints extra info
 def debug : Boolean = false
@@ -125,7 +126,7 @@ method dtypeToString(dtype) {
     if (false == dtype) then {
         "Unknown"
     } elseif {dtype.kind == "typeliteral"} then {
-        methodtypes := list[]
+        methodtypes := sg.list[]
         dtype.accept(typeVisitor)
         methodtypes.at (1)
     } else {
@@ -140,12 +141,12 @@ method dtypeToString(dtype) {
 
 // Used in match statements to catch indicate no method found
 // Method returns these when no method found.
-def noSuchMethod: outer.Pattern is readable = object {
+def noSuchMethod: sg.Pattern is readable = object {
     use sg.BasicPattern
 
     method matches(obj : Object) -> Boolean {
         if (self.isMe(obj)) then {
-            true //SuccessfulMatch.new(self, list[])
+            true //SuccessfulMatch.new(self, sg.list[])
         } else {
             false //FailedMatch.new(obj)
         }
@@ -153,12 +154,12 @@ def noSuchMethod: outer.Pattern is readable = object {
 }
 
 // Used in match statements to indicate no type found
-def noSuchType: Pattern = object {
+def noSuchType: sg.Pattern = object {
     use sg.BasicPattern
 
     method matches(obj : Object) -> Boolean{
         if (self.isMe(obj)) then {
-            true //SuccessfulMatch.new(self, list[])
+            true //SuccessfulMatch.new(self, sg.sg.emptyList)
         } else {
             false //FailedMatch.new(obj)
         }
@@ -234,8 +235,8 @@ type ParamFactory = share.ParamFactory
 def aParam: ParamFactory is readable = object {
     method withName(name': String) ofType(type' : ObjectType) → Param {
         object {
-            def name : String is public = name'
-            def typeAnnotation : ObjectType is public = type'
+            method name -> String { name' }
+            method typeAnnotation -> ObjectType { type' }
 
             method asString → String is override {
                 "{name} : {typeAnnotation}"
@@ -343,9 +344,9 @@ def aMethodType: MethodTypeFactory is public = object {
                 }
 
                 //Check parameter types and return type
-                for (signature) and (other.signature)
+                sg.for (signature) and (other.signature)
                                             do { part: MixPart, part': MixPart →
-                    for (part.parameters) and (part'.parameters)
+                    sg.for (part.parameters) and (part'.parameters)
                                                       do { p: Param, p': Param →
                         if (p.typeAnnotation ≠ p'.typeAnnotation) then {
                             return false
@@ -360,23 +361,23 @@ def aMethodType: MethodTypeFactory is public = object {
             // Results in stripped down signature
             // Used for gradual typing  NOT CHECKED FOR CORRECTNESS!
             method restriction (other : MethodType) → MethodType {
-                def restrictParts: List⟦MixPart⟧ = list[]
+                def restrictParts: List⟦MixPart⟧ = sg.emptyList[[MixPart]]
 
                 if (other.signature.size != signature.size) then {
                     return self
                 }
 
-                for (signature) and (other.signature)
+                sg.for (signature) and (other.signature)
                                         do {part: MixPart, part': MixPart →
                     if (part.name == part'.name) then {
-                        def restrictParams: List⟦Param⟧ = list[]
+                        def restrictParams: List⟦Param⟧ = sg.emptyList
                         if (part.parameters.size != part'.parameters.size) then{
                             ProgrammingError.raise("part {part.name} has " ++
                                     "{part.parameters.size} while part " ++
                                     "{part'.name} has {part'.parameters.size}")
                         }
 
-                        for (part.parameters) and (part'.parameters)
+                        sg.for (part.parameters) and (part'.parameters)
                                                 do { p: Param, p': Param →
                             def pt': ObjectType = p'.typeAnnotation
 
@@ -460,9 +461,9 @@ def aMethodType: MethodTypeFactory is public = object {
                 }
 
                 //Check subtyping of param and return types
-                for (signature) and (other.signature)
+                sg.for (signature) and (other.signature)
                                             do { part: MixPart, part': MixPart →
-                    for (part.parameters) and (part'.parameters)
+                    sg.for (part.parameters) and (part'.parameters)
                                                     do { p: Param, p': Param →
                         def pt: ObjectType = p.typeAnnotation
                         def pt': ObjectType = p'.typeAnnotation
@@ -495,7 +496,7 @@ def aMethodType: MethodTypeFactory is public = object {
                      io.error.write ("\n444: updating {self} with replacement "++
                           "types: {replacementTypes}")
                 }
-                def replacements : Dictionary⟦String, AstNode⟧ =
+                def replacements : sg.Dictionary⟦String, AstNode⟧ =
                            makeDictionary(typeParams,replacementTypes)
                 updateTypeWith(replacements)
             }
@@ -506,7 +507,7 @@ def aMethodType: MethodTypeFactory is public = object {
             //
             // Note : Does not need 'replacements.size == typeParams.size'
             method updateTypeWith (replacements :
-                              Dictionary⟦String, ObjectType⟧) → MethodType {
+                              sg.Dictionary⟦String, ObjectType⟧) → MethodType {
                 if (debug) then {
                      io.error.write "\n457: updating method: {self}"
                 }
@@ -568,7 +569,7 @@ def aMethodType: MethodTypeFactory is public = object {
             //       -it is possible that a type param will remain uninitialized
             //          if the dictionary does not contain its name
             method replaceType2(oType : ObjectType)
-                            with(replacements : Dictionary⟦String, AstNode⟧)
+                            with(replacements : sg.Dictionary⟦String, AstNode⟧)
                                                   → ObjectType is confidential {
                 // If the oType is already initialized, it can't be a type param
                 if (oType.isResolved) then {
@@ -585,7 +586,7 @@ def aMethodType: MethodTypeFactory is public = object {
             // DELETE: UNUSED
             // Replaces node with replacements to instantiate generic
             method replaceNode2(node : AstNode)
-                            with(replacements : Dictionary⟦String, AstNode⟧)
+                            with(replacements : sg.Dictionary⟦String, AstNode⟧)
                                                     → AstNode is confidential {
                 if (node.kind == "generic") then {
                     def newArgs : List⟦AstNode⟧ = sg.emptyList⟦AstNode⟧
@@ -611,7 +612,7 @@ def aMethodType: MethodTypeFactory is public = object {
 
     // Create method type with no parameters, but returning rType
     method member (name : String) ofType (rType : ObjectType) → MethodType {
-        signature(list[aMixPartWithName (name) parameters (list[])]) with (sg.emptyList[[String]])
+        signature(sg.list[aMixPartWithName (name) parameters (sg.emptyList)]) with (sg.emptyList[[String]])
                                                               returnType (rType)
     }
 
@@ -628,12 +629,12 @@ def aMethodType: MethodTypeFactory is public = object {
         def debug3 = true
         match(node) case{ meth :share.Method|share.Class|share.MethodSignature →
             //BREAK CASE OUT AS SEPARATE HELPER METHOD!!
-            def signature: List⟦MixPart⟧ = list[]
+            def signature: List⟦MixPart⟧ = sg.emptyList
             if (debug3) then {
                io.error.write "\n575: create method from {node} with type vars:{typeParams}"
             }
             for (meth.signature) do { part:AstNode →
-                def params: List⟦Param⟧ = list[]
+                def params: List⟦Param⟧ = sg.emptyList
                 if (debug) then {
                      io.error.write "\n568 creating type for {part}"
                 }
@@ -685,7 +686,7 @@ def aMethodType: MethodTypeFactory is public = object {
         } case { defd : share.Def | share.Var →
 
             def signature: List⟦MixPart⟧ =
-                    list[aMixPartWithName (defd.name.value) parameters (list[])]
+                    sg.list[aMixPartWithName (defd.name.value) parameters (sg.emptyList)]
             def dtype: ObjectType = if (defd.dtype == false) then {
                 anObjectType.dynamic
             } else {
@@ -735,11 +736,11 @@ def aGenericType : GenericTypeFactory is public = object{
             oType := oType.resolve
 
             //Create a mapping of GenericTypes-to-ObjectTypes
-            def replacements : Dictionary⟦String, ObjectType⟧ =
+            def replacements : sg.Dictionary⟦String, ObjectType⟧ =
                               makeDictionary(typeParams, replacementTypes)
 
             //Tells each method to replace references to any of the typeParams
-            def appliedMethods : Set⟦MethodType⟧ = emptySet⟦MethodType⟧
+            def appliedMethods : sg.Set⟦MethodType⟧ = sg.emptySet⟦MethodType⟧
             for (oType.methods) do { meth : MethodType →
                 appliedMethods.add(meth.updateTypeWith(replacements))
             }
@@ -814,8 +815,8 @@ def anObjectType: ObjectTypeFactory is public = object {
 
         // Return the list of sets of methods of the type
         // Needed for building types with & or |
-        method methList -> List[[Set[[MethodType]]]] {
-            sg.emptyList[[Set[[MethodType]]]]
+        method methList -> List[[sg.Set[[MethodType]]]] {
+            sg.emptyList[[sg.Set[[MethodType]]]]
         }
 
         // Does this type represent the dynamic or unknown type
@@ -833,7 +834,7 @@ def anObjectType: ObjectTypeFactory is public = object {
         }
 
         // Return set of methods of the type
-        method methods -> Set[[MethodType]] {emptySet}
+        method methods -> sg.Set[[MethodType]] {sg.emptySet}
 
         // Is it a consistent subtype of other (for gradual typing0
         method isConsistentSubtypeOf(other: ObjectType) {
@@ -841,9 +842,7 @@ def anObjectType: ObjectTypeFactory is public = object {
         }
 
         // Is it a subtype of other
-        method isSubtypeOf(other: ObjectType) -> Boolean {
-            required
-        }
+        method isSubtypeOf(other: ObjectType) -> Boolean {false} //sg.abstract
 
         // Construct a variant type from two object types.
         // Note: variant types can only be created by this constructor.
@@ -876,7 +875,7 @@ def anObjectType: ObjectTypeFactory is public = object {
         }
 
         // replace type variables with object types using replacements
-        method updateTypeWith(replacements: Dictionary[[String,ObjectType]])
+        method updateTypeWith(replacements: sg.Dictionary[[String,ObjectType]])
                     -> ObjectType {
             if (debug) then {
                io.error.write "\n740 default updateType with {self}"
@@ -891,12 +890,12 @@ def anObjectType: ObjectTypeFactory is public = object {
     }
 
     // Create an ObjectType from a collection of method signatures and a name
-    class fromMethods (methods' : Set⟦MethodType⟧) withName (name : String)
+    class fromMethods (methods' : sg.Set⟦MethodType⟧) withName (name : String)
                                                 → ObjectType {
         inherit fromMethods(methods')
 
         // don't update because it has a name
-        method updateTypeWith(replacements:Dictionary[[String,ObjectType]])
+        method updateTypeWith(replacements:sg.Dictionary[[String,ObjectType]])
                         -> ObjectType {
             if (debug) then {
                io.error.write "\n749 update type in fromMethods {name}"
@@ -911,7 +910,7 @@ def anObjectType: ObjectTypeFactory is public = object {
     }
 
     // build object type from collection of methods
-    method fromMethods (methods': Set⟦MethodType⟧) → ObjectTypeFromMeths {
+    method fromMethods (methods': sg.Set⟦MethodType⟧) → ObjectTypeFromMeths {
         object {
             inherit superObjectType
                 alias oldAnd(_) = &(_)
@@ -919,11 +918,11 @@ def anObjectType: ObjectTypeFactory is public = object {
             method isMeths -> Boolean {true}
 
             // Holds base methods as well as those in methods'
-            def methods : Set⟦MethodType⟧ is public = (if (base == dynamic) then {
-                emptySet } else { emptySet.addAll(base.methods) }).addAll(methods')
+            def methods : sg.Set⟦MethodType⟧ is public = (if (base == dynamic) then {
+                sg.emptySet } else { sg.emptySet.addAll(base.methods) }).addAll(methods')
 
-            method methList -> List[[Set[[MethodType]]]] {
-                list[[Set[[MethodType]]]] [methods]
+            method methList -> List[[sg.Set[[MethodType]]]] {
+                sg.list[[sg.Set[[MethodType]]]] [methods]
             }
 
             // Return method type with matching nameString or return noSuchMethod.
@@ -1045,7 +1044,7 @@ def anObjectType: ObjectTypeFactory is public = object {
             // Don't worry about this for now
             method restriction(other : ObjectType) → ObjectType {
                 if (other.isDynamic) then { return dynamic}
-                def restrictTypes:Set⟦MethodType⟧ = emptySet
+                def restrictTypes:sg.Set⟦MethodType⟧ = sg.emptySet
                 // Restrict matching methods
                 for(methods) doWithContinue { meth, continue →
                     // Forget restricting if it is a type
@@ -1093,7 +1092,7 @@ def anObjectType: ObjectTypeFactory is public = object {
             }
 
             // update type of all methods using replacement for generic types.
-            method updateTypeWith(replacements:Dictionary[[String,ObjectType]])
+            method updateTypeWith(replacements:sg.Dictionary[[String,ObjectType]])
                         -> ObjectType {
                 if (debug) then {
                    io.error.write "\n966: update methods"
@@ -1139,7 +1138,7 @@ def anObjectType: ObjectTypeFactory is public = object {
         method isOp -> Boolean {true}
      
 
-        method methList -> List[[Set[[MethodType]]]] {
+        method methList -> List[[sg.Set[[MethodType]]]] {
             match(op)
                 case { "|" ->
                     combineMethList(left.methList, right.methList)
@@ -1149,14 +1148,14 @@ def anObjectType: ObjectTypeFactory is public = object {
                     // and type X = T & U, then X.m: A | A' -> B & B'
                     // (X.m is a new method with '|' applied to parameters of mixed parts and '&' to return type)
 
-                    def newMethList = sg.emptyList[[Set[[MethodType]]]]
+                    def newMethList = sg.emptyList[[sg.Set[[MethodType]]]]
 
                     def leftMethListNoBase = removeBaseMethods (left.methList, base)
                     def rightMethListNoBase = removeBaseMethods (right.methList, base)
 
                     for (leftMethListNoBase) do { leftMethSet ->
                         for(rightMethListNoBase) do {rightMethSet ->
-                            def newMethSet = emptySet[[MethodType]]
+                            def newMethSet = sg.emptySet[[MethodType]]
 
                             // 1. Build a new set of methods from methods in left and right type of '&' that have the same names
                             // Refer to X.m example above
@@ -1168,8 +1167,8 @@ def anObjectType: ObjectTypeFactory is public = object {
                                         var sameSignature: Boolean := true
 
                                         // Check if method signature have the same types
-                                        for (leftMeth.signature) and (rightMeth.signature) do { part: MixPart, part': MixPart →
-                                            for (part.parameters) and (part'.parameters) do { p: Param, p': Param →
+                                        sg.for (leftMeth.signature) and (rightMeth.signature) do { part: MixPart, part': MixPart →
+                                            sg.for (part.parameters) and (part'.parameters) do { p: Param, p': Param →
                                                 if (p.typeAnnotation ≠ p'.typeAnnotation) then {
                                                     sameSignature := false
                                                 }
@@ -1188,9 +1187,9 @@ def anObjectType: ObjectTypeFactory is public = object {
                                             newMethSet.add(newMeth)
                                         } else {
                                             def newSignature: List⟦MixPart⟧ = sg.emptyList[[MixPart]]
-                                            for (leftMeth.signature) and (rightMeth.signature) do { part: MixPart, part': MixPart →
+                                            sg.for (leftMeth.signature) and (rightMeth.signature) do { part: MixPart, part': MixPart →
                                                 def paramList: List[[Param]] = sg.emptyList[[Param]]
-                                                for (part.parameters) and (part'.parameters) do { p: Param, p': Param →
+                                                sg.for (part.parameters) and (part'.parameters) do { p: Param, p': Param →
                                                     if(p.typeAnnotation != p'.typeAnnotation) then {
                                                         def newParam: Param = aParam.ofType (makeWithOp("|", p.typeAnnotation, p'.typeAnnotation))
                                                         paramList.add(newParam)
@@ -1280,7 +1279,7 @@ def anObjectType: ObjectTypeFactory is public = object {
 
         // Takes a mapping of generic-to-ObjectType and returns a copy of self
         // with all of the generics replaced with their corresponding ObjectType
-        method updateTypeWith(replacements:Dictionary[[String,ObjectType]])
+        method updateTypeWith(replacements:sg.Dictionary[[String,ObjectType]])
                         -> ObjectType {
             if (debug) then {
                io.error.write "\n1047: update methods"
@@ -1320,7 +1319,7 @@ def anObjectType: ObjectTypeFactory is public = object {
         var storedOp : TypeOp
 
         // Return methods of type
-        method methods -> Set⟦MethodType⟧ {
+        method methods -> sg.Set⟦MethodType⟧ {
             resolve.methods
         }
 
@@ -1480,7 +1479,7 @@ def anObjectType: ObjectTypeFactory is public = object {
             printOut
         }
 
-        method updateTypeWith(replacements:Dictionary[[String,ObjectType]])
+        method updateTypeWith(replacements:sg.Dictionary[[String,ObjectType]])
                                 -> ObjectType {
             if (debug) then {
                io.error.write "\n1240: update methods in definedByNode"
@@ -1523,7 +1522,7 @@ def anObjectType: ObjectTypeFactory is public = object {
             if (debug2) then {
                io.error.write "\n1255: case TypeLiteral: {typeLiteral}"
             }
-            def meths : Set⟦MethodType⟧ = emptySet
+            def meths : sg.Set⟦MethodType⟧ = sg.emptySet
             //collect MethodTypes
             for(typeLiteral.methods) do { mType : AstNode →
                 if (debug2) then {
@@ -1743,9 +1742,9 @@ def anObjectType: ObjectTypeFactory is public = object {
         method isSubtypeOf (other: ObjectType) -> Boolean { ans.isSubtypeOf(other) }  
         method == (other: ObjectType) -> Boolean { ans.asString == other.asString }
         method asString -> String { ident.value }
-        method methods -> Set⟦MethodType⟧ is public  { ans.methods }
+        method methods -> sg.Set⟦MethodType⟧ is public  { ans.methods }
 
-        method methList -> List[[Set[[MethodType]]]] {
+        method methList -> List[[sg.Set[[MethodType]]]] {
             return ans.methList
         }
 
@@ -1770,7 +1769,7 @@ def anObjectType: ObjectTypeFactory is public = object {
         method isSubtypeOf(other': ObjectType) -> Boolean {
             return (self == other') || {other'.isDynamic} || {other' == doneType} || (other' == base)
         }
-        method updateTypeWith(replacements: Dictionary[[String,ObjectType]]) -> ObjectType {
+        method updateTypeWith(replacements: sg.Dictionary[[String,ObjectType]]) -> ObjectType {
             if (debug) then {
                io.error.write "\n1411"
             }
@@ -1846,21 +1845,21 @@ def anObjectType: ObjectTypeFactory is public = object {
     // type of a block with params and return type rType
     method blockTaking(params : List⟦Parameter⟧)
             returning(rType : ObjectType) → ObjectType {
-        def signature = list[aMixPartWithName("apply") parameters(params)]
-        def meths: Set⟦MethodType⟧ = emptySet
+        def signature = sg.list[aMixPartWithName("apply") parameters(params)]
+        def meths: sg.Set⟦MethodType⟧ = sg.emptySet
         meths.add(aMethodType.signature(signature) returnType(rType))
         fromMethods(meths) withName("Block")
     }
 
     // type of block without prarameters returning value of type rType
     method blockReturning(rType : ObjectType) → ObjectType {
-        blockTaking(list[]) returning(rType)
+        blockTaking(sg.emptyList) returning(rType)
     }
 
     // add method to oType.  Only use this variant if method is parameterless
     method addTo (oType : ObjectType) name (name' : String)
                           returns (rType : ObjectType) → Done is confidential {
-        def signature = list[aMixPartWithName (name') parameters (list[])]
+        def signature = sg.list[aMixPartWithName (name') parameters (sg.emptyList)]
         oType.methods.add (aMethodType.signature (signature) returnType (rType))
     }
 
@@ -1869,12 +1868,12 @@ def anObjectType: ObjectTypeFactory is public = object {
     method addTo (oType : ObjectType) name (name' : String)
             params (ptypes : List⟦ObjectType⟧) returns (rType : ObjectType)
             → Done is confidential {
-        def parameters = list[]
+        def parameters = sg.emptyList
         for(ptypes) do { ptype →
             parameters.add(aParam.ofType(ptype))
         }
 
-        def signature = list[aMixPartWithName(name') parameters (parameters)]
+        def signature = sg.list[aMixPartWithName(name') parameters (parameters)]
 
         oType.methods.add (aMethodType.signature(signature) returnType (rType))
     }
@@ -1884,9 +1883,9 @@ def anObjectType: ObjectTypeFactory is public = object {
     method addTo (oType : ObjectType) name (name' : String)
             param (ptype : ObjectType) returns (rType : ObjectType)
             → Done is confidential {
-        def parameters = list[aParam.ofType(ptype)]
+        def parameters = sg.list[aParam.ofType(ptype)]
 
-        def signature = list[aMixPartWithName(name') parameters(parameters)]
+        def signature = sg.list[aMixPartWithName(name') parameters(parameters)]
 
         oType.methods.add (aMethodType.signature(signature) returnType(rType))
     }
@@ -1895,17 +1894,17 @@ def anObjectType: ObjectTypeFactory is public = object {
     method addTo (oType: ObjectType) names (name: List⟦String⟧)
          parts(p: List⟦List⟦ObjectType⟧ ⟧) returns (rType: ObjectType) → Done
                                     is confidential{
-         def parts: List⟦List⟦Param⟧⟧ = list[]
+         def parts: List⟦List⟦Param⟧⟧ = sg.emptyList
          var nameString: String := ""
          for (p) do { part: List⟦ObjectType⟧ →
-             def parameters: List⟦Param⟧ = list[]
+             def parameters: List⟦Param⟧ = sg.emptyList
              for (part) do {ptype: ObjectType →
                  parameters.add(aParam.ofType(ptype))
              }
              parts.add(parameters)
          }
 
-         def signature: List⟦MixPart⟧ = list[]
+         def signature: List⟦MixPart⟧ = sg.emptyList
          for (1 .. name.size) do {i →
              signature.add(aMixPartWithName(name.at (i)) parameters(parts.at (i)))
          }
@@ -2007,7 +2006,7 @@ def anObjectType: ObjectTypeFactory is public = object {
     addTo (iterator) name ("next") returns (dynamic)
 
     def shortCircuit: ObjectType =
-        blockTaking(list[aParam.ofType(blockReturning(dynamic))])returning(base)
+        blockTaking(sg.list[aParam.ofType(blockReturning(dynamic))])returning(base)
 
     extend (boolean) with(base)
     addTo (boolean) name ("&&") param (boolean) returns (boolean)
@@ -2053,11 +2052,11 @@ def anObjectType: ObjectTypeFactory is public = object {
     addTo (number) name ("abs") returns (number)
 
     // helper object types for string methods
-    def ifAbsentBlock: ObjectType = blockTaking (list[]) returning (dynamic)
-    def stringDoBlock: ObjectType = blockTaking (list[aParam.ofType(string)])
+    def ifAbsentBlock: ObjectType = blockTaking (sg.emptyList) returning (dynamic)
+    def stringDoBlock: ObjectType = blockTaking (sg.list[aParam.ofType(string)])
             returning(doneType)
     def stringKeysValuesDoBlock: ObjectType =
-        blockTaking (list[aParam.ofType(number), aParam.ofType(string)])
+        blockTaking (sg.list[aParam.ofType(number), aParam.ofType(string)])
            returning (doneType)
 
     // Add methods for strings
@@ -2083,8 +2082,8 @@ def anObjectType: ObjectTypeFactory is public = object {
     addTo (string) name ("encode") returns (string)
     addTo (string) name ("endsWith") param (string) returns (boolean)
     addTo (string) name ("indexOf") param (string) returns (number)
-    addTo(string) names (list["indexOf","startingAt"])
-           parts(list [ list[string], list[number] ]) returns (number)
+    addTo(string) names (sg.list["indexOf","startingAt"])
+           parts(sg.list [ sg.list[string], sg.list[number] ]) returns (number)
    
 //    addTo(string) names(["indexOf","startingAt","ifAbsent"])
 //       parts([ [string], [number],[ifAbsentBlock] ]) returns (number | dynamic)
@@ -2092,8 +2091,8 @@ def anObjectType: ObjectTypeFactory is public = object {
 //       parts([ [string], [number],[ifAbsentBlock] ]) returns (number | dynamic)
 
     addTo (string) name ("lastIndexOf") param (string) returns (number)
-    addTo (string) names (list["lastIndexOf","startingAt"])
-        parts(list[ list[string], list[number] ]) returns (number)
+    addTo (string) names (sg.list["lastIndexOf","startingAt"])
+        parts(sg.list[ sg.list[string], sg.list[number] ]) returns (number)
 
 //    addTo(string) names(["lastIndexOf","ifAbsent"])
         //parts([ [string], [ifAbsentBlock] ]) returns (number | dynamic)
@@ -2111,18 +2110,18 @@ def anObjectType: ObjectTypeFactory is public = object {
                       //params(string, ifAbsentBlock) returns (number | dynamic)
       
     addTo(string) name ("ord") returns (number)
-    addTo(string) names(list["replace","with"])
-                      parts(list[ list[string], list[string] ]) returns (string)
+    addTo(string) names(sg.list["replace","with"])
+                      parts(sg.list[ sg.list[string], sg.list[string] ]) returns (string)
     addTo(string) name ("size") returns (number)
     addTo(string) name ("startsWith") param (string) returns (boolean)
     addTo(string) name ("startsWithDigit") returns (boolean)
     addTo(string) name ("startsWithLetter") returns (boolean)
     addTo(string) name ("startsWithPeriod") returns (boolean)
     addTo(string) name ("startsWithSpace") returns (boolean)
-    addTo(string) names (list["substringFrom","size"])
-        parts (list[ list[number], list[number] ]) returns (string)
-    addTo(string) names (list["substringFrom","to"])
-        parts (list[ list[number], list[number] ]) returns (string)
+    addTo(string) names (sg.list["substringFrom","size"])
+        parts (sg.list[ sg.list[number], sg.list[number] ]) returns (string)
+    addTo(string) names (sg.list["substringFrom","to"])
+        parts (sg.list[sg. list[number], sg.list[number] ]) returns (string)
     addTo(string) name ("_escape") returns (string)
     addTo(string) name ("trim") returns (string)
     addTo(string) name ("do") param (stringDoBlock) returns (doneType)
@@ -2145,7 +2144,7 @@ def anObjectType: ObjectTypeFactory is public = object {
     // add methods for exceptionKind
     extend (exceptionKind) with (pattern)
     addTo (exceptionKind) name ("raise") param (string) returns (bottom)
-    addTo (exceptionKind) names (list["raise", "with"]) parts (list[ list[string],list[base] ]) returns (doneType)
+    addTo (exceptionKind) names (sg.list["raise", "with"]) parts (sg.list[ sg.list[string],sg.list[base] ]) returns (doneType)
     addTo (exceptionKind) name ("refine") param (string) returns (exceptionKind)
     addTo (exceptionKind) name ("name") returns (string)
     addTo (exceptionKind) name ("==") param (base) returns (boolean)
@@ -2153,14 +2152,14 @@ def anObjectType: ObjectTypeFactory is public = object {
 
     // helper type for lists
     def fold: ObjectType =
-              blockTaking(list[aParam.ofType(dynamic), aParam.ofType(dynamic)])
+              blockTaking(sg.list[aParam.ofType(dynamic), aParam.ofType(dynamic)])
                       returning (dynamic)
 
     // add methods for list type
     extend (listTp) with (base)
     addTo (listTp) name ("at") param (number) returns (dynamic)
-    addTo(listTp) names(list["at","put"])
-                    parts(list[ list[number], list[dynamic] ]) returns (doneType)
+    addTo(listTp) names(sg.list["at","put"])
+                    parts(sg.list[ sg.list[number], sg.list[dynamic] ]) returns (doneType)
     addTo(listTp) name ("push") param (dynamic) returns (doneType)
     addTo(listTp) name ("add") param (dynamic) returns (listTp)
     // need to add varparams(comment belongs to "addFirst")
@@ -2178,7 +2177,7 @@ def anObjectType: ObjectTypeFactory is public = object {
     addTo(listTp) name ("last") returns (dynamic)
     addTo(listTp) name ("prepended") param (dynamic) returns (listTp)
     addTo(listTp) name ("++") param (listTp) returns (listTp)
-    addTo(listTp) name ("reduce") params(list[dynamic, fold]) returns (dynamic)
+    addTo(listTp) name ("reduce") params(sg.list[dynamic, fold]) returns (dynamic)
     addTo(listTp) name ("reversed") returns (dynamic)
     addTo(listTp) name ("removeFirst") returns (dynamic)
     addTo(listTp) name ("removeLast") returns (dynamic)
@@ -2206,10 +2205,10 @@ def anObjectType: ObjectTypeFactory is public = object {
     addTo (preludeType) name ("ProgrammingError") returns (exceptionKind)
     addTo (preludeType) name ("EnvironmentException") returns (exceptionKind)
     addTo (preludeType) name ("ResourceException") returns (exceptionKind)
-    addTo (preludeType) names(list["while", "do"])
-              parts(list[list[boolBlock], list[doneBlock] ]) returns (doneType)
-    addTo (preludeType) names(list["for", "do"])
-              parts(list[list[listTp], list[dynamicDoneBlock] ]) returns (doneType)
+    addTo (preludeType) names(sg.list["while", "do"])
+              parts(sg.list[sg.list[boolBlock], sg.list[doneBlock] ]) returns (doneType)
+    addTo (preludeType) names(sg.list["for", "do"])
+              parts(sg.list[sg.list[listTp], sg.list[dynamicDoneBlock] ]) returns (doneType)
 
     // Add all predefined types to types scope
     scope.types.at ("Unknown") put (dynamic)
@@ -2331,6 +2330,17 @@ method continue'(e, bl) → Done is confidential {
     bl.apply(e, { return })
 }
 
+//method for ⟦T⟧(l1:Sequence⟦T⟧) and (l2: Sequence⟦T⟧) do
+//                (blk:Procedure2⟦T,T⟧) → Done {
+//    if (l1.size ≠ l2.size) then {
+//        ProgrammingError.raise("sequences in for()and() must have same size")
+//    } else {
+//        for (1..l1.size) do {index: Number →
+//            blk.apply(l1.at(index),l2.at(index))
+//        }
+//    }
+//}
+
 //Takes a non-empty list of objectTypes and combines them into a variant type
 method fromObjectTypeList(oList : List⟦ObjectType⟧) → ObjectType{
       if (oList.size == 0) then {
@@ -2354,14 +2364,14 @@ method fromObjectTypeList(oList : List⟦ObjectType⟧) → ObjectType{
 }
 
 //Creates a Dictionary mapping elements of keys to elements of vals
-method makeDictionary⟦K,V⟧(keys: List⟦K⟧, vals: List⟦V⟧) → Dictionary⟦K,V⟧ {
+method makeDictionary⟦K,V⟧(keys: List⟦K⟧, vals: List⟦V⟧) → sg.Dictionary⟦K,V⟧ {
     //Make sure keys and vals are of the same size
     if(keys.size ≠ vals.size) then {
         ProgrammingError.raise("Attempted to create a dictionary from two " ++
                                                       "lists of unequal size.")
     }
     //Populate the dictionary
-    def dict : Dictionary⟦K,V⟧ = emptyDictionary⟦K,V⟧
+    def dict : sg.Dictionary⟦K,V⟧ = sg.emptyDictionary⟦K,V⟧
     for (keys.indices) do { index : Number →
         dict.at (keys.at (index)) put (vals.at (index))
     }
@@ -2369,15 +2379,15 @@ method makeDictionary⟦K,V⟧(keys: List⟦K⟧, vals: List⟦V⟧) → Diction
 }
 
 // TODO: Combines two method lists and discards the clauses that are subtypes 
-method combineMethList(leftMethList: List[[Set[[MethodType]]]], rightMethList: List[[Set[[MethodType]]]]) -> List[[Set[[MethodType]]]] {
+method combineMethList(leftMethList: List[[sg.Set[[MethodType]]]], rightMethList: List[[sg.Set[[MethodType]]]]) -> List[[sg.Set[[MethodType]]]] {
     leftMethList ++ rightMethList
 }    
 
 // Returns the list methList without base methods 
-method removeBaseMethods(methList: List[[Set[[MethodType]]]], base: ObjectType) -> List[[Set[[MethodType]]]] {
-    def methListNoBase = sg.emptyList[[Set[[MethodType]]]]
+method removeBaseMethods(methList: List[[sg.Set[[MethodType]]]], base: ObjectType) -> List[[sg.Set[[MethodType]]]] {
+    def methListNoBase = sg.emptyList[[sg.Set[[MethodType]]]]
     for (methList) do { methSet ->
-        def newMethSet = emptySet[[MethodType]] 
+        def newMethSet = sg.emptySet[[MethodType]] 
         for(methSet) do { meth ->
             if(!base.methods.contains(meth)) then {
                 newMethSet.add(meth)

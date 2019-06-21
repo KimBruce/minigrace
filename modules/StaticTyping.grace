@@ -27,12 +27,14 @@ type AstNode = share.AstNode
 type MixPart = share.MixPart
 type Param = share.Param
 type Parameter = share.Parameter
+type ParamFactory = share.ParamFactory
 //This type is used for checking subtyping
 type TypePair = share.TypePair
 
 
 // Error resulting from type checking
-def StaticTypingError: Exception is public = share.StaticTypingError
+//def StaticTypingError: Exception is public = share.StaticTypingError
+def StaticTypingError is public = Exception.refine "StaticTypingError"
 
 // imported constants relating to cacheing type info
 def cache: Dictionary = sc.cache
@@ -42,8 +44,8 @@ def allCache: Dictionary = sc.allCache
 def aMethodType : MethodTypeFactory = ot.aMethodType
 def aGenericType : GenericTypeFactory = ot.aGenericType
 def anObjectType : ObjectTypeFactory = ot.anObjectType
-def scope: share.Scope = sc.scope
-def aParam: Param = ot.aParam
+def scope: sc.Scope = sc.scope
+def aParam: ParamFactory = ot.aParam
 
 // debugging prints will print if debug is true
 def debug: Boolean = false
@@ -692,7 +694,7 @@ def astVisitor: ast.AstVisitor is public = object {
                 // make sure it is a subtype of the declared 
                 // return type
                 def lastNode: AstNode = meth.body.last
-                if (share.Return.match(lastNode).not) then {
+                if (share.Return.matches(lastNode).not) then {
                     def lastType = typeOf(lastNode)
                     if (debug3) then {
                        io.error.write 
@@ -1350,6 +1352,7 @@ def astVisitor: ast.AstVisitor is public = object {
         if (debug) then {
             io.error.write "\n1919: visiting dialect {node}"
         }
+        false
         //checkMatch (node)
     }
 
@@ -1471,9 +1474,9 @@ method updateMethScope(meth : AstNode) → MethodType is confidential {
 // Type check body of object definition
 // TODO: This method is still way too long!!
 method processBody (body : List⟦AstNode⟧, 
-        superclass: AstNode | false) → ObjectType is confidential {
+        superclass: AstNode | false) → PublicConfidential is confidential {
             
-    def debug3: Boolean = false
+    def debug3: Boolean = true
     if (debug3) then {
         io.error.write "\n1958: superclass: {superclass}\n"
     }
@@ -1493,8 +1496,14 @@ method processBody (body : List⟦AstNode⟧,
         var name: String := inheriting.value.nameString
         if (name.contains "$object(") then {
             // fix glitch with method name in inheritance clause
-            inheriting.value.parts.removeLast
+//            inheriting.value.parts.removeLast
             name := inheriting.value.nameString
+            def temp = list.withAll(inheriting.value.parts)
+            def temp2 = temp.removeLast
+            io.error.write "temp2: {temp2}"
+            io.error.write "name: {name}.  Is this WRONG?"
+            io.error.write "last: {inheriting.value.parts.last}"
+            //io.error.write (allCache.at("$object"))
         }
 
         // Handle exclusions and aliases
@@ -1708,6 +1717,7 @@ method processBody (body : List⟦AstNode⟧,
                 scope.methods.at(mType.name) put(mType)
                 scope.variables.at(mType.name) put(mType.retType)
                 // add setter methods if variable in defd
+                if(debug3) then {io.error.write "\n1715: defd is {defd}"}
                 addSetterMethodFor(defd, publicMethods, allMethods)
 
             } case { td : share.TypeDeclaration →
@@ -1753,7 +1763,7 @@ method processBody (body : List⟦AstNode⟧,
 
 // Construct setter method for variable declared in defd.  
 // Add to allMethods, and, if writeable, to publicMethods.
-method addSetterMethodFor(defd: share.Def, 
+method addSetterMethodFor(defd: share.Var | share.Def, 
         publicMethods: Set⟦MethodType⟧, allMethods: Set⟦MethodType⟧)
                                     -> Done is confidential {
     if (defd.kind == "vardec") then {

@@ -179,6 +179,9 @@ class typePair (first':ObjectType, second':ObjectType) →
         second'
     }
 
+    // BRC: Change implementation of equality for typePair. 
+    //      Seems to work in conjuction with switching the order of cases in
+    //      isSubtypeHelper in fromMethods. 
     method == (other:Object) → Boolean {
         (first.asString == other.first.asString) && (second.asString == other.second.asString)
     }
@@ -813,6 +816,7 @@ method getTypeParams(params: List[[AstNode]]) -> List[[String]] {
 }
 
 // Object type information.
+// BRC: Added isMeths, isDone, methList, toList methods
 def anObjectType: ObjectTypeFactory is public = object {
     // super class providing default implementations of methods
     class superObjectType -> ObjectType {
@@ -828,14 +832,19 @@ def anObjectType: ObjectTypeFactory is public = object {
         // Is this object type built from a collection of methods?
         method isMeths -> Boolean {false}
 
+        // Is this object type done?
         method isDone -> Boolean {false}
 
-        // Return the list of sets of methods of the type
-        // Needed for building types with & or |
+        // Return a list of sets of methods of an object type
+        // Need to construct a normal-form representation of possible method 
+        // combinations in a variant type. Otherwise, contains the same methods
+        // as methods method.
+        // BRC: Is the above description accurate enough?
         method methList -> List[[Set[[MethodType]]]] {
             emptyList[[Set[[MethodType]]]]
         }
 
+        // Returns a single-element list that contains self object type
         method toList -> List[[ObjectType]] {
             list[[ObjectType]] [self]
         }
@@ -869,8 +878,17 @@ def anObjectType: ObjectTypeFactory is public = object {
 
         // Construct a variant type from two object types.
         // Note: variant types can only be created by this constructor.
+        // BRC: This method was previously implemented only with line 881.
+        //      Checking for subtyping here fixes variantTypes_test.grace but
+        //      breaks around 10 import tests that were passing before.
         method | (other' : ObjectType) → ObjectType {
-            withOp("|", other')
+            if(isSubtypeOf(other')) then {
+                other'
+            } elseif {other'.isSubtypeOf(self)} then {
+                self
+            } else {
+                withOp("|", other')
+            }
         }
 
         // Construct an & type from self and other'
@@ -878,10 +896,7 @@ def anObjectType: ObjectTypeFactory is public = object {
             withOp("&", other')
         }
 
-        //TODO: not sure we trust this. May have to refine == in the future
-        //method == (other:ObjectType) → Boolean { self.isMe(other) }
         method == (other:ObjectType) → Boolean {
-            //io.error.write "\n873 check equality of {asString} and {other.asString}"
             self.isSubtypeOf(other) && other.isSubtypeOf(self)
         }
 
@@ -929,6 +944,7 @@ def anObjectType: ObjectTypeFactory is public = object {
         // Is type given with a name (yes in this case)
         method isId -> Boolean is override {true}
 
+        // BRC:
         method isDone -> Boolean is override {
             if(name == "Done") then { true } else { false }
         }
@@ -948,6 +964,7 @@ def anObjectType: ObjectTypeFactory is public = object {
             def methods : Set⟦MethodType⟧ is public = (if (base == dynamic) then {
                 emptySet } else { emptySet.addAll(base.methods) }).addAll(methods')
 
+            // Returns a single-elment list of a set of methods
             method methList -> List[[Set[[MethodType]]]] {
                 list[[Set[[MethodType]]]] [methods]
             }
@@ -981,11 +998,15 @@ def anObjectType: ObjectTypeFactory is public = object {
             // TODO: Make confidential
             // helper method for subtyping a pair of non-variant types
             // Keeps track of pairs already considered (co-induction)
+            // BRC: Updated this method to reflect changes we made with methList.
+            //      I am not sure that we need to loop through self.methList because
+            //      methList is defined as a list that contains only one set, that is,
+            //      methods.
             method isSimpleSubtypeOf(trials: List⟦TypePair⟧,
                                                   other:ObjectType) → Answer {
-                def debug3: Boolean = false
-                //for each method in other, check that there is a corresponding
-                //method in self
+            def debug3: Boolean = false
+                // For each method in other, check that there is a corresponding
+                // method in self
                 if(debug3) then {
                     print("\n961: methList: {methList}")
                 }
@@ -998,26 +1019,33 @@ def anObjectType: ObjectTypeFactory is public = object {
                             for (selfMethSet) do { selfMeth: MethodType ->
                                 if (debug3) then { print "\n968 otherMeth: {otherMeth}" }
                                 if (debug3) then { print "\n945 selfMeth: {selfMeth}" }
-                                def isSpec: Answer =
-                                      selfMeth.isSpecialisationOf(trials, otherMeth)
+                                def isSpec: Answer = selfMeth.isSpecialisationOf(trials, otherMeth)
                                 if (debug3) then { print "\n947 isSpec.ans: {isSpec.ans}" }
                                 if (isSpec.ans) then {
                                     continue.apply 
                                 }
                             }
                         }
-                        //fails to find corresponding method
+                        // Fails to find corresponding subtype
                         return answerConstructor(false, trials)
                     }
                 }
                 return answerConstructor(true, trials)
             }
 
-      //    helper method for subtyping a pair of ObjectTypes
-      //
-      //    Param trials - Holds pairs of previously subtype-checked ObjectTypes
-      //            Prevents infinite subtype checking of self-referential types
-            //Param other' - The ObjectType that self is checked against
+            // Helper method for subtyping a pair of ObjectTypes
+            //
+            // Param trials - Holds pairs of previously subtype-checked ObjectTypes
+            // Prevents infinite subtype checking of self-referential types
+            // Param other' - The ObjectType that self is checked against
+
+            // TODO: Rename trials to trails?
+            // BRC: Reordered cases after initial check that either constructs an
+            // answer or adds selfOtherPair to trials. Checking other'.isMeths now
+            // comes before checking whether other'.isId and prevents 
+            // putting one object type into trials and then finding it in the next
+            // iteration in trials even though it wasn't ever actually typechecked. 
+            // Everything else is the same as before.
             method isSubtypeHelper(trials:List⟦TypePair⟧, other':ObjectType)
                                                      → Answer {
                 def selfOtherPair : TypePair = typePair(self, other')
@@ -1028,10 +1056,10 @@ def anObjectType: ObjectTypeFactory is public = object {
                    io.error.write "\n842: other'.isMeths: {other'.isMeths}"
                 }
 
-                //if trials already contains selfOtherPair, we can assume
-                //self <: other.  Check other trivial cases of subtyping
+                // If trials already contains selfOtherPair, we can assume
+                // self <: other.  Check other trivial cases of subtyping
                 if ((self.isMe(other')) || {trials.contains(selfOtherPair)}
-                        || {other'.isDynamic} || {other'.isDone}) then{
+                        || {other'.isDynamic} || {other'.isDone}) then {
                     if (debug47) then {
                         io.error.write "\n992: self : {self} other: {other'}"
                         io.error.write "\n993: other'.methList : {other'.methList}"
@@ -1052,7 +1080,7 @@ def anObjectType: ObjectTypeFactory is public = object {
                     return oans
                 }
 
-                // case where other is built from & or |
+                // Case where other is built from & or |
                 if (other'.isOp) then {
                     def left: Answer = self.isSubtypeHelper(trials,other'.left)
                     def right: Answer = self.isSubtypeHelper(trials,other'.right)
@@ -1070,7 +1098,7 @@ def anObjectType: ObjectTypeFactory is public = object {
                     return helperResult
                 }
 
-                // case where other is a named type
+                // Case where other is a named type
                 if (other'.isId) then {
                    if (debug47) then {
                       io.error.write "\n825 in id case for {other'}"
@@ -1135,14 +1163,13 @@ def anObjectType: ObjectTypeFactory is public = object {
                 //true
             }
 
-            // TODO: BROKEN! fix to handle same method name in both halves?
-            // Can be conservative and report error if types not identical
-            // or use m( A | A') -> B & B'
+            // BRC: Fixed makeWithOp to handle same method names.
+            // Uses (A | A') -> B & B'
             method & (other': ObjectType) -> ObjectType {   
                 anObjectType.makeWithOp("&",self,other')
             }
 
-            // update type of all methods using replacement for generic types.
+            // Update type of all methods using replacement for generic types.
             method updateTypeWith(replacements:Dictionary[[String,ObjectType]])
                         -> ObjectType {
                 if (debug) then {
@@ -1175,6 +1202,8 @@ def anObjectType: ObjectTypeFactory is public = object {
     }
 
     // Create an ObjectType from left, right using | or &
+    // TODO: Refactor this method
+    // BRC: A lot of changes in this class.
     class makeWithOp(op': String, left': ObjectType, right': ObjectType) ->
                                                     ObjectType {
         inherit superObjectType
@@ -1194,6 +1223,7 @@ def anObjectType: ObjectTypeFactory is public = object {
                     combineMethList(left.methList, right.methList)
             }
                 case { "&" ->
+                    // Formally:
                     // If type T = { m: A -> B }, type U = { m: A' -> B' }
                     // and type X = T & U, then X.m: A | A' -> B & B'
                     // (X.m is a new method with '|' applied to parameters of mixed parts and '&' to return type)
@@ -1226,8 +1256,7 @@ def anObjectType: ObjectTypeFactory is public = object {
                                             }
                                         }
 
-                                        // Make a new return type
-
+                                        // Construct a new return type
                                         var retType: ObjectType
                                         if(leftMeth.retType != rightMeth.retType) then {
                                             retType := makeWithOp("&", leftMeth.retType, rightMeth.retType)     
@@ -1235,6 +1264,10 @@ def anObjectType: ObjectTypeFactory is public = object {
                                             retType := leftMeth.retType
                                         }
 
+
+                                        // If methods have the same signature, construct new method type using 
+                                        // that signature and new return type. Otherwise, consturct new method type
+                                        // according to formal rules described above.
                                         if(sameSignature) then {
                                             def newMeth: MethodType = aMethodType.signature (leftMeth.signature) returnType (retType)
                                             newMethSet.add(newMeth)
@@ -1303,6 +1336,10 @@ def anObjectType: ObjectTypeFactory is public = object {
             self
         }
 
+        // Returns list of object types based on the value of op
+        // BRC: Stops separating an object type built from | as soon as it
+        // encounters an &. Not sure if this is the right way to do it, but
+        // I don't think we can afford to lose that '&'
         method toList -> List[[ObjectType]] {
             match(op)
                 case { "|" ->
@@ -1314,6 +1351,7 @@ def anObjectType: ObjectTypeFactory is public = object {
         }
 
         // TODO Move to superObject? 
+        // BRC: Completely new implementation.
         method isSubtypeHelper (trials: List⟦TypePair⟧, other: ObjectType) → Answer {
             // TODO Do we need to add trials here?
             def selfOtherPair : TypePair = typePair(self, other)
@@ -1321,6 +1359,10 @@ def anObjectType: ObjectTypeFactory is public = object {
 
             match(op)
                 case { "|" ->
+                    // Formally:
+                    // A_{1} | ... | A_{n} <: B_{1} | ... | B_{m} iff
+                    // forall i <= n, exists j such that A_{i} <: B_{j}
+
                     def selfList: List[[ObjectType]] = toList
                     def otherList: List[[ObjectType]] = other.toList
                     if(debug3) then {
@@ -1343,10 +1385,25 @@ def anObjectType: ObjectTypeFactory is public = object {
                     return answerConstructor(true, trials)
             }
                 case { "&" ->
+
+                    // Formally:
+                    // 1. Build two lists of object types for self and other
+                    //    based on sets of methods in methList that are 
+                    //    a normal-form representation of possible method 
+                    //    combinations in a variant type
+                    // 2. Build two new object types for self and other.
+                    //    Because our lists of object types was built from methods
+                    //    in normal form, we can '|' these object types into two new 
+                    //    object types.
+                    // 3. Check whether new object type for self is a subtype of object
+                    //    type for other  
+
                     if(debug3) then {
                         io.error.write("\n1341: methList: {methList}")
                         io.error.write("\n1342: other.methList: {other.methList}")
                     }
+
+                    // 1.
 
                     def selfObjectTypes: List[[ObjectType]] = emptyList 
                     for(self.methList) do { selfMethSet ->
@@ -1357,6 +1414,8 @@ def anObjectType: ObjectTypeFactory is public = object {
                     for(other.methList) do { otherMethSet ->
                         otherObjectTypes.add(fromMethods(otherMethSet))
                     }
+
+                    // 2.
 
                     var selfObjectType: ObjectType
                     if(selfObjectTypes.size > 1) then {
@@ -1378,12 +1437,12 @@ def anObjectType: ObjectTypeFactory is public = object {
                         otherObjectType := fromMethods(other.methList.at(1))
                     }
 
+                    // 3.
+
                     selfObjectType.isSubtypeHelper(trials, otherObjectType)
             }
         }
 
-        // conservative version of subtype where A & B <: C iff A <: C or B <: C
-        // TODO: Fix this to be correct!
         method isSubtypeOf(other: ObjectType) -> Boolean {
             isSubtypeHelper (emptyList⟦TypePair⟧, other).ans
         }
@@ -1434,6 +1493,7 @@ def anObjectType: ObjectTypeFactory is public = object {
     // checking
     //Holds the AstNode that can be resolved to the real ObjectType
     // DO WE NEED THIS?
+    // BRC: Do we need this anymore?
     class definedByNode (node': AstNode) with (typeParams: List[[String]]) -> ObjectTypeFromMeths{
         inherit superObjectType
 
@@ -1833,7 +1893,9 @@ def anObjectType: ObjectTypeFactory is public = object {
     }
 
     // ObjectType corresponding to the identifier in the scope. If not
-    // already there, raise an exception.   
+    // already there, raise an exception.
+    // BRC: Converted fromIdentifier from method into a class. Most changes seem to be
+    //      fairly intuitive.   
     class fromIdentifier(ident : share.Identifier) with (typeParams) → ObjectType { 
         inherit superObjectType
 
@@ -1845,7 +1907,9 @@ def anObjectType: ObjectTypeFactory is public = object {
         method left -> ObjectType { ans.left }
         method right -> ObjectType { ans.right }
         method op -> String { ans.op }
-        method isSubtypeHelper (trials: List⟦TypePair⟧, other: ObjectType) -> Answer { ans.isSubtypeHelper(trials, other) }
+        method isSubtypeHelper (trials: List⟦TypePair⟧, other: ObjectType) -> Answer { 
+            ans.isSubtypeHelper(trials, other) 
+        }
 
         method ans -> ObjectType {
             if (debug) then {
@@ -2502,15 +2566,17 @@ method makeDictionary⟦K,V⟧(keys: List⟦K⟧, vals: List⟦V⟧) → Diction
     dict
 }
 
-// TODO: Combines two method lists and discards the clauses that are subtypes 
+// TODO: Combines two method lists and discards the clauses that are subtypes
+// BRC: Same thing as TODO? Might be able to handle this in method | in an object type? 
 method combineMethList(leftMethList: List[[Set[[MethodType]]]], rightMethList: List[[Set[[MethodType]]]]) -> List[[Set[[MethodType]]]] {
     leftMethList ++ rightMethList
 }    
 
-// Returns the list methList without base methods 
-method removeBaseMethods(methList: List[[Set[[MethodType]]]], base: ObjectType) -> List[[Set[[MethodType]]]] {
-    def methListNoBase = emptyList[[Set[[MethodType]]]]
-    for (methList) do { methSet ->
+// Returns parameter methods without base methods
+// BRC:
+method removeBaseMethods(methods: List[[Set[[MethodType]]]], base: ObjectType) -> List[[Set[[MethodType]]]] {
+    def methodsNoBase = emptyList[[Set[[MethodType]]]]
+    for (methods) do { methSet ->
         def newMethSet = emptySet[[MethodType]] 
         for(methSet) do { meth ->
             if(!base.methods.contains(meth)) then {
@@ -2519,5 +2585,5 @@ method removeBaseMethods(methList: List[[Set[[MethodType]]]], base: ObjectType) 
         }
         methListNoBase.add(newMethSet)
     }
-    return methListNoBase
+    return methodsNoBase
 }                        

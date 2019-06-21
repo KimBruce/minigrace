@@ -836,7 +836,7 @@ def anObjectType: ObjectTypeFactory is public = object {
             emptyList[[Set[[MethodType]]]]
         }
 
-        method decompose -> List[[ObjectType]] {
+        method toList -> List[[ObjectType]] {
             list[[ObjectType]] [self]
         }
 
@@ -1226,6 +1226,8 @@ def anObjectType: ObjectTypeFactory is public = object {
                                             }
                                         }
 
+                                        // Make a new return type
+
                                         var retType: ObjectType
                                         if(leftMeth.retType != rightMeth.retType) then {
                                             retType := makeWithOp("&", leftMeth.retType, rightMeth.retType)     
@@ -1258,7 +1260,8 @@ def anObjectType: ObjectTypeFactory is public = object {
                                 }
                             }   
 
-                            // 2. Go through leftMethSet and rightMethSet again and add methods that are not in newMethSet
+                            // 2. Go through leftMethSet and rightMethSet again and add remaining methods 
+                            // that are not in newMethSet
                             
                             for(leftMethSet) do { leftMeth ->
                                 var exists: Boolean := false
@@ -1300,22 +1303,33 @@ def anObjectType: ObjectTypeFactory is public = object {
             self
         }
 
-        method decompose -> List[[ObjectType]] {
-            left.decompose ++ right.decompose
+        method toList -> List[[ObjectType]] {
+            match(op)
+                case { "|" ->
+                    left.toList ++ right.toList
+            }
+                case { "&" ->
+                    [self]
+            }
         }
 
         // TODO Move to superObject? 
         method isSubtypeHelper (trials: List⟦TypePair⟧, other: ObjectType) → Answer {
-            def selfDecomposedList: List[[ObjectType]] = decompose
-            def otherDecomposedList: List[[ObjectType]] = other.decompose
+            // TODO Do we need to add trials here?
+            def selfOtherPair : TypePair = typePair(self, other)
+            trials.add(selfOtherPair)
 
             match(op)
                 case { "|" ->
+                    def selfList: List[[ObjectType]] = toList
+                    def otherList: List[[ObjectType]] = other.toList
                     if(debug3) then {
                         io.error.write("\n1314: In {op} case: {left} {op} {right}")
+                        io.error.write("\n1333: selfList: {selfList}")
+                        io.error.write("\n1334: otherList: {otherList}")
                     }
-                    for(selfDecomposedList) doWithContinue { selfType: ObjectType, continue -> 
-                        for(otherDecomposedList) do { otherType: ObjectType ->
+                    for(selfList) doWithContinue { selfType: ObjectType, continue -> 
+                        for(otherList) do { otherType: ObjectType ->
                             def answer: Answer = selfType.isSubtypeHelper(trials, otherType)
                             if(debug3) then {
                                 io.error.write("\n1318: selfType {selfType} is subtype of otherType {otherType}: {answer.ans}")
@@ -1328,16 +1342,43 @@ def anObjectType: ObjectTypeFactory is public = object {
                     }
                     return answerConstructor(true, trials)
             }
-                case { "&" -> 
-                    for(selfDecomposedList) doWithContinue { selfType: ObjectType, continue -> 
-                        for(otherDecomposedList) do { otherType: ObjectType ->
-                            def answer: Answer = selfType.isSubtypeHelper(trials, otherType)
-                            if(answer.ans.not) then {
-                                answerConstructor(false, trials)
-                            }
-                        }          
+                case { "&" ->
+                    if(debug3) then {
+                        io.error.write("\n1341: methList: {methList}")
+                        io.error.write("\n1342: other.methList: {other.methList}")
                     }
-                    answerConstructor(true, trials)
+
+                    def selfObjectTypes: List[[ObjectType]] = emptyList 
+                    for(self.methList) do { selfMethSet ->
+                        selfObjectTypes.add(fromMethods(selfMethSet))
+                    }
+
+                    def otherObjectTypes: List[[ObjectType]] = emptyList 
+                    for(other.methList) do { otherMethSet ->
+                        otherObjectTypes.add(fromMethods(otherMethSet))
+                    }
+
+                    var selfObjectType: ObjectType
+                    if(selfObjectTypes.size > 1) then {
+                        selfObjectType := makeWithOp("|", selfObjectTypes.at(1), selfObjectTypes.at(2))
+                        for(3.. selfObjectTypes.size) do { i ->
+                            selfObjectType := makeWithOp("|", selfObjectType, selfObjectTypes.at(i))
+                        }
+                    } else {
+                        selfObjectType := fromMethods(methList.at(1))
+                    }
+
+                    var otherObjectType: ObjectType
+                    if(otherObjectTypes.size > 1) then {
+                        otherObjectType := makeWithOp("|", otherObjectTypes.at(1), otherObjectTypes.at(2))
+                        for(3.. otherObjectTypes.size) do { i ->
+                            otherObjectType := makeWithOp("|", otherObjectType, otherObjectTypes.at(i))
+                        }
+                    } else {
+                        otherObjectType := fromMethods(other.methList.at(1))
+                    }
+
+                    selfObjectType.isSubtypeHelper(trials, otherObjectType)
             }
         }
 

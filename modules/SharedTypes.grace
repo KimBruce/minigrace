@@ -175,8 +175,9 @@ type ObjectType = {
     isMeths -> Boolean
 
     // Return the list of sets of methods of the type
-    // Needed for building types with & or |
-    methList -> List[[Set[[MethodType]]]]
+    // Used to build a normal-form representation of
+    // methods in types made with & or |
+    normalMeths -> List[[Set[[MethodType]]]]
 
     // Create new object type from self and other using op
     withOp(op: String, other: ObjectType) -> ObjectType

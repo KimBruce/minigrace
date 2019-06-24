@@ -346,15 +346,9 @@ def aMethodType: MethodTypeFactory is public = object {
                 }
 
                 //Check parameter types and return type
-                for (signature) and (other.signature)
-                                            do { part: MixPart, part': MixPart →
-                    for (part.parameters) and (part'.parameters)
-                                                      do { p: Param, p': Param →
-                        if (p.typeAnnotation ≠ p'.typeAnnotation) then {
-                            return false
-                        }
-                    }
-                }
+                def sameSignature: Boolean = sameSignatureTypes(signature, other.signature)
+                if(sameSignature.not) then { return false }
+
                 return (retType == other.retType)
             }
 

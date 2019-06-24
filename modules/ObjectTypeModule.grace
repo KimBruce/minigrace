@@ -1201,42 +1201,15 @@ def anObjectType: ObjectTypeFactory is public = object {
 
                     def newMeths = emptyList[[Set[[MethodType]]]]
 
-                    // TODO: What to do with base methods?
-                    // def leftMeths = removeBaseMethods (left.normalMeths, base)
-                    // def rightMeths = removeBaseMethods (right.normalMeths, base)
                     def leftMeths = left.normalMeths
                     def rightMeths = right.normalMeths
 
                     for (leftMeths) do { leftMethSet ->
                         for(rightMeths) do {rightMethSet ->
-                            def newMethSet = emptySet[[MethodType]]
-
-                            // 1. Build a new set of methods from methods in left and right type of '&' that have the same names
+                            // 1. Get a new set of methods from methods in left and right type of '&' that have the same names
                             // Refer to X.m example above
 
-                            for(leftMethSet) do { leftMeth ->
-                                for(rightMethSet) do { rightMeth -> 
-
-                                    // Check that method has the same mixed parts with the same number of parameters
-                                    if(rightMeth.nameString == leftMeth.nameString) then {
-                                        def sameSignature: Boolean = sameSignatureTypes(leftMeth.signature, rightMeth.signature)
-
-                                        // Construct a new return type
-                                        def retType: ObjectType = newReturnType(leftMeth.retType, rightMeth.retType)
-
-                                        // If methods have the same signature, construct new method type using 
-                                        // that signature and new return type. Otherwise, consturct new method type
-                                        // according to formal rules described above.
-                                        var newMethod: MethodType
-                                        if(sameSignature) then {
-                                            newMethod := aMethodType.signature (leftMeth.signature) returnType (retType)
-                                        } else {
-                                            newMethod := newMethodType(leftMeth.signature, rightMeth.signature, retType)
-                                        }
-                                        newMethSet.add(newMethod)
-                                    }
-                                }
-                            }   
+                            def newMethSet: Set[[MethodType]] = mergeCommonMeths(leftMethSet, rightMethSet)
 
                             // 2. Go through leftMethSet and rightMethSet again and add remaining methods 
                             // that are not in newMethSet
@@ -1244,7 +1217,6 @@ def anObjectType: ObjectTypeFactory is public = object {
                             newMethSet.addAll(methSetDifference(leftMethSet, newMethSet))
                             newMethSet.addAll(methSetDifference(rightMethSet, newMethSet))
 
-                            // newMethSet.addAll(base.methods)
                             newMeths.add(newMethSet)
                         }
                     }
@@ -1255,20 +1227,33 @@ def anObjectType: ObjectTypeFactory is public = object {
             }
         }
 
-        // Returns a list of sets of methods without any base methods
-        method removeBaseMethods(methods: List[[Set[[MethodType]]]], base: ObjectType) -> List[[Set[[MethodType]]]] is confidential {
-            def methodsNoBase = emptyList[[Set[[MethodType]]]]
-            for (methods) do { methSet ->
-                def newMethSet = emptySet[[MethodType]] 
-                for(methSet) do { meth ->
-                    if(!base.methods.contains(meth)) then {
-                        newMethSet.add(meth)
+        method mergeCommonMeths(methSet: Set[[MethodType]], methSet': Set[[MethodType]]) -> Set[[MethodType]] {
+            def newMethSet: Set[[MethodType]] = emptySet
+            for(methSet) do { meth ->
+                for(methSet') do { meth' -> 
+
+                    // Check that methods have the same mixed parts with the same number of parameters
+                    if(meth'.nameString == meth.nameString) then {
+                        def sameSignature: Boolean = sameSignatureTypes(meth.signature, meth'.signature)
+
+                        // Construct a new return type
+                        def retType: ObjectType = newReturnType(meth.retType, meth'.retType)
+
+                        // If methods have the same signature, construct new method type using 
+                        // that signature and new return type. Otherwise, consturct new method type
+                        // according to formal rules described above.
+                        var newMethod: MethodType
+                        if(sameSignature) then {
+                            newMethod := aMethodType.signature (meth.signature) returnType (retType)
+                        } else {
+                            newMethod := newMethodType(meth.signature, meth'.signature, retType)
+                        }
+                        newMethSet.add(newMethod)
                     }
                 }
-                methodsNoBase.add(newMethSet)
             }
-            return methodsNoBase
-        } 
+            newMethSet
+        }
 
         // Returns a new return type from returnType and returnType'
         // If return type == returnType', return returnType. Otherwise,
@@ -1344,54 +1329,22 @@ def anObjectType: ObjectTypeFactory is public = object {
             isSubtypeHelper (emptyList⟦TypePair⟧, other).ans
         }
 
-        // TODO Move to superObject? 
+        // Formally:
+        // A_{1} | ... | A_{n} <: B_{1} | ... | B_{m} iff
+        // forall i <= n, exists j such that A_{i} <: B_{j} 
         method isSubtypeHelper (trails: List⟦TypePair⟧, other: ObjectType) → Answer {
             def debug4: Boolean = false
-            match(op)
-                case { "|" ->
-                    // Formally:
-                    // A_{1} | ... | A_{n} <: B_{1} | ... | B_{m} iff
-                    // forall i <= n, exists j such that A_{i} <: B_{j}
 
-                    def selfObjectTypes: List[[ObjectType]] = toList
-                    def otherObjectTypes: List[[ObjectType]] = other.toList
+            def selfObjectTypes: List[[ObjectType]] = toList
+            def otherObjectTypes: List[[ObjectType]] = other.toList
 
-                    if(debug4) then {
-                        io.error.write("\n1314: In {op} case: {left} {op} {right}")
-                        io.error.write("\n1333: selfObjectTypes: {selfObjectTypes}")
-                        io.error.write("\n1334: otherObjectTypes: {otherObjectTypes}")
-                    }
-
-                    existsEachSubtype(selfObjectTypes, otherObjectTypes, trails)
+            if(debug4) then {
+                io.error.write("\n1314: In {op} case: {left} {op} {right}")
+                io.error.write("\n1333: selfObjectTypes: {selfObjectTypes}")
+                io.error.write("\n1334: otherObjectTypes: {otherObjectTypes}")
             }
-                case { "&" ->
 
-                    if(debug4) then {
-                        io.error.write("\n1341: normalMeths: {normalMeths}")
-                        io.error.write("\n1342: other.normalMeths: {other.normalMeths}")
-                    }
-
-                    // 1. Get lists of object types for self and other
-                    //    based on sets of methods that are a normal-form 
-                    //    representation of possible combinations of methods
-                    //    in a variant type
-
-                    def selfObjectTypes: List[[ObjectType]] = toList
-                    def otherObjectTypes: List[[ObjectType]] = other.toList
-
-                    // 2. Build new object types for self and other based on lists above.
-                    //    Because our lists of object types was built from methods
-                    //    in normal form, we can '|' these object types into new 
-                    //    object types.
-
-                    def selfObjectType: ObjectType = makeObjectType(selfObjectTypes)
-                    def otherObjectType: ObjectType = makeObjectType(otherObjectTypes)
-
-                    // 3. Check whether new object type for self is a subtype of object
-                    //    type for other  
-
-                    selfObjectType.isSubtypeHelper(trails, otherObjectType)
-            }
+            existsEachSubtype(selfObjectTypes, otherObjectTypes, trails)
         }
 
         // Checks if each A_{i} in A_{1} | ... | A_{n} <: B_{1} | ... | B_{m} is subtype of some B_{k}

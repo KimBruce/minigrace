@@ -3,21 +3,19 @@ dialect "StaticTyping"
 type A = {
     m → A
 }
-
-type B = A & interface {
+type C = {
     m -> B
     n -> String
+    r -> A
+}
+type B = A & C 
+class b -> B {
+    method m -> B { self }
+    method n -> String { "Hello" }
+    method r -> A { self }
 }
 
-type T = B & interface {
-    m -> T
-    p -> Number
-}
+def d: B = b.m
 
-class t -> T {
-    method m -> T { self }
-    method p -> Number { 47 }
-    method n -> String {"Hello World"}
-}
-
-print (t.m.p)
+print(d.n)
+print(b.m.n)

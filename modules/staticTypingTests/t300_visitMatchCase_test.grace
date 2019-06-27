@@ -7,6 +7,7 @@ import "io" as io
 import "StaticTyping" as st
 import "ObjectTypeModule" as ot
 import "identifierresolution" as ir
+import "SharedTypes" as share
 
 //Divided the input into testBlock objects so that each testBlock can be
 //type checked independently by the astVisitor inside gradualTypesND
@@ -118,12 +119,12 @@ testSuiteNamed "visitMatchCase tests" with {
 
   test "matchee and param type-mismatch error" by {
     def blk2 = nodes.filter{n -> n.name.name == "testBlock2"}.first
-    assert ({blk2.accept(st.astVisitor)}) shouldRaise (st.StaticTypingError)
+    assert ({blk2.accept(st.astVisitor)}) shouldRaise (share.StaticTypingError)
   }
 
   test "multiple params error" by {
     def blk3 = nodes.filter{n -> n.name.name == "testBlock3"}.first
-    assert ({blk3.accept(st.astVisitor)}) shouldRaise (st.StaticTypingError)
+    assert ({blk3.accept(st.astVisitor)}) shouldRaise (share.StaticTypingError)
   }
 
   test "variant type matchee and params" by {
@@ -132,7 +133,7 @@ testSuiteNamed "visitMatchCase tests" with {
 
     // TODO Does not work
     def blk5 = nodes.filter{n -> n.name.name == "testBlock5"}.first
-    assert ({blk5.accept(st.astVisitor)}) shouldRaise (st.StaticTypingError)
+    assert ({blk5.accept(st.astVisitor)}) shouldRaise (share.StaticTypingError)
   }
 
   test "variant return-type" by {
@@ -140,7 +141,7 @@ testSuiteNamed "visitMatchCase tests" with {
     assert ({blk6.accept(st.astVisitor)}) shouldntRaise (Exception)
 
     def blk7 = nodes.filter{n -> n.name.name == "testBlock7"}.first
-    assert ({blk7.accept(st.astVisitor)}) shouldRaise (st.StaticTypingError)
+    assert ({blk7.accept(st.astVisitor)}) shouldRaise (share.StaticTypingError)
   }
 
   test "return-type Done" by {

@@ -107,7 +107,7 @@ type MethodType = {
     restriction (other : MethodType) → MethodType
 
     // Does it extend other
-    isSpecialisationOf (trials : List⟦TypePair⟧, other : MethodType) → Answer
+    isSpecialisationOf (other : MethodType) → Answer
 
     // pre-condition: This MethodType has type parameters
     apply(replacementTypes : List⟦ObjectType⟧) → MethodType
@@ -162,6 +162,11 @@ type GenericTypeFactory = {
 
 // Generic type used in type checking, supertype of all others
 type ObjectType = {
+
+    // Returns self or an object type from scope when an object type
+    // is built from identifier
+    resolve -> ObjectType
+
     // Is this type built using & or |?
     isOp -> Boolean
 
@@ -176,8 +181,8 @@ type ObjectType = {
 
     // Return the list of sets of methods of the type
     // Used to build a normal-form representation of
-    // methods in types made with & or |
-    normalMeths -> List[[Set[[MethodType]]]]
+    // methods in variant types
+    normalFormMeths -> List[[Set[[MethodType]]]]
 
     // Create new object type from self and other using op
     withOp(op: String, other: ObjectType) -> ObjectType

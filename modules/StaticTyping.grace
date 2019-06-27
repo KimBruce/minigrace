@@ -466,6 +466,7 @@ def astVisitor: ast.AstVisitor is public = object {
                         ot.fromObjectTypeList (returnTypesList)
 
         if (debug3) then {
+            io.error.write "\nmatcheeType now equals: {matcheeType}"
             io.error.write "\nparamType now equals: {paramType}"
             io.error.write "\nreturnType now equals: {returnType}"
         }
@@ -1452,8 +1453,7 @@ method updateTypeScope(typeDec : share.TypeDeclaration) → Done
         }
         // DEBUG: Was definedByNode
         def typeName: String = typeDec.nameString
-        oType := anObjectType.fromDType (typeDec.value) 
-                                        with (emptyList[[String]])
+        oType := anObjectType.fromDType (typeDec.value) with (emptyList[[String]])
         scope.types.addToGlobalAt(typeName) put(oType)
         if (debug3) then {
             io.error.write "\n1252: added to types: {oType}"
@@ -1821,8 +1821,7 @@ method checkOverride(mType: MethodType, allMethods: Set⟦MethodType⟧,
         io.error.write 
             "\n1233 Found new method {mType} while old was {oldMethType}"
     }
-    if (mType.isSpecialisationOf 
-            (emptyList⟦TypePair⟧, oldMethType).ans.not) then {
+    if (mType.isSpecialisationOf (oldMethType).ans.not) then {
         StaticTypingError.raise ("Type of overriding method {mType} "
             ++ "on line {meth.line} is not a specialization of " 
             ++ "existing method {oldMethType}") with (meth)
@@ -1844,12 +1843,13 @@ def TypeDeclarationError = TypeError.refine "TypeDeclarationError"
 method collectTypes(nodes : Collection⟦AstNode⟧) → Done 
                                     is confidential {
     def debug3 = false
-    def typeDecs: List[[share.typeDecNode]] = list[]
+    def typeDecs: List[[share.typeDecNode]] = emptyList
 
     // Collect all type declarations into typeDecs and insert their
     // left-hand side into scope with placholders
     for(nodes) do { node -> 
         if(node.kind == "typedec") then {
+
             if (debug3) then {
                 io.error.write"\n1576: matched as typeDec {node}"
             }
@@ -1869,13 +1869,24 @@ method collectTypes(nodes : Collection⟦AstNode⟧) → Done
         }
     }
 
-    if (debug3) then {
-        io.error.write "\nGenerics scope is: {scope.generics}"
-    }
-
     // Update type placeholders in the scope to real types 
     for(typeDecs) do { typeDec →
+        if (debug3) then {
+            io.error.write "\n1884: Type scope is: {scope.types}, before adding {typeDec.value}"
+        }
         updateTypeScope(typeDec)
+        if (debug3) then {
+            io.error.write "\n1884: Type scope is: {scope.types}, after adding {typeDec.value}"
+        }
+    }
+
+    if (debug3) then {
+        io.error.write "\nType scope is: {scope.types}"
+    }
+
+    if (debug3) then {
+        io.error.write "\nGenerics scope is: {scope.generics}"
+        io.error.write "\nType  scope is: {scope.types}"
     }
 }
 

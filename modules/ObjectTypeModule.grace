@@ -38,6 +38,8 @@ def debug : Boolean = false
 // Collection of method types in type
 var methodtypes: List[[MethodType]] := [ ]
 
+def trails: List[[TypePair]] = emptyList
+
 // visitor to convert a type expression to a string
 // Makes printing them a bit clearer. Used in gct?
 def typeVisitor: ast.AstVisitor = object {
@@ -182,7 +184,8 @@ class typePair (first':ObjectType, second':ObjectType) →
     // Seems to work in conjuction with switching the order of cases in
     // isSubtypeHelper in fromMethods. 
     method == (other:Object) → Boolean {
-        (first.asString == other.first.asString) && (second.asString == other.second.asString)
+        (first.asString == other.first.asString) && 
+            {second.asString == other.second.asString}
     }
 
     method asString {
@@ -194,13 +197,9 @@ class typePair (first':ObjectType, second':ObjectType) →
 type Answer = share.Answer
 
 // Responds that keeps trail of types checked in subtyping
-class answerConstructor(ans':Boolean, trails':List⟦TypePair⟧) → Answer {
+class answerConstructor (ans':Boolean) → Answer {
     method ans → Boolean {
         ans'
-    }
-
-    method trails → List⟦TypePair⟧ {
-        trails'
     }
 
     method asString → String{
@@ -212,7 +211,7 @@ type TypeOp = share.TypeOp
 
 // Stores needed information used when type-checking a type defined by an opNode
 // I.e., & or |
-class typeOp(op' : String, left' : ObjectType, right' : ObjectType) → TypeOp {
+class typeOp (op' : String, left' : ObjectType, right' : ObjectType) → TypeOp {
     method op → String {
         op'
     }
@@ -399,24 +398,23 @@ def aMethodType: MethodTypeFactory is public = object {
 
             // Determines if this method is a specialisation (<:) of
             // the given one.
-            method isSpecialisationOf (trails: List⟦TypePair⟧,
-                                         other: MethodType) → Answer {
+            method isSpecialisationOf (other: MethodType) → Answer {
                 // Check part names and number of parameters
                 if (nameString != other.nameString) then {
-                    return answerConstructor(false, trails)
+                    return answerConstructor(false)
                 }
 
                 // Check that both methods have the same number of type params
                 if (typeParams.size ≠ other.typeParams.size) then {
-                    return answerConstructor(false, trails)
+                    return answerConstructor(false)
                 }
 
                 // Determine whether each method still have uninitialized
                 // type params
                 if (typeParams.size > 0) then {
-                    return self.genericSpecialisationOf(trails, other)
+                    return self.genericSpecialisationOf(other)
                 } else {
-                    return self.nongenericSpecialisationOf(trails, other)
+                    return self.nongenericSpecialisationOf(other)
                 }
             }
 
@@ -425,8 +423,7 @@ def aMethodType: MethodTypeFactory is public = object {
             //
             // pre: self and other has the same # of uninitialized type params
             // TODO: Hack which is not right!!!
-            method genericSpecialisationOf(trails: List⟦TypePair⟧,
-                                                  other: MethodType) → Answer {
+            method genericSpecialisationOf(other: MethodType) → Answer {
                 // We use '$Object$' instead of 'Object' because Object can be
                 // overwritten by the programmer
                 def baseList : List⟦AstNode⟧ = emptyList⟦AstNode⟧
@@ -443,13 +440,12 @@ def aMethodType: MethodTypeFactory is public = object {
                                 "{appliedSelf} against {appliedOther}")
                 }
 
-                return appliedSelf.isSpecialisationOf(trails, appliedOther)
+                return appliedSelf.isSpecialisationOf(appliedOther)
             }
 
             // Perform specialisation check on a pair of MethodTypes that have
             // no uninitialized type params
-            method nongenericSpecialisationOf(trails: List⟦TypePair⟧,
-                                                  other: MethodType) → Answer {
+            method nongenericSpecialisationOf(other: MethodType) → Answer {
                 def debug3: Boolean = false
                 if(debug3) then {
                     io.error.write("\n458: Entering nongenericSpecialisationOf")
@@ -458,7 +454,7 @@ def aMethodType: MethodTypeFactory is public = object {
                 //Shortcut for when self and other have the exact same param
                 //types and return type
                 if (self.isMe(other)) then {
-                    return answerConstructor(true, trails)
+                    return answerConstructor(true)
                 }
 
                 if(debug3) then {
@@ -476,8 +472,7 @@ def aMethodType: MethodTypeFactory is public = object {
                         def pt': ObjectType = p'.typeAnnotation
 
                         // Contravariant in parameter types.
-                        def paramSubtyping : Answer =
-                                                pt'.isSubtypeHelper(trails, pt)
+                        def paramSubtyping : Answer = pt'.isSubtypeHelper(pt)
 
                         if (paramSubtyping.ans.not) then {
                             return paramSubtyping
@@ -486,12 +481,12 @@ def aMethodType: MethodTypeFactory is public = object {
                 }
 
                 if(debug3) then {
-                    io.error.write("\n492: retType = {retType}")
-                    io.error.write("\n493: other.retType = {other.retType}")
-                    io.error.write("\n494: trails = {trails}")
+                    io.error.write("\n488: retType = {retType}")
+                    io.error.write("\n489: other.retType = {other.retType}")
+                    io.error.write("\n490: trails = {trails}")
                 }
 
-                return retType.isSubtypeHelper (trails, other.retType)
+                retType.isSubtypeHelper (other.retType)
             }
 
             // Update this method's type params with the replacementTypes
@@ -572,51 +567,6 @@ def aMethodType: MethodTypeFactory is public = object {
                 }
                 newMeth.typeParams.addAll(newTypeParams)
                 newMeth
-            }
-
-            // DELETE: UNUSED
-            // Replaces the oType that is holding a node representing an
-            // uninitialized type param with its replacement in the dictionary
-            //
-            // Note: -type params are stored as identifiernodes
-            //       -it is possible that a type param will remain uninitialized
-            //          if the dictionary does not contain its name
-            method replaceType2(oType : ObjectType)
-                            with(replacements : Dictionary⟦String, AstNode⟧)
-                                                  → ObjectType is confidential {
-                // If the oType is already initialized, it can't be a type param
-                if (oType.isResolved) then {
-                    return oType
-                }
-
-                // Call the helper function with the AstNode stored in oType
-                def replacedNode : AstNode = replaceNode2(oType.getNode)
-                                                              with(replacements)
-                // used to be definedByNode
-                return anObjectType.fromDType(replacedNode)with(emptyList)
-            }
-
-            // DELETE: UNUSED
-            // Replaces node with replacements to instantiate generic
-            method replaceNode2(node : AstNode)
-                            with(replacements : Dictionary⟦String, AstNode⟧)
-                                                    → AstNode is confidential {
-                if (node.kind == "generic") then {
-                    def newArgs : List⟦AstNode⟧ = emptyList⟦AstNode⟧
-                    for (node.args) do { arg : AstNode →
-                        newArgs.add(replaceNode2(arg) with(replacements))
-                    }
-                    return ast.genericNode.new(node.value, newArgs)
-                } elseif {node.kind == "op"} then {
-                    def left: AstNode= replaceNode2(node.left) with(replacements)
-                    def right:AstNode= replaceNode2(node.right)with(replacements)
-                    return ast.opNode.new(node.value, left, right)
-                } elseif {node.kind == "identifier"} then {
-                    if (replacements.containsKey(node.nameString)) then {
-                        return replacements.at (node.nameString)
-                    }
-                }
-                return node
             }
 
             method asString → String is override { show }
@@ -814,28 +764,36 @@ method getTypeParams(params: List[[AstNode]]) -> List[[String]] {
 def anObjectType: ObjectTypeFactory is public = object {
     // super class providing default implementations of methods
     class superObjectType -> ObjectType {
+
+        // Returns self or an object type from scope when an object type
+        // is built from identifier
+        method resolve -> ObjectType { self }
+
         // Is type built with & or |
-        method isOp -> Boolean {false}
+        method isOp -> Boolean { false }
 
         // Is it a type name
-        method isId -> Boolean {false}
+        method isId -> Boolean { false }
 
         // Does this represent a type variable?
-        method isTypeVble -> Boolean {false}
+        method isTypeVble -> Boolean { false }
 
         // Is this object type built from a collection of methods?
-        method isMeths -> Boolean {false}
+        method isMeths -> Boolean { false }
 
         // Is this object type done?
-        method isDone -> Boolean {false}
+        method isDone -> Boolean { false }
+
+        // Return set of methods of the type
+        method methods -> Set[[MethodType]] {emptySet}
 
         // Returns a list of sets of methods of an object type
         // 
         // Needed to construct a normal-form representation of possible method 
-        // combinations in a variant type. Otherwise, contains the same methods
-        // as methods method.
-        method normalMeths -> List[[Set[[MethodType]]]] {
-            emptyList[[Set[[MethodType]]]]
+        // combinations in a variant type. If type is not a variant or & type, 
+        // normalFormMeths returns the same set of methods as methods method.
+        method normalFormMeths -> List[[Set[[MethodType]]]] {
+            list[[Set[[MethodType]]]] [methods]
         }
 
         // Returns a single-element list that contains self object type
@@ -857,17 +815,18 @@ def anObjectType: ObjectTypeFactory is public = object {
             anObjectType.makeWithOp(op, self, other)
         }
 
-        // Return set of methods of the type
-        method methods -> Set[[MethodType]] {emptySet}
-
-        // Is it a consistent subtype of other (for gradual typing0
+        // Is it a consistent subtype of other (for gradual typing
         method isConsistentSubtypeOf(other: ObjectType) {
             isSubtypeOf(other)
         }
 
         // Is it a subtype of other
         method isSubtypeOf(other: ObjectType) -> Boolean {
-            required
+            resolve.isSubtypeHelper(other.resolve).ans
+        }
+
+        method isSubtypeHelper(other: ObjectType) -> Answer {
+            resolve.isSubtypeHelper(other.resolve)
         }
 
         // Construct a variant type from two object types.
@@ -875,7 +834,7 @@ def anObjectType: ObjectTypeFactory is public = object {
         method | (other' : ObjectType) → ObjectType {
             if(isSubtypeOf(other')) then {
                 other'
-            } elseif {other'.isSubtypeOf(self)} then {
+            } elseif{other'.isSubtypeOf(self)} then {
                 self
             } else {
                 withOp("|", other')
@@ -887,19 +846,15 @@ def anObjectType: ObjectTypeFactory is public = object {
             withOp("&", other')
         }
 
-        method == (other:ObjectType) → Boolean {
-            self.isSubtypeOf(other) && other.isSubtypeOf(self)
+        // A == B iff A <: B && B <: A
+        method == (other: ObjectType) → Boolean {
+            isSubtypeOf(other) && other.isSubtypeOf(self)
         }
 
         // Instantiate generic parameters with tparams
         // For now, just return self
         // TODO: Not sure if this is ever used!
         method replaceTypeParams(tparams: List[[String]]) -> ObjectType {
-            self
-        }
-
-        // Not sure purpose.  For now return self
-        method resolve -> ObjectType {
             self
         }
 
@@ -915,7 +870,7 @@ def anObjectType: ObjectTypeFactory is public = object {
 
     def placeholder: ObjectType is public = object{
        inherit superObjectType
-       method isPlaceholder -> Boolean {true}
+       method isPlaceholder -> Boolean { true }
     }
 
     // Create an ObjectType from a collection of method signatures and a name
@@ -953,13 +908,13 @@ def anObjectType: ObjectTypeFactory is public = object {
                 emptySet } else { emptySet.addAll(base.methods) }).addAll(methods')
 
             // Returns a single-elment list of a set of methods in methods method
-            method normalMeths -> List[[Set[[MethodType]]]] {
+            method normalFormMeths -> List[[Set[[MethodType]]]] {
                 list[[Set[[MethodType]]]] [methods]
             }
 
             // Return method type with matching nameString or return noSuchMethod.
             method getMethod(name : String) → MethodType | noSuchMethod {
-                for(normalMeths) do { methSet →
+                for(normalFormMeths) do { methSet →
                     for(methSet) do { meth ->
                         if (meth.nameString == name) then {
                             return meth
@@ -969,55 +924,40 @@ def anObjectType: ObjectTypeFactory is public = object {
                 return noSuchMethod
             }
 
-            method resolve -> ObjectType { self }
-
-            def isResolved : Boolean is public = true
-
-            // Check if 'self', which is the ObjectType calling this method, is
-            // a subtype of 'other'
-            method isSubtypeOf(other : ObjectType) → Boolean {
-                if(debug) then {
-                    io.error.write("\n947: entered isSubtypeHelper, " ++ 
-                        "subtyping {self} with {other}")
-                }
-                isSubtypeHelper(emptyList⟦TypePair⟧, other.resolve).ans
-            }
-
-            // Helper method for subtyping a pair of non-variant types
+            // Helper method for subtyping a pair of non-variant or non-& types
+            // This method is a base case for subtyping
             // Keeps track of pairs already considered (co-induction)
-            method isSimpleSubtypeOf(trails: List⟦TypePair⟧,
-                                                  other:ObjectType) → Answer is confidential {
+            method isSimpleSubtypeOf(other:ObjectType) → Answer is confidential {
                 def debug3 = false
                 // For each method in other, check that there is a corresponding
-                // method in self. Can assume that normalMeths is a single-element list
-                // because in this case neither self nor other are variant types.
-                for (other.normalMeths.at(1)) doWithContinue { otherMeth: MethodType, continue →
-                    for (normalMeths.at(1)) do { selfMeth: MethodType →
+                // method in self. Can assume that normalFormMeths is a single-element list
+                // because in this case neither self nor other are variant or & types.
+                for (other.normalFormMeths.at(1)) doWithContinue { otherMeth: MethodType, continue →
+                    for (normalFormMeths.at(1)) do { selfMeth: MethodType →
                         if (debug3) then { 
                             io.error.write "\n945: otherMeth: {otherMeth}" 
                             io.error.write "\n946: selfMeth: {selfMeth}" 
                         }
-                        def isSpec: Answer = selfMeth.isSpecialisationOf(trails, otherMeth)
+                        def isSpec: Answer = selfMeth.isSpecialisationOf(otherMeth)
                         if (debug3) then { io.error.write "\n947: isSpec: {isSpec.ans}" }
                         if (isSpec.ans) then { continue.apply }
                     }
                     // Failed to find corresponding method
-                    return answerConstructor(false, trails)
+                    return answerConstructor(false)
                 }
-                return answerConstructor(true, trails)
+                return answerConstructor(true)
             }
 
             // Helper method for subtyping a pair of ObjectTypes
             //
-            // Param trails - Holds pairs of previously subtype-checked ObjectTypes
             // Prevents infinite subtype checking of self-referential types
-            // Param other' - The ObjectType that self is checked against
-            method isSubtypeHelper(trails:List⟦TypePair⟧, other':ObjectType)
-                                                     → Answer {
-                def selfOtherPair : TypePair = typePair(self, other')
-                def debug47 = false 
+            // @param other' An ObjectType that self is checked against
+            method isSubtypeHelper(other': ObjectType) → Answer {
+                def debug4 = false
 
-                if (debug47) then {
+                def selfOtherPair : TypePair = typePair(self, other')
+
+                if (debug4) then {
                    io.error.write "\n841: checking suptyping for {self} and {other'}"
                 }
 
@@ -1025,31 +965,42 @@ def anObjectType: ObjectTypeFactory is public = object {
                 // self <: other.  Check other trivial cases of subtyping
                 if ((self.isMe(other')) || {trails.contains(selfOtherPair)}
                         || {other'.isDynamic} || {other'.isDone}) then {
-                    if (false) then {
+                    if (debug4) then {
                         io.error.write "\n992: self : {self} other: {other'}"
-                        io.error.write "\n993: other'.normalMeths : {other'.normalMeths}"
                         io.error.write "\n994: trails : {trails}"
-                        io.error.write "\n1001: selfOtherPair: {selfOtherPair}"
-                        io.error.write "\n1002: trails.contains(selfOtherPair): {trails.contains(selfOtherPair)}"
                     }
-                    return answerConstructor(true, trails)
+                    return answerConstructor(true)
                 } else {
                     trails.add(selfOtherPair)
                 }
 
                 // Handle simple case where other is collection of methods
                 if (other'.isMeths) then {
-                    if (debug47) then {io.error.write "\n816: both are meths"}
-                    def oans = isSimpleSubtypeOf(trails, other')
-                    if (debug47) then {io.error.write "\n818: self: {self} subtype of other: {other'}  ans is {oans}"}
-                    return oans
+                    if (debug4) then {io.error.write "\n816: both are meths"}
+                    def answer = isSimpleSubtypeOf(other')
+                    if (debug4) then {io.error.write "\n818: self: {self} subtype of other: {other'}  ans is {answer}"}
+                    if (answer.ans.not) then {
+                        trails.remove(selfOtherPair) 
+                    }
+                    return answer
+                }
+
+                // Case where other is a named type
+                if (other'.isId) then {
+
+                   if (debug4) then {
+                      io.error.write "\n825 in id case for {other'}"
+                   }
+                   def idType: ObjectType = scope.types.find(other'.id)
+                        butIfMissing {ScopingError.raise("Failed to find {other'.id}")}
+                   return isSubtypeHelper (idType)
                 }
 
                 // Case where other is built from & or |
                 if (other'.isOp) then {
-                    def left: Answer = self.isSubtypeHelper(trails,other'.left)
-                    def right: Answer = self.isSubtypeHelper(trails,other'.right)
-                    if (debug47) then {
+                    def left: Answer = self.isSubtypeHelper(other'.left)
+                    def right: Answer = self.isSubtypeHelper(other'.right)
+                    if (debug4) then {
                         io.error.write
                             "\n832: ansLeft: {left}, ansRight:{right}"
                         io.error.write
@@ -1059,32 +1010,25 @@ def anObjectType: ObjectTypeFactory is public = object {
                     // Formally:
                     // A <: B | C iff A <: B || A <: C,
                     // A <: B & C iff A <: B && A <: C
-                    // This simple case works because A is not a variant type.
+                    // These simple propositions are correct given that A is not a variant or & type.
                     def helperResult: Answer = if (other'.op =="|") then {
-                         answerConstructor(left.ans || right.ans,trails)
+                        if((left.ans || right.ans).not) then { trails.remove(selfOtherPair) }
+                        answerConstructor(left.ans || right.ans)
                     } else { // & node
-                         answerConstructor(left.ans && right.ans,trails)
+                        if((left.ans && right.ans).not) then { trails.remove(selfOtherPair) }
+                        answerConstructor(left.ans && right.ans)
                     }
                     return helperResult
                 }
 
-                // Case where other is a named type
-                if (other'.isId) then {
-                   if (debug47) then {
-                      io.error.write "\n825 in id case for {other'}"
-                   }
-                   def idType: ObjectType = scope.types.find(other'.id)
-                        butIfMissing {ScopingError.raise("Failed to find {other'.id}")}
-                   return isSubtypeHelper (trails, idType)
-                }
-
                 // TODO: Should this be an error? Probably not.
                 if (other'.isTypeVble) then {
-                   return answerConstructor(false,trails)
+                   trails.remove(selfOtherPair)
+                   return answerConstructor(false)
                 }
 
                 // Should have covered all cases by now!
-                if (debug47) then { 
+                if (debug4) then { 
                    io.error.write "Oops! Missed a case for {self} and {other'}"
                    io.error.write "other'.isMeths = {other'.isMeths}"
                 }
@@ -1118,22 +1062,7 @@ def anObjectType: ObjectTypeFactory is public = object {
                 }
             }
 
-            // Consistent-subtyping:
-            // If self restrict other is a subtype of other restrict self.
-            method isConsistentSubtypeOf(other : ObjectType) → Boolean {
-                return self.isSubtypeOf(other.resolve)
-
-                // TODO: Fix restriction() so that it handles variant types
-                // def selfRestType = self.restriction(other)
-                // def otherRestType = other.restriction(self)
-                // io.error.write "self's restricted type is {selfRestType}"
-                // io.error.write "other's restricted type is {otherRestType}"
-
-                // return selfRestType.isSubtypeOf(otherRestType)  //  FIX!!!
-                // true
-            }
-
-            // Uses (A | A') -> B & B' to construct type Alpha & Beta, where
+            // Uses (A | A') -> B & B' to construct type (Alpha & Beta), where
             // types Alpha and Beta are defined as follows:
             // Alpha = { m: A -> B }
             // Beta = { m -> A' -> B'}
@@ -1180,18 +1109,18 @@ def anObjectType: ObjectTypeFactory is public = object {
         inherit superObjectType
         def debug3: Boolean = false
         if (debug3) then {
-           io.error.write("\n942: left':{left'} isMeths: {left'.isMeths}")
-           io.error.write("right':{right'} isMeths: {right'.isMeths}")
+           io.error.write("\n942: left':{left'} isMeths: {left'.isMeths} isOp: {left'.isOp}")
+           io.error.write("right':{right'} isMeths: {right'.isMeths} isOp: {right'.isOp}")
         }
         method op -> String {op'}
         method left -> ObjectType {left'}
         method right -> ObjectType {right'}
         method isOp -> Boolean {true}
 
-        method normalMeths -> List[[Set[[MethodType]]]] {
+        method normalFormMeths -> List[[Set[[MethodType]]]] {
             match(op)
                 case { "|" ->
-                    left.normalMeths ++ right.normalMeths
+                    left.normalFormMeths ++ right.normalFormMeths
             }
                 case { "&" ->
                     // Formally:
@@ -1201,8 +1130,13 @@ def anObjectType: ObjectTypeFactory is public = object {
 
                     def newMeths = emptyList[[Set[[MethodType]]]]
 
-                    def leftMeths = left.normalMeths
-                    def rightMeths = right.normalMeths
+                    def leftMeths = left.normalFormMeths
+                    def rightMeths = right.normalFormMeths
+
+                    if(debug3) then {
+                        io.error.write ("\n1208: leftMeths: {leftMeths}")
+                        io.error.write ("\n1209: rightMeths: {rightMeths}")
+                    }
 
                     for (leftMeths) do { leftMethSet ->
                         for(rightMeths) do {rightMethSet ->
@@ -1210,6 +1144,12 @@ def anObjectType: ObjectTypeFactory is public = object {
                             // Refer to X.m example above
 
                             def newMethSet: Set[[MethodType]] = mergeCommonMeths(leftMethSet, rightMethSet)
+
+                            if(debug3) then {
+                                io.error.write ("\n1216: leftMethSet: {leftMethSet}")
+                                io.error.write ("\n1217: rightMethSet: {rightMethSet}")
+                                io.error.write ("\n1218: newMethSet: {newMethSet}")
+                            }
 
                             // 2. Go through leftMethSet and rightMethSet again and add remaining methods 
                             // that are not in newMethSet
@@ -1221,7 +1161,7 @@ def anObjectType: ObjectTypeFactory is public = object {
                         }
                     }
                     if(debug3) then {
-                        io.error.write ("\n1211: newMeths: {newMeths}")
+                        io.error.write ("\n1231: newMeths: {newMeths}")
                     }
                     newMeths
             }
@@ -1259,13 +1199,19 @@ def anObjectType: ObjectTypeFactory is public = object {
         // If return type == returnType', return returnType. Otherwise,
         // return a new object type (returnType & returnType')
         // 
-        // Refer to X.m example in normalMeths for a formal description
+        // Refer to X.m example in normalFormMeths for a formal description
         method newReturnType(returnType: ObjectType, returnType': ObjectType) -> ObjectType is confidential {
+            def debug47: Boolean = false
             var retType: ObjectType
-            if(returnType != returnType') then {
-                retType := makeWithOp("&", returnType, returnType')     
-            } else {
+            if(debug47) then {
+                io.error.write ("\n1221: returnType: {returnType}")
+                io.error.write ("\n1222: returnType': {returnType'}")
+            }
+
+            if(returnType == returnType') then { 
                 retType := returnType
+            } else {
+                retType := makeWithOp("&", returnType, returnType')
             }
             retType
         }
@@ -1274,7 +1220,7 @@ def anObjectType: ObjectTypeFactory is public = object {
         // If a parameter in has different types in signature and signature', make a new parameter
         // by combining these two types with '|'
         //
-        // Refer to X.m example in normalMeths for a formal description
+        // Refer to X.m example in normalFormMeths for a formal description
         method newMethodType(signature: List[[MixPart]], signature': List[[MixPart]], returnType: ObjectType) -> MethodType is confidential {
             def newSignature: List⟦MixPart⟧ = emptyList[[MixPart]]
             for (signature) and (signature') do { part: MixPart, part': MixPart →
@@ -1319,21 +1265,37 @@ def anObjectType: ObjectTypeFactory is public = object {
         // Returns list of object types based from methods in normal-form
         method toList -> List[[ObjectType]] {
             def objectTypes: List[[ObjectType]] = emptyList 
-            for(normalMeths) do { methSet ->
+            for(normalFormMeths) do { methSet ->
                 objectTypes.add(fromMethods(methSet))
             }
             return objectTypes
         }
 
-        method isSubtypeOf(other: ObjectType) -> Boolean {
-            isSubtypeHelper (emptyList⟦TypePair⟧, other).ans
-        }
-
         // Formally:
         // A_{1} | ... | A_{n} <: B_{1} | ... | B_{m} iff
         // forall i <= n, exists j such that A_{i} <: B_{j} 
-        method isSubtypeHelper (trails: List⟦TypePair⟧, other: ObjectType) → Answer {
+        method isSubtypeHelper (other: ObjectType) → Answer {
             def debug4: Boolean = false
+            
+            def selfOtherPair : TypePair = typePair(self, other)
+
+            // If trails already contains selfOtherPair, we can assume
+            // self <: other.  Check other trivial cases of subtyping
+            if ((self.isMe(other)) 
+                    || {trails.contains(selfOtherPair)}
+                    || {other.isDynamic} 
+                    || {other.isDone}) then {
+                return answerConstructor(true)
+            } else {
+                trails.add(selfOtherPair)
+            }
+
+            if (debug4) then {
+                io.error.write "\n992: self : {self} other: {other}"
+                io.error.write "\n993: other.normalFormMeths : {other.normalFormMeths}"
+                io.error.write "\n1001: selfOtherPair: {selfOtherPair}"
+                io.error.write "\n1002: trails.contains(selfOtherPair): {trails.contains(selfOtherPair)}"
+            }
 
             def selfObjectTypes: List[[ObjectType]] = toList
             def otherObjectTypes: List[[ObjectType]] = other.toList
@@ -1344,15 +1306,17 @@ def anObjectType: ObjectTypeFactory is public = object {
                 io.error.write("\n1334: otherObjectTypes: {otherObjectTypes}")
             }
 
-            existsEachSubtype(selfObjectTypes, otherObjectTypes, trails)
+            def answer: Answer = existsEachSubtype(selfObjectTypes, otherObjectTypes)
+            if(answer.ans.not) then { trails.remove(selfOtherPair) }
+            answer
         }
 
         // Checks if each A_{i} in A_{1} | ... | A_{n} <: B_{1} | ... | B_{m} is subtype of some B_{k}
-        method existsEachSubtype(selfObjectTypes: List[[ObjectType]], otherObjectTypes: List[[ObjectType]], trails) -> Answer is confidential {
+        method existsEachSubtype(selfObjectTypes: List[[ObjectType]], otherObjectTypes: List[[ObjectType]]) -> Answer is confidential {
             def debug47: Boolean = false
             for(selfObjectTypes) doWithContinue { selfType: ObjectType, continue -> 
                 for(otherObjectTypes) do { otherType: ObjectType ->
-                    def answer: Answer = selfType.isSubtypeHelper(trails, otherType)
+                    def answer: Answer = selfType.isSubtypeHelper(otherType)
                     if(debug47) then {
                         io.error.write("\n1318: selfType {selfType} is subtype of otherType {otherType}: {answer.ans}")
                     }
@@ -1360,28 +1324,9 @@ def anObjectType: ObjectTypeFactory is public = object {
                         continue.apply
                     }
                 }
-                return answerConstructor(false, trails)
+                return answerConstructor(false)
             }
-            return answerConstructor(true, trails)
-        }
-
-        // Returns a new object type built by applying '|' to a list of object types
-        method makeObjectType(objectTypes: List[[ObjectType]]) -> ObjectType is confidential {
-            var objectType: ObjectType
-            if(objectTypes.size > 1) then {
-                objectType := makeWithOp("|", objectTypes.at(1), objectTypes.at(2))
-                for(3.. objectTypes.size) do { i ->
-                    objectType := makeWithOp("|", objectType, objectTypes.at(i))
-                }
-            } else {
-                objectType := objectTypes.at(1)
-            }
-            objectType
-        }
-
-        // TODO: Fix if do gradual typing
-        method isConsistentSubtypeOf(other: ObjectType) -> Boolean {
-            isSubtypeOf(other)
+            return answerConstructor(true)
         }
 
         // Replace type parameters in left and right pieces
@@ -1410,7 +1355,7 @@ def anObjectType: ObjectTypeFactory is public = object {
 
         // Return method type with matching nameString or return noSuchMethod.
         method getMethod(name : String) → MethodType | noSuchMethod {
-            for(normalMeths) do { methSet →
+            for(normalFormMeths) do { methSet →
                 for(methSet) do { meth ->
                     if (meth.nameString == name) then {
                         return meth
@@ -1458,10 +1403,6 @@ def anObjectType: ObjectTypeFactory is public = object {
             fromDType (node') with (typeParams)
         }
 
-        // An ObjectType is unresolved if it has yet to collect its methods and,
-        // optionally, variant types
-        def isResolved : Boolean is public = false
-
         // Is this type built using & or |?
         method isOp → Boolean{
             ((false != node) && {node'.kind == "op"})
@@ -1472,11 +1413,10 @@ def anObjectType: ObjectTypeFactory is public = object {
 
         // Determines if self is a subtype of other
         method isSubtypeOf (other : ObjectType) -> Boolean {
-            isSubtypeHelper (emptyList⟦TypePair⟧, other).ans
-
+            isSubtypeHelper (other.resolve).ans
         }
 
-        method isSubtypeHelper (trails:List⟦TypePair⟧, other:ObjectType) → Answer {
+        method isSubtypeHelper (other:ObjectType) → Answer {
             if (debug47) then {
                 io.error.write("\n607: entered isSubtypeHelper, " ++
                                   "subtyping {self} with {other}")
@@ -1485,26 +1425,24 @@ def anObjectType: ObjectTypeFactory is public = object {
             // If self is defined by an opNode, then we recursively call
             // isSubtypeHelper on its left and right
             if (isOp) then {
-                def left: Answer = getOpNode.left.isSubtypeHelper(trails, other)
+                def left: Answer = getOpNode.left.isSubtypeHelper(other)
 
                 if (getOpNode.op == "&") then {
                     // Check left's result to see if right needs to be evaluated
                     if (left.ans) then {
                         return left
                     }
-                    def right : Answer = getOpNode.right.isSubtypeHelper(
-                                                                  left.trails, other)
+                    def right : Answer = getOpNode.right.isSubtypeHelper(other)
                     return right
                 } elseif {getOpNode.op == "|"} then {
                     if (left.ans.not) then {
                         return left
                     }
-                    def right : Answer = getOpNode.right.isSubtypeHelper(
-                                                                  trails, other)
+                    def right : Answer = getOpNode.right.isSubtypeHelper(other)
                     return right
                 }
             }
-            resolve.isSubtypeHelper(trails, other)
+            resolve.isSubtypeHelper(other)
         }
 
         method restriction (other : ObjectType) → ObjectType {
@@ -1825,69 +1763,66 @@ def anObjectType: ObjectTypeFactory is public = object {
 
     // ObjectType corresponding to the identifier in the scope. If not
     // already there, raise an exception.  
-    class fromIdentifier(ident : share.Identifier) with (typeParams) → ObjectType { 
-        inherit superObjectType
+    method fromIdentifier(ident : share.Identifier) with (typeParams) → ObjectType { 
+        object {
+            inherit superObjectType
+            def debug2: Boolean = false
 
-        method ans -> ObjectType {
-            if (debug) then {
-                io.error.write("\n1249 fromIdentifier - looking for {ident.value}"++
-                                            " inside {scope.types}")
+            method resolve -> ObjectType {
+                if (debug2) then {
+                    io.error.write("\n1878 called ans: fromIdentifier - looking for {ident.value}")
+                }
+
+                // Check if identifier is generic, and if so, turn it into a
+                // generic node and recurse so the generic case can handle it.
+                if(ident.generics ≠ false) then {
+                    if (debug) then {
+                       io.error.write "\n1429: generic node {ident}"
+                    }
+                    def genericAns: ObjectType = fromDType(ast.genericNode.new(ident, ident.generics))
+                        with (typeParams)
+                    if (debug) then {
+                       io.error.write "\n1433: generic node reduced to {genericAns}"
+                    }
+                    genericAns
+                } else {
+                    def answer: ObjectType = scope.types.find(id) butIfMissing {
+                        ScopingError.raise("Type " ++ id ++ " is not defined")
+                    }
+                    if (debug2) then {
+                        io.error.write("\n1897: id: {id}, ans: {answer}")
+                    }
+                    answer
+                }            
             }
 
-            // Check if identifier is generic, and if so, turn it into a
-            // generic node and recurse so the generic case can handle it.
-            if(ident.generics ≠ false) then {
-                if (debug) then {
-                   io.error.write "\n1429: generic node {ident}"
-                }
-                def genericAns: ObjectType = fromDType(ast.genericNode.new(ident, ident.generics))
-                    with (typeParams)
-                if (debug) then {
-                   io.error.write "\n1433: generic node reduced to {ans}"
-                }
-                genericAns
-            } else {
-                scope.types.find(id) butIfMissing {
-                    ScopingError.raise("Type " ++ id ++ " is not defined")
-                }
-            }            
-        }
-
-        method id  -> String { ident.value }
-        method isId -> Boolean { true }
-        method isOp -> Boolean { ans.isOp }
-        method isMeths -> Boolean { ans.isMeths }
-        method left -> ObjectType { ans.left }
-        method right -> ObjectType { ans.right }
-        method op -> String { ans.op }
-        method asString -> String { id }
-    
-        method isSubtypeOf (other: ObjectType) -> Boolean { ans.isSubtypeOf(other) } 
-
-        method isSubtypeHelper (trails: List⟦TypePair⟧, other: ObjectType) -> Answer { 
-            ans.isSubtypeHelper(trails, other) 
-        }
+            method id -> String { ident.value }
+            method isId -> Boolean { true }
+            method isOp -> Boolean { resolve.isOp }
+            method isMeths -> Boolean { resolve.isMeths }
+            method left -> ObjectType { resolve.left }
+            method right -> ObjectType { resolve.right }
+            method op -> String { resolve.op }
+            method asString -> String { id }
+            method isPlaceholder -> Boolean { resolve.isPlaceholder }
         
-        method == (other: ObjectType) -> Boolean {
-            ans.isSubtypeOf(other) && other.isSubtypeOf(ans) 
-        }
+            method methods -> Set⟦MethodType⟧ is public  { resolve.methods } 
 
-        method methods -> Set⟦MethodType⟧ is public  { ans.methods } 
+            method normalFormMeths -> List[[Set[[MethodType]]]] {
+                return resolve.normalFormMeths
+            }
 
-        method normalMeths -> List[[Set[[MethodType]]]] {
-            return ans.normalMeths
-        }
-
-        // Return method type with matching nameString or return noSuchMethod.
-        method getMethod(name : String) → MethodType | noSuchMethod {
-            for(normalMeths) do { methSet →
-                for(methSet) do { meth ->
-                    if (meth.nameString == name) then {
-                        return meth
+            // Return method type with matching nameString or return noSuchMethod.
+            method getMethod(name : String) → MethodType | noSuchMethod {
+                for(normalFormMeths) do { methSet →
+                    for(methSet) do { meth ->
+                        if (meth.nameString == name) then {
+                            return meth
+                        }
                     }
                 }
+                return noSuchMethod
             }
-            return noSuchMethod
         }
     }
 
@@ -1924,9 +1859,8 @@ def anObjectType: ObjectTypeFactory is public = object {
     method dynamic → ObjectType {
         object {
             inherit superObjectType
-            method resolve -> ObjectType { self }
 
-            def isResolved : Boolean is public = true
+            method resolve -> ObjectType { self }
 
             def isOp : Boolean is public = false
 
@@ -1936,8 +1870,8 @@ def anObjectType: ObjectTypeFactory is public = object {
 
             method isSubtypeOf(_ : ObjectType) → Boolean { true }
 
-            method isSubtypeHelper (_ : List⟦TypePair⟧, _ : ObjectType) → Answer{
-                answerConstructor(true , emptyList⟦TypePair⟧)
+            method isSubtypeHelper (_ : ObjectType) → Answer{
+                answerConstructor(true)
             }
 
             method restriction(_ : ObjectType) → dynamic { dynamic }
@@ -2354,7 +2288,7 @@ def anObjectType: ObjectTypeFactory is public = object {
     scope.types.at ("Binding") put (binding)
     scope.types.at ("Range") put (rangeTp)
     scope.types.at ("Iterator") put (iterator)
-//    scope.types.at ("Collection") put (collection)
+    // scope.types.at ("Collection") put (collection)
     scope.types.at ("Enumerable") put (enumerable)
     scope.types.at ("ExceptionKind") put (exceptionKind)
     scope.types.at ("Exception") put (exceptionKind)
@@ -2399,7 +2333,7 @@ def anObjectType: ObjectTypeFactory is public = object {
     addVar("Range") ofType(pattern)
 
     addVar("Iterator") ofType(pattern)
-//    addVar("Collection") ofType(pattern)
+    // addVar("Collection") ofType(pattern)
     addVar("Enumerable") ofType(pattern)
 
     // Add predefined constants to variable scope
@@ -2459,10 +2393,11 @@ method continue'(e, bl) → Done is confidential {
     bl.apply(e, { return })
 }
 
+
 //Takes a non-empty list of objectTypes and combines them into a variant type
 method fromObjectTypeList(oList : List⟦ObjectType⟧) → ObjectType{
       if (oList.size == 0) then {
-          StaticTypingError.raise("\nTried to construct a variant type from" ++
+          TypeError.raise("\nTried to construct a variant type from" ++
               "an empty list of variant types")
       }
       var varType: ObjectType := oList.at (1)

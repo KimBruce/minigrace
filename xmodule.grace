@@ -418,7 +418,7 @@ method writeGCT(modname, dict) is confidential {
         def fp = io.open("{util.outDir}{modname}.gct", "w")
         list.withAll(dict.bindings).sortBy(keyCompare).do { b ->
             fp.write "{b.key}:\n"
-            list.withAll(b.value).sort.do { v ->
+            list.withAll(b.value).do { v ->
                 fp.write " {v}\n"
             }
         }
@@ -435,7 +435,7 @@ method gctAsString(gctDict) {
     var ret := ""
     list.withAll(gctDict.bindings).sortBy(keyCompare).do { b ->
         ret := ret ++ "{b.key}:\n"
-        list.withAll(b.value).sort.do { v ->
+        list.withAll(b.value).do { v ->
             ret := ret ++ " {v}\n"
         }
     }
@@ -652,6 +652,7 @@ method buildGctFor(module) {
                 }
             }
         } elseif {v.kind == "import"} then {
+            def impGct = gctDictionaryFor(v.path)
             if (v.isPublic) then {
                 meths.add(v.nameString)
                 def gctType = if (false != v.dtype) then {v.dtype.toGrace(0)} else {"Unknown"}
@@ -659,6 +660,16 @@ method buildGctFor(module) {
             } else {
                 confidentials.push(v.nameString)
             }
+            // Collect the public types from this imported module
+            for (impGct.keys) do { key →
+                if (key.startsWith "typedec-of:") then {
+                    def typeName = key.substringFrom 12
+                    meths.add "{v.nameString}.{typeName}"
+                    types.add "{v.nameString}.{typeName}"
+                    gct.at "typedec-of:{v.nameString}.{typeName}" put (impGct.at(key))
+                }
+            }
+
         }
     }
     gct.at "classes" put(classes.sort)
@@ -674,7 +685,7 @@ method buildGctFor(module) {
     } ]
     gct.at "public" put(list.withAll(meths).sort)
     gct.at "publicMethodTypes" put(publicMethodTypes.sort)
-    gct.at "types" put(types.sort)
+    gct.at "types" put(types)
     gct.at "dialect" put (
         if (theDialect == "none") then { [] } else { [theDialect] }
     )

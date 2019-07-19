@@ -418,8 +418,14 @@ method writeGCT(modname, dict) is confidential {
         def fp = io.open("{util.outDir}{modname}.gct", "w")
         list.withAll(dict.bindings).sortBy(keyCompare).do { b ->
             fp.write "{b.key}:\n"
-            list.withAll(b.value).do { v ->
-                fp.write " {v}\n"
+            if(b.key.startsWith("typedec-of:")) then {
+                list.withAll(b.value).do { v ->
+                    fp.write " {v}\n"
+                }
+            } else {
+                list.withAll(b.value).sort.do { v ->
+                    fp.write " {v}\n"
+                }
             }
         }
         fp.close
@@ -435,8 +441,14 @@ method gctAsString(gctDict) {
     var ret := ""
     list.withAll(gctDict.bindings).sortBy(keyCompare).do { b ->
         ret := ret ++ "{b.key}:\n"
-        list.withAll(b.value).do { v ->
-            ret := ret ++ " {v}\n"
+        if(b.key.startsWith("typedec-of:")) then {
+            list.withAll(b.value).do { v ->
+                ret := ret ++ " {v}\n"
+            }
+        } else {
+            list.withAll(b.value).sort.do { v ->
+                ret := ret ++ " {v}\n"
+            }
         }
     }
     return ret
@@ -685,7 +697,7 @@ method buildGctFor(module) {
     } ]
     gct.at "public" put(list.withAll(meths).sort)
     gct.at "publicMethodTypes" put(publicMethodTypes.sort)
-    gct.at "types" put(types)
+    gct.at "types" put(types.sort)
     gct.at "dialect" put (
         if (theDialect == "none") then { [] } else { [theDialect] }
     )

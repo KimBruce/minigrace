@@ -669,6 +669,18 @@ method buildGctFor(module) {
                 meths.add(v.nameString)
                 def gctType = if (false != v.dtype) then {v.dtype.toGrace(0)} else {"Unknown"}
                 publicMethodTypes.push("{v.name.value} → {gctType}")
+
+                // Accumulate public methods accessible from this module
+                var acc : String := "type {v.nameString} = interface \{"
+                for(impGct.keys) do { key : String →
+                    if (key.startsWith("publicMethod:")) then {
+                        for (impGct.at(key)) do { line : String →
+                            acc := acc ++ "\n   " ++ line
+                        }
+                    }
+                }
+                acc := acc ++ "\n \}"
+                gct.at ("typedec-of:${v.nameString}") put(list[acc])
             } else {
                 confidentials.push(v.nameString)
             }

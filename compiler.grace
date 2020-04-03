@@ -11,6 +11,7 @@ import "sys" as sys
 import "unicode" as unicode
 import "util" as util
 import "xmodule" as xmodule
+import "StaticTyping" as staticTyping
 
 util.parseargs(buildinfo)
 
@@ -91,6 +92,11 @@ try {
         sys.exit(0)
     }
 
+    // Perform type check
+    if (util.typeCheck) then {
+        moduleObject.accept(staticTyping.astVisitor)
+    }
+ 
     xmodule.doAstCheck(moduleObject)
 
     // Perform the actual compilation

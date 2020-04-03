@@ -23,7 +23,7 @@ def lines is readable = list [ ]
 def nullFile = filePath.null        // don't modify this one
 var filename is readable := nullFile
 var commandLineExtensions is readable := ""
-
+var typeCheck is readable := false
 
 def targets = set.withAll [
     "lex", "parse", "grace", "ast", "processed-ast", "symbols", "imports", "js"
@@ -127,6 +127,8 @@ method parseargs(buildinfo) {
                         ++ "{buildinfo.gitgeneration}")
                     print("git revision " ++ buildinfo.gitrevision)
                     sys.exit(0)
+                } case { "--typecheck" ->
+                    typeCheck := true
                 } else {
                     if (arg.at(2) == "X") then {
                         var ext := arg.substringFrom(3)to(arg.size)

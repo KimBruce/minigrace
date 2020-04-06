@@ -16,10 +16,6 @@ j1/typeComparision.js: j1/mirrors.gct j1/standardGrace.js
 j1/unixFilePath.js: j1/standardGrace.js
 j1/util.js: j1/io.gct j1/sys.gct j1/unixFilePath.js j1/standardGrace.js j1/fastDict.js
 j1/xmodule.js: j1/io.gct j1/sys.gct j1/util.js j1/ast.js j1/mirrors.gct j1/errormessages.js j1/unixFilePath.js j1/standardGrace.js
-j1/StaticTyping.js: j1/standardGrace.js j1/ast.js j1/lexer.js j1/parser.js j1/xmodule.js j1/io.gct j1/sys.gct j1/SharedTypes.js j1/ScopeModule.js j1/ObjectTypeModule.js
-j1/SharedTypes.js: j1/standardGrace.js j1/ast.js j1/xmodule.js j1/io.gct
-j1/ScopeModule.js: j1/standardGrace.js j1/xmodule.js j1/io.gct j1/SharedTypes.js
-j1/ObjectTypeModule.js: j1/standardGrace.js j1/lexer.js j1/parser.js j1/ast.js j1/xmodule.js j1/io.gct j1/ScopeModule.js j1/SharedTypes.js
 
 j2/standardGrace.js: j2/fastDict.js
 j2/ast.js: j2/util.js j2/util.js j2/identifierKinds.js j2/standardGrace.js
@@ -38,10 +34,6 @@ j2/typeComparision.js: j2/mirrors.gct j2/standardGrace.js
 j2/fastDict.js: j2/collectionsPrelude.js
 j2/util.js: j2/io.gct j2/sys.gct j2/unixFilePath.js j2/standardGrace.js j2/fastDict.js
 j2/xmodule.js: j2/io.gct j2/sys.gct j2/util.js j2/ast.js j2/mirrors.gct j2/errormessages.js j2/unixFilePath.js j2/standardGrace.js
-j2/StaticTyping.js: j2/standardGrace.js j2/ast.js j2/lexer.js j2/parser.js j2/xmodule.js j2/io.gct j2/sys.gct j2/SharedTypes.js j2/ScopeModule.js j2/ObjectTypeModule.js
-j2/SharedTypes.js: j2/standardGrace.js j2/ast.js j2/xmodule.js j2/io.gct
-j2/ScopeModule.js: j2/standardGrace.js j2/xmodule.js j2/io.gct j2/SharedTypes.js
-j2/ObjectTypeModule.js: j2/standardGrace.js j2/lexer.js j2/parser.js j2/ast.js j2/xmodule.js j2/io.gct j2/ScopeModule.js j2/SharedTypes.js
 
 j2/logo.js: j2/turtle.js j2/standardGrace.js
 j2/requireTypes.js: j2/dialect.js j2/standardGrace.js
